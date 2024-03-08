@@ -1,0 +1,7 @@
+{
+  "name": "simulator",
+  "version": "0.0.1",
+  "module": "./main.js",
+  "type": "module",
+  "main": "./main.js"
+}

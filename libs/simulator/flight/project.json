@@ -1,0 +1,19 @@
+{
+  "name": "simulator-flight",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/simulator/flight/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/simulator/flight",
+        "main": "libs/simulator/flight/src/index.ts",
+        "tsConfig": "libs/simulator/flight/tsconfig.lib.json",
+        "assets": ["libs/simulator/flight/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

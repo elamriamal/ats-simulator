@@ -1,0 +1,19 @@
+{
+  "name": "simulator-map",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/simulator/map/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/simulator/map",
+        "main": "libs/simulator/map/src/index.ts",
+        "tsConfig": "libs/simulator/map/tsconfig.lib.json",
+        "assets": ["libs/simulator/map/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

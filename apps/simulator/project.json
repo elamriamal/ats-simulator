@@ -1,0 +1,40 @@
+{
+  "name": "simulator",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/simulator/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/simulator",
+        "format": ["esm"],
+        "bundle": true,
+        "thirdParty": true,
+        "main": "apps/simulator/src/main.ts",
+        "tsConfig": "apps/simulator/tsconfig.app.json",
+        "assets": ["apps/simulator/src/assets", "apps/simulator/index.html"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      }
+    },
+    "serve": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "http-server -c-1 dist/apps/simulator",
+          "nx watch --projects=simulator --includeDependentProjects -- nx build simulator"
+        ]
+      }
+    }
+  },
+  "tags": []
+}

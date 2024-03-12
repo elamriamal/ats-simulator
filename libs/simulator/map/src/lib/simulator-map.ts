@@ -1,41 +1,54 @@
-import { LitElement, css, html, svg } from 'lit';
+import { LitElement, css, svg, SVGTemplateResult } from 'lit';
+import * as d3 from 'd3';
 import { customElement, property } from 'lit/decorators.js';
-import { GeoJSON2SVG } from 'geojson2svg';
-import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
 @customElement('ats-simulator-map')
-export class MapElement extends LitElement {  
-  @property({ type: Object })
+export class MapElement extends LitElement {
+  @property({ type: Number }) width = window.innerWidth;
+  @property({ type: Number }) height = window.innerHeight;
   private geojson: any;
-  private svgStrings: string[] = [];
 
-  static override styles = css`
+  static override = css`
     svg {
-      background-color: #464646;
+      background-color: #f0f0f0;
     }
+  
   `;
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this.convertGeojsonToSvg();
-  }
-
-  private convertGeojsonToSvg(): void {
-    const options = {
-      viewportSize: {width: 1000, height: 1000},
-    };
-    const converter = new GeoJSON2SVG(options);
-    this.svgStrings = converter.convert(this.geojson, options);
-  }
-
-  override render() {
-    return html`
-      <svg style="width: 100%; height: 100%;" baseprofile="tiny" fill="#3d3d3d" width="1000" height="1000" viewbox="0 0 1000 1000" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width=".1" version="1.2" xmlns="http://www.w3.org/2000/svg">
-        ${this.svgStrings.map(svgString => svg`
-          ${unsafeSVG(svgString)}
-        `)}
-      </svg>
+  override render(): SVGTemplateResult {
+    return svg`
+      <!-- Create SVG element for the map -->
+      <svg width="${this.width}" height="${this.height}"></svg>
     `;
   }
-}
 
+  override firstUpdated(): void {
+    // Create a projection for the map
+    const projection = d3.geoMercator()
+    .center([0, 0])
+    .scale(this.width / 2 / Math.PI) // scale to fit the map to the screen
+    .translate([this.width / 2, this.height / 2]);
+   
+    // Create a path generator
+    const path = d3.geoPath().projection(projection);
+
+    // Select the SVG element
+    const svg = this.shadowRoot!.querySelector('svg');
+
+    if (svg) {
+        // Remove any existing elements
+        d3.select(svg).selectAll("*").remove();
+
+        d3.select(svg)
+            .selectAll(".country")
+            .data(this.geojson.features)
+            .enter()
+            .append("path")
+            .attr("class", "country")
+            // @ts-ignore
+            .attr("d", path)
+            .style("fill", "#444") // Dark grey fill color for countries
+            .style("stroke", "#666666"); // Light stroke color for countries
+    }
+}
+}

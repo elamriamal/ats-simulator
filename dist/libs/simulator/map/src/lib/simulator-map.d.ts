@@ -1,9 +1,9 @@
-import { LitElement } from 'lit';
+import { LitElement, SVGTemplateResult } from 'lit';
 export declare class MapElement extends LitElement {
+    width: number;
+    height: number;
     private geojson;
-    private svgStrings;
-    static styles: import("lit").CSSResult;
-    connectedCallback(): void;
-    private convertGeojsonToSvg;
-    render(): import("lit-html").TemplateResult<1>;
+    static override: import("lit").CSSResult;
+    render(): SVGTemplateResult;
+    firstUpdated(): void;
 }

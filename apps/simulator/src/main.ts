@@ -13,7 +13,7 @@ export class MyElement extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this.loadDigipair();
+    // this.loadDigipair();
   }
 
   private loadDigipair(): void {
@@ -51,15 +51,13 @@ export class MyElement extends LitElement {
 
   override render() {
     return html`
-      <section style="position: fixed; top: 0; left: 0; width: 100vmin; height: 100vmin; font-size: 1vmin;">
+      <section style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; font-size: 1vmin;">
         <ats-simulator-map .geojson=${geojson}></ats-simulator-map>
 
         ${this.flights.map(flight => html`
           <ats-simulator-flight fid=${flight.id} longitude=${flight.left/10} latitude=${flight.top/10}></ats-simulator-flight>
         `)}
       </section>
-
-      <digipair-ai code="65d2075798ed5a093a588ca7"></digipair-ai>
     `;
   }
 }

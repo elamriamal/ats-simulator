@@ -14,41 +14,61 @@ let MapElement = class MapElement extends lit_1.LitElement {
     render() {
         return (0, lit_1.svg) `
       <!-- Create SVG element for the map -->
-      <svg width="${this.width}" height="${this.height}"></svg>
+      <svg width="${this.width}" height="${this.height}">
+        <g></g>
+      </svg>
     `;
     }
     firstUpdated() {
-        // Create a projection for the map
-        const projection = d3.geoMercator()
-            .center([0, 0])
-            .scale(this.width / 2 / Math.PI) // scale to fit the map to the screen
-            .translate([this.width / 2, this.height / 2]);
+        this.svg = d3.select(this.shadowRoot.querySelector('svg'));
+        this.g = this.svg.select('g');
+        // Create a projection for the entire world map
+        var projection = d3.geoMercator().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
         // Create a path generator
         const path = d3.geoPath().projection(projection);
-        // Select the SVG element
-        const svg = this.shadowRoot.querySelector('svg');
-        if (svg) {
-            // Remove any existing elements
-            d3.select(svg).selectAll("*").remove();
-            d3.select(svg)
-                .selectAll(".country")
-                .data(this.geojson.features)
-                .enter()
-                .append("path")
-                .attr("class", "country")
-                // @ts-ignore
-                .attr("d", path)
-                .style("fill", "#444") // Dark grey fill color for countries
-                .style("stroke", "#666666"); // Light stroke color for countries
-        }
+        // Add zoom behavior
+        this.zoom = d3.zoom()
+            .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
+            .on('zoom', (event) => {
+            this.g.attr('transform', event.transform);
+        });
+        this.svg.call(this.zoom);
+        // Render map with adjusted projection
+        this.renderMap(path);
+    }
+    renderMap(path) {
+        // Remove any existing elements
+        this.g.selectAll("*").remove();
+        // Render countries
+        this.g.selectAll(".country")
+            .data(this.geojson.features)
+            .enter()
+            .append("path")
+            .attr("class", "country")
+            .attr("d", path)
+            .style("fill", "#444") // Dark grey fill color for countries
+            .style("stroke", "#666666"); // Light stroke color for countries
+    }
+    // Function to zoom in
+    zoomIn() {
+        this.svg.transition().call(this.zoom.scaleBy, 2);
+    }
+    // Function to zoom out
+    zoomOut() {
+        this.svg.transition().call(this.zoom.scaleBy, 0.5);
     }
 };
 exports.MapElement = MapElement;
-MapElement.override = (0, lit_1.css) `
-    svg {
-      background-color: #f0f0f0;
+MapElement.styles = (0, lit_1.css) `
+    :host {
+      display: block;
+      overflow: hidden; /* Hide overflow content */
     }
-  
+
+    svg {
+      display: block;
+      background-color: #444; 
+    }
   `;
 tslib_1.__decorate([
     (0, decorators_js_1.property)({ type: Number }),

@@ -1864,6 +1864,68 @@ function select_default2(selector) {
   return typeof selector === "string" ? new Selection([[document.querySelector(selector)]], [document.documentElement]) : new Selection([[selector]], root);
 }
 
+// node_modules/d3-selection/src/sourceEvent.js
+function sourceEvent_default(event) {
+  let sourceEvent;
+  while (sourceEvent = event.sourceEvent)
+    event = sourceEvent;
+  return event;
+}
+
+// node_modules/d3-selection/src/pointer.js
+function pointer_default(event, node) {
+  event = sourceEvent_default(event);
+  if (node === void 0)
+    node = event.currentTarget;
+  if (node) {
+    var svg = node.ownerSVGElement || node;
+    if (svg.createSVGPoint) {
+      var point = svg.createSVGPoint();
+      point.x = event.clientX, point.y = event.clientY;
+      point = point.matrixTransform(node.getScreenCTM().inverse());
+      return [point.x, point.y];
+    }
+    if (node.getBoundingClientRect) {
+      var rect = node.getBoundingClientRect();
+      return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
+    }
+  }
+  return [event.pageX, event.pageY];
+}
+
+// node_modules/d3-drag/src/noevent.js
+var nonpassivecapture = { capture: true, passive: false };
+function noevent_default(event) {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+// node_modules/d3-drag/src/nodrag.js
+function nodrag_default(view) {
+  var root2 = view.document.documentElement, selection2 = select_default2(view).on("dragstart.drag", noevent_default, nonpassivecapture);
+  if ("onselectstart" in root2) {
+    selection2.on("selectstart.drag", noevent_default, nonpassivecapture);
+  } else {
+    root2.__noselect = root2.style.MozUserSelect;
+    root2.style.MozUserSelect = "none";
+  }
+}
+function yesdrag(view, noclick) {
+  var root2 = view.document.documentElement, selection2 = select_default2(view).on("dragstart.drag", null);
+  if (noclick) {
+    selection2.on("click.drag", noevent_default, nonpassivecapture);
+    setTimeout(function() {
+      selection2.on("click.drag", null);
+    }, 0);
+  }
+  if ("onselectstart" in root2) {
+    selection2.on("selectstart.drag", null);
+  } else {
+    root2.style.MozUserSelect = root2.__noselect;
+    delete root2.__noselect;
+  }
+}
+
 // node_modules/d3-color/src/define.js
 function define_default(constructor, factory, prototype) {
   constructor.prototype = factory.prototype = prototype;
@@ -2473,6 +2535,51 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 }
 var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
 var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
+
+// node_modules/d3-interpolate/src/zoom.js
+var epsilon2 = 1e-12;
+function cosh(x2) {
+  return ((x2 = Math.exp(x2)) + 1 / x2) / 2;
+}
+function sinh(x2) {
+  return ((x2 = Math.exp(x2)) - 1 / x2) / 2;
+}
+function tanh(x2) {
+  return ((x2 = Math.exp(2 * x2)) - 1) / (x2 + 1);
+}
+var zoom_default = function zoomRho(rho, rho2, rho4) {
+  function zoom(p0, p1) {
+    var ux0 = p0[0], uy0 = p0[1], w0 = p0[2], ux1 = p1[0], uy1 = p1[1], w1 = p1[2], dx = ux1 - ux0, dy = uy1 - uy0, d22 = dx * dx + dy * dy, i3, S3;
+    if (d22 < epsilon2) {
+      S3 = Math.log(w1 / w0) / rho;
+      i3 = function(t4) {
+        return [
+          ux0 + t4 * dx,
+          uy0 + t4 * dy,
+          w0 * Math.exp(rho * t4 * S3)
+        ];
+      };
+    } else {
+      var d1 = Math.sqrt(d22), b0 = (w1 * w1 - w0 * w0 + rho4 * d22) / (2 * w0 * rho2 * d1), b1 = (w1 * w1 - w0 * w0 - rho4 * d22) / (2 * w1 * rho2 * d1), r0 = Math.log(Math.sqrt(b0 * b0 + 1) - b0), r1 = Math.log(Math.sqrt(b1 * b1 + 1) - b1);
+      S3 = (r1 - r0) / rho;
+      i3 = function(t4) {
+        var s4 = t4 * S3, coshr0 = cosh(r0), u3 = w0 / (rho2 * d1) * (coshr0 * tanh(rho * s4 + r0) - sinh(r0));
+        return [
+          ux0 + u3 * dx,
+          uy0 + u3 * dy,
+          w0 * coshr0 / cosh(rho * s4 + r0)
+        ];
+      };
+    }
+    i3.duration = S3 * 1e3 * rho / Math.SQRT2;
+    return i3;
+  }
+  zoom.rho = function(_2) {
+    var _1 = Math.max(1e-3, +_2), _22 = _1 * _1, _4 = _22 * _22;
+    return zoomRho(_1, _22, _4);
+  };
+  return zoom;
+}(Math.SQRT2, 2, 4);
 
 // node_modules/d3-timer/src/timer.js
 var frame = 0;
@@ -3380,7 +3487,7 @@ function type(t4) {
 
 // node_modules/d3-geo/src/math.js
 var epsilon = 1e-6;
-var epsilon2 = 1e-12;
+var epsilon22 = 1e-12;
 var pi = Math.PI;
 var halfPi = pi / 2;
 var quarterPi = pi / 4;
@@ -3746,7 +3853,7 @@ function polygonContains_default(polygon, point) {
       }
     }
   }
-  return (angle < -epsilon || angle < epsilon && sum < -epsilon2) ^ winding & 1;
+  return (angle < -epsilon || angle < epsilon && sum < -epsilon22) ^ winding & 1;
 }
 
 // node_modules/d3-geo/src/clip/index.js
@@ -4934,6 +5041,25 @@ function mercatorProjection(project) {
   return reclip();
 }
 
+// node_modules/d3-zoom/src/constant.js
+var constant_default4 = (x2) => () => x2;
+
+// node_modules/d3-zoom/src/event.js
+function ZoomEvent(type2, {
+  sourceEvent,
+  target,
+  transform: transform2,
+  dispatch: dispatch2
+}) {
+  Object.defineProperties(this, {
+    type: { value: type2, enumerable: true, configurable: true },
+    sourceEvent: { value: sourceEvent, enumerable: true, configurable: true },
+    target: { value: target, enumerable: true, configurable: true },
+    transform: { value: transform2, enumerable: true, configurable: true },
+    _: { value: dispatch2 }
+  });
+}
+
 // node_modules/d3-zoom/src/transform.js
 function Transform(k2, x2, y3) {
   this.k = k2;
@@ -4985,6 +5111,358 @@ function transform(node) {
   return node.__zoom;
 }
 
+// node_modules/d3-zoom/src/noevent.js
+function nopropagation2(event) {
+  event.stopImmediatePropagation();
+}
+function noevent_default3(event) {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+// node_modules/d3-zoom/src/zoom.js
+function defaultFilter(event) {
+  return (!event.ctrlKey || event.type === "wheel") && !event.button;
+}
+function defaultExtent() {
+  var e4 = this;
+  if (e4 instanceof SVGElement) {
+    e4 = e4.ownerSVGElement || e4;
+    if (e4.hasAttribute("viewBox")) {
+      e4 = e4.viewBox.baseVal;
+      return [[e4.x, e4.y], [e4.x + e4.width, e4.y + e4.height]];
+    }
+    return [[0, 0], [e4.width.baseVal.value, e4.height.baseVal.value]];
+  }
+  return [[0, 0], [e4.clientWidth, e4.clientHeight]];
+}
+function defaultTransform() {
+  return this.__zoom || identity2;
+}
+function defaultWheelDelta(event) {
+  return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 2e-3) * (event.ctrlKey ? 10 : 1);
+}
+function defaultTouchable() {
+  return navigator.maxTouchPoints || "ontouchstart" in this;
+}
+function defaultConstrain(transform2, extent, translateExtent) {
+  var dx0 = transform2.invertX(extent[0][0]) - translateExtent[0][0], dx1 = transform2.invertX(extent[1][0]) - translateExtent[1][0], dy0 = transform2.invertY(extent[0][1]) - translateExtent[0][1], dy1 = transform2.invertY(extent[1][1]) - translateExtent[1][1];
+  return transform2.translate(
+    dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1),
+    dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1)
+  );
+}
+function zoom_default2() {
+  var filter2 = defaultFilter, extent = defaultExtent, constrain = defaultConstrain, wheelDelta = defaultWheelDelta, touchable = defaultTouchable, scaleExtent = [0, Infinity], translateExtent = [[-Infinity, -Infinity], [Infinity, Infinity]], duration = 250, interpolate = zoom_default, listeners = dispatch_default("start", "zoom", "end"), touchstarting, touchfirst, touchending, touchDelay = 500, wheelDelay = 150, clickDistance2 = 0, tapDistance = 10;
+  function zoom(selection2) {
+    selection2.property("__zoom", defaultTransform).on("wheel.zoom", wheeled, { passive: false }).on("mousedown.zoom", mousedowned).on("dblclick.zoom", dblclicked).filter(touchable).on("touchstart.zoom", touchstarted).on("touchmove.zoom", touchmoved).on("touchend.zoom touchcancel.zoom", touchended).style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
+  }
+  zoom.transform = function(collection, transform2, point, event) {
+    var selection2 = collection.selection ? collection.selection() : collection;
+    selection2.property("__zoom", defaultTransform);
+    if (collection !== selection2) {
+      schedule(collection, transform2, point, event);
+    } else {
+      selection2.interrupt().each(function() {
+        gesture(this, arguments).event(event).start().zoom(null, typeof transform2 === "function" ? transform2.apply(this, arguments) : transform2).end();
+      });
+    }
+  };
+  zoom.scaleBy = function(selection2, k2, p3, event) {
+    zoom.scaleTo(selection2, function() {
+      var k0 = this.__zoom.k, k1 = typeof k2 === "function" ? k2.apply(this, arguments) : k2;
+      return k0 * k1;
+    }, p3, event);
+  };
+  zoom.scaleTo = function(selection2, k2, p3, event) {
+    zoom.transform(selection2, function() {
+      var e4 = extent.apply(this, arguments), t0 = this.__zoom, p0 = p3 == null ? centroid(e4) : typeof p3 === "function" ? p3.apply(this, arguments) : p3, p1 = t0.invert(p0), k1 = typeof k2 === "function" ? k2.apply(this, arguments) : k2;
+      return constrain(translate(scale(t0, k1), p0, p1), e4, translateExtent);
+    }, p3, event);
+  };
+  zoom.translateBy = function(selection2, x2, y3, event) {
+    zoom.transform(selection2, function() {
+      return constrain(this.__zoom.translate(
+        typeof x2 === "function" ? x2.apply(this, arguments) : x2,
+        typeof y3 === "function" ? y3.apply(this, arguments) : y3
+      ), extent.apply(this, arguments), translateExtent);
+    }, null, event);
+  };
+  zoom.translateTo = function(selection2, x2, y3, p3, event) {
+    zoom.transform(selection2, function() {
+      var e4 = extent.apply(this, arguments), t4 = this.__zoom, p0 = p3 == null ? centroid(e4) : typeof p3 === "function" ? p3.apply(this, arguments) : p3;
+      return constrain(identity2.translate(p0[0], p0[1]).scale(t4.k).translate(
+        typeof x2 === "function" ? -x2.apply(this, arguments) : -x2,
+        typeof y3 === "function" ? -y3.apply(this, arguments) : -y3
+      ), e4, translateExtent);
+    }, p3, event);
+  };
+  function scale(transform2, k2) {
+    k2 = Math.max(scaleExtent[0], Math.min(scaleExtent[1], k2));
+    return k2 === transform2.k ? transform2 : new Transform(k2, transform2.x, transform2.y);
+  }
+  function translate(transform2, p0, p1) {
+    var x2 = p0[0] - p1[0] * transform2.k, y3 = p0[1] - p1[1] * transform2.k;
+    return x2 === transform2.x && y3 === transform2.y ? transform2 : new Transform(transform2.k, x2, y3);
+  }
+  function centroid(extent2) {
+    return [(+extent2[0][0] + +extent2[1][0]) / 2, (+extent2[0][1] + +extent2[1][1]) / 2];
+  }
+  function schedule(transition2, transform2, point, event) {
+    transition2.on("start.zoom", function() {
+      gesture(this, arguments).event(event).start();
+    }).on("interrupt.zoom end.zoom", function() {
+      gesture(this, arguments).event(event).end();
+    }).tween("zoom", function() {
+      var that = this, args = arguments, g3 = gesture(that, args).event(event), e4 = extent.apply(that, args), p3 = point == null ? centroid(e4) : typeof point === "function" ? point.apply(that, args) : point, w2 = Math.max(e4[1][0] - e4[0][0], e4[1][1] - e4[0][1]), a3 = that.__zoom, b3 = typeof transform2 === "function" ? transform2.apply(that, args) : transform2, i3 = interpolate(a3.invert(p3).concat(w2 / a3.k), b3.invert(p3).concat(w2 / b3.k));
+      return function(t4) {
+        if (t4 === 1)
+          t4 = b3;
+        else {
+          var l3 = i3(t4), k2 = w2 / l3[2];
+          t4 = new Transform(k2, p3[0] - l3[0] * k2, p3[1] - l3[1] * k2);
+        }
+        g3.zoom(null, t4);
+      };
+    });
+  }
+  function gesture(that, args, clean) {
+    return !clean && that.__zooming || new Gesture(that, args);
+  }
+  function Gesture(that, args) {
+    this.that = that;
+    this.args = args;
+    this.active = 0;
+    this.sourceEvent = null;
+    this.extent = extent.apply(that, args);
+    this.taps = 0;
+  }
+  Gesture.prototype = {
+    event: function(event) {
+      if (event)
+        this.sourceEvent = event;
+      return this;
+    },
+    start: function() {
+      if (++this.active === 1) {
+        this.that.__zooming = this;
+        this.emit("start");
+      }
+      return this;
+    },
+    zoom: function(key, transform2) {
+      if (this.mouse && key !== "mouse")
+        this.mouse[1] = transform2.invert(this.mouse[0]);
+      if (this.touch0 && key !== "touch")
+        this.touch0[1] = transform2.invert(this.touch0[0]);
+      if (this.touch1 && key !== "touch")
+        this.touch1[1] = transform2.invert(this.touch1[0]);
+      this.that.__zoom = transform2;
+      this.emit("zoom");
+      return this;
+    },
+    end: function() {
+      if (--this.active === 0) {
+        delete this.that.__zooming;
+        this.emit("end");
+      }
+      return this;
+    },
+    emit: function(type2) {
+      var d3 = select_default2(this.that).datum();
+      listeners.call(
+        type2,
+        this.that,
+        new ZoomEvent(type2, {
+          sourceEvent: this.sourceEvent,
+          target: zoom,
+          type: type2,
+          transform: this.that.__zoom,
+          dispatch: listeners
+        }),
+        d3
+      );
+    }
+  };
+  function wheeled(event, ...args) {
+    if (!filter2.apply(this, arguments))
+      return;
+    var g3 = gesture(this, args).event(event), t4 = this.__zoom, k2 = Math.max(scaleExtent[0], Math.min(scaleExtent[1], t4.k * Math.pow(2, wheelDelta.apply(this, arguments)))), p3 = pointer_default(event);
+    if (g3.wheel) {
+      if (g3.mouse[0][0] !== p3[0] || g3.mouse[0][1] !== p3[1]) {
+        g3.mouse[1] = t4.invert(g3.mouse[0] = p3);
+      }
+      clearTimeout(g3.wheel);
+    } else if (t4.k === k2)
+      return;
+    else {
+      g3.mouse = [p3, t4.invert(p3)];
+      interrupt_default(this);
+      g3.start();
+    }
+    noevent_default3(event);
+    g3.wheel = setTimeout(wheelidled, wheelDelay);
+    g3.zoom("mouse", constrain(translate(scale(t4, k2), g3.mouse[0], g3.mouse[1]), g3.extent, translateExtent));
+    function wheelidled() {
+      g3.wheel = null;
+      g3.end();
+    }
+  }
+  function mousedowned(event, ...args) {
+    if (touchending || !filter2.apply(this, arguments))
+      return;
+    var currentTarget = event.currentTarget, g3 = gesture(this, args, true).event(event), v2 = select_default2(event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true), p3 = pointer_default(event, currentTarget), x05 = event.clientX, y05 = event.clientY;
+    nodrag_default(event.view);
+    nopropagation2(event);
+    g3.mouse = [p3, this.__zoom.invert(p3)];
+    interrupt_default(this);
+    g3.start();
+    function mousemoved(event2) {
+      noevent_default3(event2);
+      if (!g3.moved) {
+        var dx = event2.clientX - x05, dy = event2.clientY - y05;
+        g3.moved = dx * dx + dy * dy > clickDistance2;
+      }
+      g3.event(event2).zoom("mouse", constrain(translate(g3.that.__zoom, g3.mouse[0] = pointer_default(event2, currentTarget), g3.mouse[1]), g3.extent, translateExtent));
+    }
+    function mouseupped(event2) {
+      v2.on("mousemove.zoom mouseup.zoom", null);
+      yesdrag(event2.view, g3.moved);
+      noevent_default3(event2);
+      g3.event(event2).end();
+    }
+  }
+  function dblclicked(event, ...args) {
+    if (!filter2.apply(this, arguments))
+      return;
+    var t0 = this.__zoom, p0 = pointer_default(event.changedTouches ? event.changedTouches[0] : event, this), p1 = t0.invert(p0), k1 = t0.k * (event.shiftKey ? 0.5 : 2), t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, args), translateExtent);
+    noevent_default3(event);
+    if (duration > 0)
+      select_default2(this).transition().duration(duration).call(schedule, t1, p0, event);
+    else
+      select_default2(this).call(zoom.transform, t1, p0, event);
+  }
+  function touchstarted(event, ...args) {
+    if (!filter2.apply(this, arguments))
+      return;
+    var touches = event.touches, n5 = touches.length, g3 = gesture(this, args, event.changedTouches.length === n5).event(event), started, i3, t4, p3;
+    nopropagation2(event);
+    for (i3 = 0; i3 < n5; ++i3) {
+      t4 = touches[i3], p3 = pointer_default(t4, this);
+      p3 = [p3, this.__zoom.invert(p3), t4.identifier];
+      if (!g3.touch0)
+        g3.touch0 = p3, started = true, g3.taps = 1 + !!touchstarting;
+      else if (!g3.touch1 && g3.touch0[2] !== p3[2])
+        g3.touch1 = p3, g3.taps = 0;
+    }
+    if (touchstarting)
+      touchstarting = clearTimeout(touchstarting);
+    if (started) {
+      if (g3.taps < 2)
+        touchfirst = p3[0], touchstarting = setTimeout(function() {
+          touchstarting = null;
+        }, touchDelay);
+      interrupt_default(this);
+      g3.start();
+    }
+  }
+  function touchmoved(event, ...args) {
+    if (!this.__zooming)
+      return;
+    var g3 = gesture(this, args).event(event), touches = event.changedTouches, n5 = touches.length, i3, t4, p3, l3;
+    noevent_default3(event);
+    for (i3 = 0; i3 < n5; ++i3) {
+      t4 = touches[i3], p3 = pointer_default(t4, this);
+      if (g3.touch0 && g3.touch0[2] === t4.identifier)
+        g3.touch0[0] = p3;
+      else if (g3.touch1 && g3.touch1[2] === t4.identifier)
+        g3.touch1[0] = p3;
+    }
+    t4 = g3.that.__zoom;
+    if (g3.touch1) {
+      var p0 = g3.touch0[0], l0 = g3.touch0[1], p1 = g3.touch1[0], l1 = g3.touch1[1], dp = (dp = p1[0] - p0[0]) * dp + (dp = p1[1] - p0[1]) * dp, dl = (dl = l1[0] - l0[0]) * dl + (dl = l1[1] - l0[1]) * dl;
+      t4 = scale(t4, Math.sqrt(dp / dl));
+      p3 = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
+      l3 = [(l0[0] + l1[0]) / 2, (l0[1] + l1[1]) / 2];
+    } else if (g3.touch0)
+      p3 = g3.touch0[0], l3 = g3.touch0[1];
+    else
+      return;
+    g3.zoom("touch", constrain(translate(t4, p3, l3), g3.extent, translateExtent));
+  }
+  function touchended(event, ...args) {
+    if (!this.__zooming)
+      return;
+    var g3 = gesture(this, args).event(event), touches = event.changedTouches, n5 = touches.length, i3, t4;
+    nopropagation2(event);
+    if (touchending)
+      clearTimeout(touchending);
+    touchending = setTimeout(function() {
+      touchending = null;
+    }, touchDelay);
+    for (i3 = 0; i3 < n5; ++i3) {
+      t4 = touches[i3];
+      if (g3.touch0 && g3.touch0[2] === t4.identifier)
+        delete g3.touch0;
+      else if (g3.touch1 && g3.touch1[2] === t4.identifier)
+        delete g3.touch1;
+    }
+    if (g3.touch1 && !g3.touch0)
+      g3.touch0 = g3.touch1, delete g3.touch1;
+    if (g3.touch0)
+      g3.touch0[1] = this.__zoom.invert(g3.touch0[0]);
+    else {
+      g3.end();
+      if (g3.taps === 2) {
+        t4 = pointer_default(t4, this);
+        if (Math.hypot(touchfirst[0] - t4[0], touchfirst[1] - t4[1]) < tapDistance) {
+          var p3 = select_default2(this).on("dblclick.zoom");
+          if (p3)
+            p3.apply(this, arguments);
+        }
+      }
+    }
+  }
+  zoom.wheelDelta = function(_2) {
+    return arguments.length ? (wheelDelta = typeof _2 === "function" ? _2 : constant_default4(+_2), zoom) : wheelDelta;
+  };
+  zoom.filter = function(_2) {
+    return arguments.length ? (filter2 = typeof _2 === "function" ? _2 : constant_default4(!!_2), zoom) : filter2;
+  };
+  zoom.touchable = function(_2) {
+    return arguments.length ? (touchable = typeof _2 === "function" ? _2 : constant_default4(!!_2), zoom) : touchable;
+  };
+  zoom.extent = function(_2) {
+    return arguments.length ? (extent = typeof _2 === "function" ? _2 : constant_default4([[+_2[0][0], +_2[0][1]], [+_2[1][0], +_2[1][1]]]), zoom) : extent;
+  };
+  zoom.scaleExtent = function(_2) {
+    return arguments.length ? (scaleExtent[0] = +_2[0], scaleExtent[1] = +_2[1], zoom) : [scaleExtent[0], scaleExtent[1]];
+  };
+  zoom.translateExtent = function(_2) {
+    return arguments.length ? (translateExtent[0][0] = +_2[0][0], translateExtent[1][0] = +_2[1][0], translateExtent[0][1] = +_2[0][1], translateExtent[1][1] = +_2[1][1], zoom) : [[translateExtent[0][0], translateExtent[0][1]], [translateExtent[1][0], translateExtent[1][1]]];
+  };
+  zoom.constrain = function(_2) {
+    return arguments.length ? (constrain = _2, zoom) : constrain;
+  };
+  zoom.duration = function(_2) {
+    return arguments.length ? (duration = +_2, zoom) : duration;
+  };
+  zoom.interpolate = function(_2) {
+    return arguments.length ? (interpolate = _2, zoom) : interpolate;
+  };
+  zoom.on = function() {
+    var value = listeners.on.apply(listeners, arguments);
+    return value === listeners ? zoom : value;
+  };
+  zoom.clickDistance = function(_2) {
+    return arguments.length ? (clickDistance2 = (_2 = +_2) * _2, zoom) : Math.sqrt(clickDistance2);
+  };
+  zoom.tapDistance = function(_2) {
+    return arguments.length ? (tapDistance = +_2, zoom) : tapDistance;
+  };
+  return zoom;
+}
+
 // libs/simulator/map/src/lib/simulator-map.ts
 var MapElement = class extends s3 {
   constructor() {
@@ -4995,24 +5473,45 @@ var MapElement = class extends s3 {
   render() {
     return T`
       <!-- Create SVG element for the map -->
-      <svg width="${this.width}" height="${this.height}"></svg>
+      <svg width="${this.width}" height="${this.height}">
+        <g></g>
+      </svg>
     `;
   }
   firstUpdated() {
-    const projection2 = mercator_default().center([0, 0]).scale(this.width / 2 / Math.PI).translate([this.width / 2, this.height / 2]);
+    this.svg = select_default2(this.shadowRoot.querySelector("svg"));
+    this.g = this.svg.select("g");
+    var projection2 = mercator_default().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
     const path = path_default().projection(projection2);
-    const svg = this.shadowRoot.querySelector("svg");
-    if (svg) {
-      select_default2(svg).selectAll("*").remove();
-      select_default2(svg).selectAll(".country").data(this.geojson.features).enter().append("path").attr("class", "country").attr("d", path).style("fill", "#444").style("stroke", "#666666");
-    }
+    this.zoom = zoom_default2().scaleExtent([1, 8]).on("zoom", (event) => {
+      this.g.attr("transform", event.transform);
+    });
+    this.svg.call(this.zoom);
+    this.renderMap(path);
+  }
+  renderMap(path) {
+    this.g.selectAll("*").remove();
+    this.g.selectAll(".country").data(this.geojson.features).enter().append("path").attr("class", "country").attr("d", path).style("fill", "#444").style("stroke", "#666666");
+  }
+  // Function to zoom in
+  zoomIn() {
+    this.svg.transition().call(this.zoom.scaleBy, 2);
+  }
+  // Function to zoom out
+  zoomOut() {
+    this.svg.transition().call(this.zoom.scaleBy, 0.5);
   }
 };
-MapElement.override = i`
-    svg {
-      background-color: #f0f0f0;
+MapElement.styles = i`
+    :host {
+      display: block;
+      overflow: hidden; /* Hide overflow content */
     }
-  
+
+    svg {
+      display: block;
+      background-color: #444; 
+    }
   `;
 __decorateClass([
   n4({ type: Number })
@@ -5224,7 +5723,7 @@ var geojson = { "type": "FeatureCollection", "features": [
   { "type": "Feature", "id": "BIH", "properties": { "name": "Bosnia and Herzegovina" }, "geometry": { "type": "Polygon", "coordinates": [[[19.005486, 44.860234], [19.36803, 44.863], [19.11761, 44.42307], [19.59976, 44.03847], [19.454, 43.5681], [19.21852, 43.52384], [19.03165, 43.43253], [18.70648, 43.20011], [18.56, 42.65], [17.674922, 43.028563], [17.297373, 43.446341], [16.916156, 43.667722], [16.456443, 44.04124], [16.23966, 44.351143], [15.750026, 44.818712], [15.959367, 45.233777], [16.318157, 45.004127], [16.534939, 45.211608], [17.002146, 45.233777], [17.861783, 45.06774], [18.553214, 45.08159], [19.005486, 44.860234]]] } },
   { "type": "Feature", "id": "BLR", "properties": { "name": "Belarus" }, "geometry": { "type": "Polygon", "coordinates": [[[23.484128, 53.912498], [24.450684, 53.905702], [25.536354, 54.282423], [25.768433, 54.846963], [26.588279, 55.167176], [26.494331, 55.615107], [27.10246, 55.783314], [28.176709, 56.16913], [29.229513, 55.918344], [29.371572, 55.670091], [29.896294, 55.789463], [30.873909, 55.550976], [30.971836, 55.081548], [30.757534, 54.811771], [31.384472, 54.157056], [31.791424, 53.974639], [31.731273, 53.794029], [32.405599, 53.618045], [32.693643, 53.351421], [32.304519, 53.132726], [31.497644, 53.167427], [31.305201, 53.073996], [31.540018, 52.742052], [31.785998, 52.101678], [30.927549, 52.042353], [30.619454, 51.822806], [30.555117, 51.319503], [30.157364, 51.416138], [29.254938, 51.368234], [28.992835, 51.602044], [28.617613, 51.427714], [28.241615, 51.572227], [27.454066, 51.592303], [26.337959, 51.832289], [25.327788, 51.910656], [24.553106, 51.888461], [24.005078, 51.617444], [23.527071, 51.578454], [23.508002, 52.023647], [23.199494, 52.486977], [23.799199, 52.691099], [23.804935, 53.089731], [23.527536, 53.470122], [23.484128, 53.912498]]] } },
   { "type": "Feature", "id": "BLZ", "properties": { "name": "Belize" }, "geometry": { "type": "Polygon", "coordinates": [[[-89.14308, 17.808319], [-89.150909, 17.955468], [-89.029857, 18.001511], [-88.848344, 17.883198], [-88.490123, 18.486831], [-88.300031, 18.499982], [-88.296336, 18.353273], [-88.106813, 18.348674], [-88.123479, 18.076675], [-88.285355, 17.644143], [-88.197867, 17.489475], [-88.302641, 17.131694], [-88.239518, 17.036066], [-88.355428, 16.530774], [-88.551825, 16.265467], [-88.732434, 16.233635], [-88.930613, 15.887273], [-89.229122, 15.886938], [-89.150806, 17.015577], [-89.14308, 17.808319]]] } },
-  { "type": "Feature", "id": "BMU", "properties": { "name": "Bermuda" }, "geometry": { "type": "Polygon", "coordinates": [[[-64.7799734332998, 32.3072000581802], [-64.7873319183061, 32.3039237143428], [-64.7946942710173, 32.3032682700388], [-64.8094297981283, 32.3098175728414], [-64.8167896352437, 32.3058845718466], [-64.8101968029642, 32.3022833180511], [-64.7962291465484, 32.2934409732427], [-64.7815086336978, 32.2868973114514], [-64.7997025513437, 32.2796896417328], [-64.8066707691087, 32.2747767569465], [-64.8225587873683, 32.2669111289395], [-64.8287548840306, 32.2669075473817], [-64.8306732143498, 32.2583944840235], [-64.8399924854972, 32.254782282336], [-64.8566090462354, 32.2547740387514], [-64.8682296789446, 32.2616393614322], [-64.8628241459563, 32.2724481933959], [-64.8748651338951, 32.2757120264753], [-64.8717752856644, 32.2819371582026], [-64.8671422127295, 32.2930760547989], [-64.8559068764437, 32.2960321186471], [-64.8597429072279, 32.3015842021933], [-64.8439233486717, 32.3140553852543], [-64.8350242329311, 32.3242161760006], [-64.8338690593672, 32.3294587561557], [-64.8520298651164, 32.3110911879954], [-64.8635922932573, 32.3048469433363], [-64.8686668994079, 32.30910745083], [-64.8721354593415, 32.3041908606301], [-64.8779667328485, 32.3038632800462], [-64.8780046844321, 32.2907757831692], [-64.8849776658292, 32.2819261366004], [-64.8783230004629, 32.2613001418681], [-64.863194968877, 32.2465799485801], [-64.8519819555722, 32.2485519134663], [-64.842311980074, 32.2492123317296], [-64.8388242605209, 32.2475773472534], [-64.8334002575532, 32.2462714714698], [-64.8256389530584, 32.2472637398594], [-64.8205697556026, 32.2531698880328], [-64.8105087275579, 32.2561208974156], [-64.7900177727338, 32.2659446936992], [-64.7745415970416, 32.2718413023427], [-64.7644742436426, 32.2855931353214], [-64.7551803442276, 32.2908326702531], [-64.7423982971436, 32.2996734994024], [-64.7206991797682, 32.3137542201258], [-64.7117851247134, 32.3176823360806], [-64.6962778813133, 32.3275029115532], [-64.6768921127452, 32.3324095397555], [-64.6567136927777, 32.3451776458469], [-64.6532168823499, 32.3494356627941], [-64.6605720384429, 32.3589423487763], [-64.65125819471, 32.3615600906466], [-64.6462011670816, 32.36975169749], [-64.6613227512832, 32.3763135008721], [-64.6690666074397, 32.388444543924], [-64.6834270548595, 32.3854968316788], [-64.6954617672714, 32.3763221285869], [-64.70438689565, 32.3704254760469], [-64.7117569982798, 32.368132600249], [-64.7061764744404, 32.3600110593559], [-64.700531552697, 32.3590601356818], [-64.6940348033967, 32.3640708659835], [-64.6895164826082, 32.3633598579866], [-64.6864150099255, 32.3547797587266], [-64.6824635995504, 32.3540628176846], [-64.6835876652835, 32.3626447677968], [-64.6801998697415, 32.3631199096979], [-64.6672170444687, 32.3597751617473], [-64.6598811264978, 32.3497625771755], [-64.6737331235384, 32.3390281851635], [-64.6887090648183, 32.3342439408053], [-64.706732854446, 32.3429010723036], [-64.7149301576112, 32.3552188753513], [-64.7185967666669, 32.3552239212394], [-64.7214189847314, 32.3518830231342], [-64.7270616067222, 32.3466461715475], [-64.734962460882, 32.3442819830499], [-64.7383521549094, 32.3407216514918], [-64.7411729976333, 32.3311790864627], [-64.7423019216485, 32.323311561213], [-64.7462482354281, 32.318538611581], [-64.7566773739613, 32.3130509130175], [-64.768738200563, 32.3088369816572], [-64.7799734332998, 32.3072000581802]]] } },
+  //{"type":"Feature","id":"BMU","properties":{"name":"Bermuda"},"geometry":{"type":"Polygon","coordinates":[[[-64.7799734332998,32.3072000581802],[-64.7873319183061,32.3039237143428],[-64.7946942710173,32.3032682700388],[-64.8094297981283,32.3098175728414],[-64.8167896352437,32.3058845718466],[-64.8101968029642,32.3022833180511],[-64.7962291465484,32.2934409732427],[-64.7815086336978,32.2868973114514],[-64.7997025513437,32.2796896417328],[-64.8066707691087,32.2747767569465],[-64.8225587873683,32.2669111289395],[-64.8287548840306,32.2669075473817],[-64.8306732143498,32.2583944840235],[-64.8399924854972,32.254782282336],[-64.8566090462354,32.2547740387514],[-64.8682296789446,32.2616393614322],[-64.8628241459563,32.2724481933959],[-64.8748651338951,32.2757120264753],[-64.8717752856644,32.2819371582026],[-64.8671422127295,32.2930760547989],[-64.8559068764437,32.2960321186471],[-64.8597429072279,32.3015842021933],[-64.8439233486717,32.3140553852543],[-64.8350242329311,32.3242161760006],[-64.8338690593672,32.3294587561557],[-64.8520298651164,32.3110911879954],[-64.8635922932573,32.3048469433363],[-64.8686668994079,32.30910745083],[-64.8721354593415,32.3041908606301],[-64.8779667328485,32.3038632800462],[-64.8780046844321,32.2907757831692],[-64.8849776658292,32.2819261366004],[-64.8783230004629,32.2613001418681],[-64.863194968877,32.2465799485801],[-64.8519819555722,32.2485519134663],[-64.842311980074,32.2492123317296],[-64.8388242605209,32.2475773472534],[-64.8334002575532,32.2462714714698],[-64.8256389530584,32.2472637398594],[-64.8205697556026,32.2531698880328],[-64.8105087275579,32.2561208974156],[-64.7900177727338,32.2659446936992],[-64.7745415970416,32.2718413023427],[-64.7644742436426,32.2855931353214],[-64.7551803442276,32.2908326702531],[-64.7423982971436,32.2996734994024],[-64.7206991797682,32.3137542201258],[-64.7117851247134,32.3176823360806],[-64.6962778813133,32.3275029115532],[-64.6768921127452,32.3324095397555],[-64.6567136927777,32.3451776458469],[-64.6532168823499,32.3494356627941],[-64.6605720384429,32.3589423487763],[-64.65125819471,32.3615600906466],[-64.6462011670816,32.36975169749],[-64.6613227512832,32.3763135008721],[-64.6690666074397,32.388444543924],[-64.6834270548595,32.3854968316788],[-64.6954617672714,32.3763221285869],[-64.70438689565,32.3704254760469],[-64.7117569982798,32.368132600249],[-64.7061764744404,32.3600110593559],[-64.700531552697,32.3590601356818],[-64.6940348033967,32.3640708659835],[-64.6895164826082,32.3633598579866],[-64.6864150099255,32.3547797587266],[-64.6824635995504,32.3540628176846],[-64.6835876652835,32.3626447677968],[-64.6801998697415,32.3631199096979],[-64.6672170444687,32.3597751617473],[-64.6598811264978,32.3497625771755],[-64.6737331235384,32.3390281851635],[-64.6887090648183,32.3342439408053],[-64.706732854446,32.3429010723036],[-64.7149301576112,32.3552188753513],[-64.7185967666669,32.3552239212394],[-64.7214189847314,32.3518830231342],[-64.7270616067222,32.3466461715475],[-64.734962460882,32.3442819830499],[-64.7383521549094,32.3407216514918],[-64.7411729976333,32.3311790864627],[-64.7423019216485,32.323311561213],[-64.7462482354281,32.318538611581],[-64.7566773739613,32.3130509130175],[-64.768738200563,32.3088369816572],[-64.7799734332998,32.3072000581802]]]}},
   { "type": "Feature", "id": "BOL", "properties": { "name": "Bolivia" }, "geometry": { "type": "Polygon", "coordinates": [[[-62.846468, -22.034985], [-63.986838, -21.993644], [-64.377021, -22.798091], [-64.964892, -22.075862], [-66.273339, -21.83231], [-67.106674, -22.735925], [-67.82818, -22.872919], [-68.219913, -21.494347], [-68.757167, -20.372658], [-68.442225, -19.405068], [-68.966818, -18.981683], [-69.100247, -18.260125], [-69.590424, -17.580012], [-68.959635, -16.500698], [-69.389764, -15.660129], [-69.160347, -15.323974], [-69.339535, -14.953195], [-68.948887, -14.453639], [-68.929224, -13.602684], [-68.88008, -12.899729], [-68.66508, -12.5613], [-69.529678, -10.951734], [-68.786158, -11.03638], [-68.271254, -11.014521], [-68.048192, -10.712059], [-67.173801, -10.306812], [-66.646908, -9.931331], [-65.338435, -9.761988], [-65.444837, -10.511451], [-65.321899, -10.895872], [-65.402281, -11.56627], [-64.316353, -12.461978], [-63.196499, -12.627033], [-62.80306, -13.000653], [-62.127081, -13.198781], [-61.713204, -13.489202], [-61.084121, -13.479384], [-60.503304, -13.775955], [-60.459198, -14.354007], [-60.264326, -14.645979], [-60.251149, -15.077219], [-60.542966, -15.09391], [-60.15839, -16.258284], [-58.24122, -16.299573], [-58.388058, -16.877109], [-58.280804, -17.27171], [-57.734558, -17.552468], [-57.498371, -18.174188], [-57.676009, -18.96184], [-57.949997, -19.400004], [-57.853802, -19.969995], [-58.166392, -20.176701], [-58.183471, -19.868399], [-59.115042, -19.356906], [-60.043565, -19.342747], [-61.786326, -19.633737], [-62.265961, -20.513735], [-62.291179, -21.051635], [-62.685057, -22.249029], [-62.846468, -22.034985]]] } },
   { "type": "Feature", "id": "BRA", "properties": { "name": "Brazil" }, "geometry": { "type": "Polygon", "coordinates": [[[-57.625133, -30.216295], [-56.2909, -28.852761], [-55.162286, -27.881915], [-54.490725, -27.474757], [-53.648735, -26.923473], [-53.628349, -26.124865], [-54.13005, -25.547639], [-54.625291, -25.739255], [-54.428946, -25.162185], [-54.293476, -24.5708], [-54.29296, -24.021014], [-54.652834, -23.839578], [-55.027902, -24.001274], [-55.400747, -23.956935], [-55.517639, -23.571998], [-55.610683, -22.655619], [-55.797958, -22.35693], [-56.473317, -22.0863], [-56.88151, -22.282154], [-57.937156, -22.090176], [-57.870674, -20.732688], [-58.166392, -20.176701], [-57.853802, -19.969995], [-57.949997, -19.400004], [-57.676009, -18.96184], [-57.498371, -18.174188], [-57.734558, -17.552468], [-58.280804, -17.27171], [-58.388058, -16.877109], [-58.24122, -16.299573], [-60.15839, -16.258284], [-60.542966, -15.09391], [-60.251149, -15.077219], [-60.264326, -14.645979], [-60.459198, -14.354007], [-60.503304, -13.775955], [-61.084121, -13.479384], [-61.713204, -13.489202], [-62.127081, -13.198781], [-62.80306, -13.000653], [-63.196499, -12.627033], [-64.316353, -12.461978], [-65.402281, -11.56627], [-65.321899, -10.895872], [-65.444837, -10.511451], [-65.338435, -9.761988], [-66.646908, -9.931331], [-67.173801, -10.306812], [-68.048192, -10.712059], [-68.271254, -11.014521], [-68.786158, -11.03638], [-69.529678, -10.951734], [-70.093752, -11.123972], [-70.548686, -11.009147], [-70.481894, -9.490118], [-71.302412, -10.079436], [-72.184891, -10.053598], [-72.563033, -9.520194], [-73.226713, -9.462213], [-73.015383, -9.032833], [-73.571059, -8.424447], [-73.987235, -7.52383], [-73.723401, -7.340999], [-73.724487, -6.918595], [-73.120027, -6.629931], [-73.219711, -6.089189], [-72.964507, -5.741251], [-72.891928, -5.274561], [-71.748406, -4.593983], [-70.928843, -4.401591], [-70.794769, -4.251265], [-69.893635, -4.298187], [-69.444102, -1.556287], [-69.420486, -1.122619], [-69.577065, -0.549992], [-70.020656, -0.185156], [-70.015566, 0.541414], [-69.452396, 0.706159], [-69.252434, 0.602651], [-69.218638, 0.985677], [-69.804597, 1.089081], [-69.816973, 1.714805], [-67.868565, 1.692455], [-67.53781, 2.037163], [-67.259998, 1.719999], [-67.065048, 1.130112], [-66.876326, 1.253361], [-66.325765, 0.724452], [-65.548267, 0.789254], [-65.354713, 1.095282], [-64.611012, 1.328731], [-64.199306, 1.492855], [-64.083085, 1.916369], [-63.368788, 2.2009], [-63.422867, 2.411068], [-64.269999, 2.497006], [-64.408828, 3.126786], [-64.368494, 3.79721], [-64.816064, 4.056445], [-64.628659, 4.148481], [-63.888343, 4.02053], [-63.093198, 3.770571], [-62.804533, 4.006965], [-62.08543, 4.162124], [-60.966893, 4.536468], [-60.601179, 4.918098], [-60.733574, 5.200277], [-60.213683, 5.244486], [-59.980959, 5.014061], [-60.111002, 4.574967], [-59.767406, 4.423503], [-59.53804, 3.958803], [-59.815413, 3.606499], [-59.974525, 2.755233], [-59.718546, 2.24963], [-59.646044, 1.786894], [-59.030862, 1.317698], [-58.540013, 1.268088], [-58.429477, 1.463942], [-58.11345, 1.507195], [-57.660971, 1.682585], [-57.335823, 1.948538], [-56.782704, 1.863711], [-56.539386, 1.899523], [-55.995698, 1.817667], [-55.9056, 2.021996], [-56.073342, 2.220795], [-55.973322, 2.510364], [-55.569755, 2.421506], [-55.097587, 2.523748], [-54.524754, 2.311849], [-54.088063, 2.105557], [-53.778521, 2.376703], [-53.554839, 2.334897], [-53.418465, 2.053389], [-52.939657, 2.124858], [-52.556425, 2.504705], [-52.249338, 3.241094], [-51.657797, 4.156232], [-51.317146, 4.203491], [-51.069771, 3.650398], [-50.508875, 1.901564], [-49.974076, 1.736483], [-49.947101, 1.04619], [-50.699251, 0.222984], [-50.388211, -0.078445], [-48.620567, -0.235489], [-48.584497, -1.237805], [-47.824956, -0.581618], [-46.566584, -0.941028], [-44.905703, -1.55174], [-44.417619, -2.13775], [-44.581589, -2.691308], [-43.418791, -2.38311], [-41.472657, -2.912018], [-39.978665, -2.873054], [-38.500383, -3.700652], [-37.223252, -4.820946], [-36.452937, -5.109404], [-35.597796, -5.149504], [-35.235389, -5.464937], [-34.89603, -6.738193], [-34.729993, -7.343221], [-35.128212, -8.996401], [-35.636967, -9.649282], [-37.046519, -11.040721], [-37.683612, -12.171195], [-38.423877, -13.038119], [-38.673887, -13.057652], [-38.953276, -13.79337], [-38.882298, -15.667054], [-39.161092, -17.208407], [-39.267339, -17.867746], [-39.583521, -18.262296], [-39.760823, -19.599113], [-40.774741, -20.904512], [-40.944756, -21.937317], [-41.754164, -22.370676], [-41.988284, -22.97007], [-43.074704, -22.967693], [-44.647812, -23.351959], [-45.352136, -23.796842], [-46.472093, -24.088969], [-47.648972, -24.885199], [-48.495458, -25.877025], [-48.641005, -26.623698], [-48.474736, -27.175912], [-48.66152, -28.186135], [-48.888457, -28.674115], [-49.587329, -29.224469], [-50.696874, -30.984465], [-51.576226, -31.777698], [-52.256081, -32.24537], [-52.7121, -33.196578], [-53.373662, -33.768378], [-53.650544, -33.202004], [-53.209589, -32.727666], [-53.787952, -32.047243], [-54.572452, -31.494511], [-55.60151, -30.853879], [-55.973245, -30.883076], [-56.976026, -30.109686], [-57.625133, -30.216295]]] } },
   { "type": "Feature", "id": "BRN", "properties": { "name": "Brunei" }, "geometry": { "type": "Polygon", "coordinates": [[[114.204017, 4.525874], [114.599961, 4.900011], [115.45071, 5.44773], [115.4057, 4.955228], [115.347461, 4.316636], [114.869557, 4.348314], [114.659596, 4.007637], [114.204017, 4.525874]]] } },

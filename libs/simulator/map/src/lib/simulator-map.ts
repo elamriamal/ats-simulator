@@ -7,48 +7,76 @@ export class MapElement extends LitElement {
   @property({ type: Number }) width = window.innerWidth;
   @property({ type: Number }) height = window.innerHeight;
   private geojson: any;
+  private svg: any;
+  private g: any;
+  private zoom: any;
 
-  static override = css`
-    svg {
-      background-color: #f0f0f0;
+  static override styles = css`
+    :host {
+      display: block;
+      overflow: hidden; /* Hide overflow content */
     }
-  
+
+    svg {
+      display: block;
+      background-color: #444; 
+    }
   `;
 
   override render(): SVGTemplateResult {
     return svg`
       <!-- Create SVG element for the map -->
-      <svg width="${this.width}" height="${this.height}"></svg>
+      <svg width="${this.width}" height="${this.height}">
+        <g></g>
+      </svg>
     `;
   }
 
   override firstUpdated(): void {
-    // Create a projection for the map
-    const projection = d3.geoMercator()
-    .center([0, 0])
-    .scale(this.width / 2 / Math.PI) // scale to fit the map to the screen
-    .translate([this.width / 2, this.height / 2]);
-   
+    this.svg = d3.select(this.shadowRoot!.querySelector('svg'));
+    this.g = this.svg.select('g');
+
+    // Create a projection for the entire world map
+    var projection = d3.geoMercator().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
+
     // Create a path generator
     const path = d3.geoPath().projection(projection);
 
-    // Select the SVG element
-    const svg = this.shadowRoot!.querySelector('svg');
+    // Add zoom behavior
+    this.zoom = d3.zoom<SVGSVGElement, any>()
+      .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
+      .on('zoom', (event) => {
+        this.g.attr('transform', event.transform);
+      });
 
-    if (svg) {
-        // Remove any existing elements
-        d3.select(svg).selectAll("*").remove();
+    this.svg.call(this.zoom);
 
-        d3.select(svg)
-            .selectAll(".country")
-            .data(this.geojson.features)
-            .enter()
-            .append("path")
-            .attr("class", "country")
-            // @ts-ignore
-            .attr("d", path)
-            .style("fill", "#444") // Dark grey fill color for countries
-            .style("stroke", "#666666"); // Light stroke color for countries
-    }
-}
+    // Render map with adjusted projection
+    this.renderMap(path);
+  }
+
+  private renderMap(path: any): void {
+    // Remove any existing elements
+    this.g.selectAll("*").remove();
+
+    // Render countries
+    this.g.selectAll(".country")
+      .data(this.geojson.features)
+      .enter()
+      .append("path")
+      .attr("class", "country")
+      .attr("d", path)
+      .style("fill", "#444") // Dark grey fill color for countries
+      .style("stroke", "#666666") // Light stroke color for countries
+  }
+
+  // Function to zoom in
+  zoomIn(): void {
+    this.svg.transition().call(this.zoom.scaleBy, 2);
+  }
+
+  // Function to zoom out
+  zoomOut(): void {
+    this.svg.transition().call(this.zoom.scaleBy, 0.5);
+  }
 }

@@ -3,7 +3,13 @@ export declare class MapElement extends LitElement {
     width: number;
     height: number;
     private geojson;
-    static override: import("lit").CSSResult;
+    private svg;
+    private g;
+    private zoom;
+    static styles: import("lit").CSSResult;
     render(): SVGTemplateResult;
     firstUpdated(): void;
+    private renderMap;
+    zoomIn(): void;
+    zoomOut(): void;
 }

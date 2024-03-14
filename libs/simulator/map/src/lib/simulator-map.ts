@@ -6,6 +6,8 @@ import { customElement, property } from 'lit/decorators.js';
 export class MapElement extends LitElement {
   @property({ type: Number }) width = window.innerWidth;
   @property({ type: Number }) height = window.innerHeight;
+  @property({ type: Array }) flights: any[] = [];
+
   private geojson: any;
   private svg: any;
   private g: any;
@@ -20,6 +22,14 @@ export class MapElement extends LitElement {
     svg {
       display: block;
       background-color: #444; 
+    }
+
+    .flight-card {
+      position: absolute;
+      color: white;
+      padding: 1px;
+      border: 0.5px solid #ccc;
+      border-radius: 5px;
     }
   `;
 
@@ -56,6 +66,7 @@ export class MapElement extends LitElement {
   }
 
   private renderMap(path: any): void {
+
     // Remove any existing elements
     this.g.selectAll("*").remove();
 
@@ -67,7 +78,22 @@ export class MapElement extends LitElement {
       .attr("class", "country")
       .attr("d", path)
       .style("fill", "#444") // Dark grey fill color for countries
-      .style("stroke", "#666666") // Light stroke color for countries
+      .style("stroke", "#666666"); // Light stroke color for countries
+
+    // Render flights
+    this.flights.forEach((flight: { left: any; top: any; id: any; }) => {
+      const foreignObject = this.g.append('foreignObject')
+        .attr('x', flight.left)
+        .attr('y', flight.top)
+        .attr('width', 50)
+        .attr('height', 35);
+
+      const div = foreignObject.append('xhtml:div')
+        .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+        .classed('flight-card', true);
+
+      div.append('p').text(flight.id);
+    });
   }
 
   // Function to zoom in

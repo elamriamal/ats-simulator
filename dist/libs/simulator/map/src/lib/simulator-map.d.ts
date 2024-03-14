@@ -2,6 +2,7 @@ import { LitElement, SVGTemplateResult } from 'lit';
 export declare class MapElement extends LitElement {
     width: number;
     height: number;
+    flights: any[];
     private geojson;
     private svg;
     private g;

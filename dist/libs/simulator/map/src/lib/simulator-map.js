@@ -10,6 +10,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
         super(...arguments);
         this.width = window.innerWidth;
         this.height = window.innerHeight;
+        this.flights = [];
     }
     render() {
         return (0, lit_1.svg) `
@@ -48,6 +49,18 @@ let MapElement = class MapElement extends lit_1.LitElement {
             .attr("d", path)
             .style("fill", "#444") // Dark grey fill color for countries
             .style("stroke", "#666666"); // Light stroke color for countries
+        // Render flights
+        this.flights.forEach((flight) => {
+            const foreignObject = this.g.append('foreignObject')
+                .attr('x', flight.left)
+                .attr('y', flight.top)
+                .attr('width', 50)
+                .attr('height', 35);
+            const div = foreignObject.append('xhtml:div')
+                .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+                .classed('flight-card', true);
+            div.append('p').text(flight.id);
+        });
     }
     // Function to zoom in
     zoomIn() {
@@ -69,6 +82,14 @@ MapElement.styles = (0, lit_1.css) `
       display: block;
       background-color: #444; 
     }
+
+    .flight-card {
+      position: absolute;
+      color: white;
+      padding: 1px;
+      border: 0.5px solid #ccc;
+      border-radius: 5px;
+    }
   `;
 tslib_1.__decorate([
     (0, decorators_js_1.property)({ type: Number }),
@@ -78,6 +99,10 @@ tslib_1.__decorate([
     (0, decorators_js_1.property)({ type: Number }),
     tslib_1.__metadata("design:type", Object)
 ], MapElement.prototype, "height", void 0);
+tslib_1.__decorate([
+    (0, decorators_js_1.property)({ type: Array }),
+    tslib_1.__metadata("design:type", Array)
+], MapElement.prototype, "flights", void 0);
 exports.MapElement = MapElement = tslib_1.__decorate([
     (0, decorators_js_1.customElement)('ats-simulator-map')
 ], MapElement);

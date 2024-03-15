@@ -5477,11 +5477,14 @@ var MapElement = class extends s3 {
       <svg width="${this.width}" height="${this.height}">
         <g></g>
       </svg>
+      <!-- Tooltip -->
+      <div class="tooltip" style="display: none;"></div>
     `;
   }
   firstUpdated() {
     this.svg = select_default2(this.shadowRoot.querySelector("svg"));
     this.g = this.svg.select("g");
+    this.tooltip = this.shadowRoot.querySelector(".tooltip");
     var projection2 = mercator_default().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
     const path = path_default().projection(projection2);
     this.zoom = zoom_default2().scaleExtent([1, 8]).on("zoom", (event) => {
@@ -5494,18 +5497,33 @@ var MapElement = class extends s3 {
     this.g.selectAll("*").remove();
     this.g.selectAll(".country").data(this.geojson.features).enter().append("path").attr("class", "country").attr("d", path).style("fill", "#444").style("stroke", "#666666");
     this.flights.forEach((flight) => {
-      const foreignObject = this.g.append("foreignObject").attr("x", flight.left).attr("y", flight.top).attr("width", 50).attr("height", 35);
+      const foreignObject = this.g.append("foreignObject").attr("x", flight.left).attr("y", flight.top);
+      const tempDiv = foreignObject.append("xhtml:div").attr("xmlns", "http://www.w3.org/1999/xhtml").classed("flight-card", true).style("visibility", "hidden").html(flight.data);
+      foreignObject.append("xhtml:section").classed("plane", true).html("x");
+      const divWidth = tempDiv.node().getBoundingClientRect().width;
+      const divHeight = tempDiv.node().getBoundingClientRect().height;
+      const planeWidth = foreignObject.select(".plane").node().getBoundingClientRect().width;
+      const planeHeight = foreignObject.select(".plane").node().getBoundingClientRect().height;
+      const width = Math.max(divWidth, planeWidth);
+      const height = divHeight + planeHeight;
+      tempDiv.remove();
+      foreignObject.attr("width", width).attr("height", height);
+      foreignObject.select(".flight-card").style("visibility", "visible");
       const div = foreignObject.append("xhtml:div").attr("xmlns", "http://www.w3.org/1999/xhtml").classed("flight-card", true);
-      div.append("p").text(flight.id);
+      div.append("p").html(flight.data);
+      foreignObject.on("mouseover", (event) => {
+        const flightData = flight.metadata;
+        const svgRect = this.svg.node().getBoundingClientRect();
+        const x2 = event.clientX - svgRect.left;
+        const y3 = event.clientY - svgRect.top;
+        this.tooltip.style.left = `${x2}px`;
+        this.tooltip.style.top = `${y3}px`;
+        this.tooltip.innerHTML = flightData;
+        this.tooltip.style.display = "block";
+      }).on("mouseout", () => {
+        this.tooltip.style.display = "none";
+      });
     });
-  }
-  // Function to zoom in
-  zoomIn() {
-    this.svg.transition().call(this.zoom.scaleBy, 2);
-  }
-  // Function to zoom out
-  zoomOut() {
-    this.svg.transition().call(this.zoom.scaleBy, 0.5);
   }
 };
 MapElement.styles = i`
@@ -5513,18 +5531,36 @@ MapElement.styles = i`
       display: block;
       overflow: hidden; /* Hide overflow content */
     }
-
     svg {
       display: block;
       background-color: #444; 
     }
-
     .flight-card {
       position: absolute;
       color: white;
-      padding: 1px;
-      border: 0.5px solid #ccc;
-      border-radius: 5px;
+      cursor: pointer;
+    }
+    .plane {
+      color: white;
+      border: 1px solid white;
+      text-align: center;
+      width: 1.4vmin;
+      cursor: pointer;
+    }
+    .tooltip {
+      position: absolute;
+      color: white;
+      z-index: 9999; /* Ensure tooltip appears on top */
+      pointer-events: none;
+      -webkit-pointer-events: none; /* Safari and Chrome */
+      -moz-pointer-events: none; /* Firefox */
+      -ms-pointer-events: none; /* Internet Explorer */
+      border: 1px solid rgba(248, 241, 241, 0.5);
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+      padding: 8px;
+      font-size: 8px;
     }
   `;
 __decorateClass([
@@ -5553,35 +5589,35 @@ var flights = [
     "id": "FL067",
     "left": 670,
     "top": 100,
-    data: "43\n\u2713VLG 18HA\n360-\nXI\n\u2192DEVRO",
-    metadata: "43<br>\u2713VLG 18HA<br>360-<br>XI<br>\u2192DEVRO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
+    data: "93<br>\u2713VLG 18HA<br>360-<br>XI<br>\u2192DEVRO",
+    metadata: "93<br>\u2713VLG 18HA<br>360-<br>XI<br>\u2192DEVRO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
   },
   {
     "id": "FL068",
     "left": 680,
     "top": 200,
-    data: "43\nVRYR60VE\n360-\nNILANG",
-    metadata: "33<br>VRYR60VE<br>360-<br>NILANG<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
+    data: "43<br>VRYR60VE<br>360-<br>NILANG",
+    metadata: "43<br>VRYR60VE<br>360-<br>NILANG<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
   },
   {
     "id": "FL069",
     "left": 690,
     "top": 300,
-    data: "43\nVEZY95KC\n360-\nNI RALIX\n\u27A1TUPAR",
-    metadata: "27<br>VEZY95KC<br>360-<br>NI RALIX<br>\u27A1TUPAR<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
+    data: "63<br>VEZY95KC<br>360-<br>NI RALIX<br>\u27A1TUPAR",
+    metadata: "i63<br>VEZY95KC<br>360-<br>NI RALIX<br>\u27A1TUPAR<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
   },
   {
     "id": "FL070",
     "left": 700,
     "top": 400,
-    data: "47\n\u2713BEL7AD\n350-\nZ3\n\u279CURUNA",
+    data: "47<br>\u2713BEL7AD<br>350-<br>Z3<br>\u279CURUNA",
     metadata: "47<br>\u2713BEL7AD<br>350-<br>Z3<br>\u279CURUNA<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
   },
   {
     "id": "FL071",
     "left": 710,
     "top": 500,
-    data: "42\nVRYR219Y\n360-\nXI\n\u27A1BOKNO",
+    data: "42<br>VRYR219Y<br>360-<br>XI<br>\u27A1BOKNO",
     metadata: "42<br>VRYR219Y<br>360-<br>XI<br>\u27A1BOKNO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
   },
   {

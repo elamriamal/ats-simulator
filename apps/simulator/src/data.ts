@@ -11,31 +11,31 @@ export const flights = [
     "id": "FL067",
     "left": 670,
     "top": 100,
-    data: "43\n✓VLG 18HA\n360-\nXI\n→DEVRO",
+    data: "93<br>✓VLG 18HA<br>360-<br>XI<br>→DEVRO",
     metadata:
-      "43<br>✓VLG 18HA<br>360-<br>XI<br>→DEVRO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
+      "93<br>✓VLG 18HA<br>360-<br>XI<br>→DEVRO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
   },
   {
     "id": "FL068",
     "left": 680,
     "top": 200,
-    data: "43\nVRYR60VE\n360-\nNILANG",
+    data: "43<br>VRYR60VE<br>360-<br>NILANG",
     metadata:
-      "33<br>VRYR60VE<br>360-<br>NILANG<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
+      "43<br>VRYR60VE<br>360-<br>NILANG<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
   },
   {
     "id": "FL069",
     "left": 690,
     "top": 300,
-    data: "43\nVEZY95KC\n360-\nNI RALIX\n➡TUPAR",
+    data: "63<br>VEZY95KC<br>360-<br>NI RALIX<br>➡TUPAR",
     metadata:
-      "27<br>VEZY95KC<br>360-<br>NI RALIX<br>➡TUPAR<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
+      "i63<br>VEZY95KC<br>360-<br>NI RALIX<br>➡TUPAR<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
   },
   {
     "id": "FL070",
     "left": 700,
     "top": 400,
-    data: "47\n✓BEL7AD\n350-\nZ3\n➜URUNA",
+    data: "47<br>✓BEL7AD<br>350-<br>Z3<br>➜URUNA",
     metadata:
       "47<br>✓BEL7AD<br>350-<br>Z3<br>➜URUNA<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
   },
@@ -43,7 +43,7 @@ export const flights = [
     "id": "FL071",
     "left": 710,
     "top": 500,
-    data: "42\nVRYR219Y\n360-\nXI\n➡BOKNO",
+    data: "42<br>VRYR219Y<br>360-<br>XI<br>➡BOKNO",
     metadata:
       "42<br>VRYR219Y<br>360-<br>XI<br>➡BOKNO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36",
   },

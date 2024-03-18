@@ -4,6 +4,7 @@ import '@ats/simulator-map';
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { geojson, flights } from './data';
+import geoJSONData from './sectors.json';
 
 @customElement('ats-simulator')
 export class MyElement extends LitElement {
@@ -14,6 +15,8 @@ export class MyElement extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     // this.loadDigipair();
+    console.log(geoJSONData);
+    
   }
 
   private loadDigipair(): void {
@@ -52,7 +55,7 @@ export class MyElement extends LitElement {
   override render() {
     return html`
       <section style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; font-size: 1vmin;">
-        <ats-simulator-map .geojson=${geojson} .flights=${this.flights}></ats-simulator-map>
+        <ats-simulator-map .geojson=${geoJSONData} .flights=${this.flights}></ats-simulator-map>
       </section>
     `;
   }

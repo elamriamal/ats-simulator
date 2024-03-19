@@ -1,6 +1,7 @@
 import { LitElement, css, svg, SVGTemplateResult, PropertyValueMap } from 'lit';
 import * as d3 from 'd3';
 import { customElement, property } from 'lit/decorators.js';
+import { generateRandomData } from './utils';
 
 @customElement('ats-simulator-map')
 export class MapElement extends LitElement {
@@ -23,8 +24,12 @@ export class MapElement extends LitElement {
     super.updated(changedProperties);
 
     // Create a projection for the entire map
+    const centroid = d3.geoCentroid(this.geojson);
+
     this.projection = d3.geoMercator()
-      .scale(this.width / 6).translate([this.width / 2, this.height / 2]);
+      .center(centroid) // Set the center of the projection
+      .scale(this.width / 6)
+      .translate([this.width / 2, this.height / 2]);
 
     // Create a path generator
     this.path = d3.geoPath().projection(this.projection);
@@ -48,12 +53,13 @@ export class MapElement extends LitElement {
       position: absolute;
       color: white;
       cursor: pointer;
+      font-size: 8px;
     }
     .plane {
       color: white;
-      border: 1px solid white;
+      border: 0.5px solid white;
       text-align: center;
-      width: 1.4vmin;
+      width: 1vmin;
       cursor: pointer;
     }
     .tooltip {
@@ -120,7 +126,10 @@ export class MapElement extends LitElement {
       metadata: any;
       data: any;
       aircraftId: string;
-      position: { latitude: number; longitude: number };
+      position: {
+        hdg: any;
+        cas: any; latitude: number; longitude: number
+      };
     }) => {
       const { position } = flight;
       const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
@@ -165,12 +174,11 @@ export class MapElement extends LitElement {
       const div = foreignObject.append('xhtml:div')
         .attr('xmlns', 'http://www.w3.org/1999/xhtml')
         .classed('flight-card', true);
-
-      div.append('p').html(flight.data);
+      div.append('p').html(`${flight?.aircraftId} <br> ${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}`);
 
       // Add tooltip interaction for flights
       foreignObject.on('mouseover', (event: MouseEvent) => {
-        const flightData = flight.metadata; // Get flight data for the current flight
+        const flightData = `${flight?.aircraftId}<br>${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}<br>${generateRandomData()?.metadata}`; // Get flight data for the current flight
 
         // Get the position of the mouse pointer relative to the SVG container
         const svgRect = this.svg.node().getBoundingClientRect();

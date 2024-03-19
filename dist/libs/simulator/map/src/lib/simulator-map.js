@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const lit_1 = require("lit");
 const d3 = require("d3");
 const decorators_js_1 = require("lit/decorators.js");
+const utils_1 = require("./utils");
 let MapElement = class MapElement extends lit_1.LitElement {
     constructor() {
         super();
@@ -15,8 +16,11 @@ let MapElement = class MapElement extends lit_1.LitElement {
     updated(changedProperties) {
         super.updated(changedProperties);
         // Create a projection for the entire map
+        const centroid = d3.geoCentroid(this.geojson);
         this.projection = d3.geoMercator()
-            .scale(this.width / 6).translate([this.width / 2, this.height / 2]);
+            .center(centroid) // Set the center of the projection
+            .scale(this.width / 6)
+            .translate([this.width / 2, this.height / 2]);
         // Create a path generator
         this.path = d3.geoPath().projection(this.projection);
         if (changedProperties.has('flights')) {
@@ -63,6 +67,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
             .style("stroke", "#666666"); // Light stroke color for countries
         // Render flights
         (_a = this.flights) === null || _a === void 0 ? void 0 : _a.forEach((flight) => {
+            var _a, _b;
             const { position } = flight;
             const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
             const foreignObject = this.g.append('foreignObject')
@@ -97,10 +102,11 @@ let MapElement = class MapElement extends lit_1.LitElement {
             const div = foreignObject.append('xhtml:div')
                 .attr('xmlns', 'http://www.w3.org/1999/xhtml')
                 .classed('flight-card', true);
-            div.append('p').html(flight.data);
+            div.append('p').html(`${flight === null || flight === void 0 ? void 0 : flight.aircraftId} <br> ${Math.floor((_a = flight === null || flight === void 0 ? void 0 : flight.position) === null || _a === void 0 ? void 0 : _a.cas)} - ${Math.floor((_b = flight === null || flight === void 0 ? void 0 : flight.position) === null || _b === void 0 ? void 0 : _b.hdg)}`);
             // Add tooltip interaction for flights
             foreignObject.on('mouseover', (event) => {
-                const flightData = flight.metadata; // Get flight data for the current flight
+                var _a, _b, _c;
+                const flightData = `${flight === null || flight === void 0 ? void 0 : flight.aircraftId}<br>${Math.floor((_a = flight === null || flight === void 0 ? void 0 : flight.position) === null || _a === void 0 ? void 0 : _a.cas)} - ${Math.floor((_b = flight === null || flight === void 0 ? void 0 : flight.position) === null || _b === void 0 ? void 0 : _b.hdg)}<br>${(_c = (0, utils_1.generateRandomData)()) === null || _c === void 0 ? void 0 : _c.metadata}`; // Get flight data for the current flight
                 // Get the position of the mouse pointer relative to the SVG container
                 const svgRect = this.svg.node().getBoundingClientRect();
                 const x = event.clientX - svgRect.left;
@@ -134,12 +140,13 @@ MapElement.styles = (0, lit_1.css) `
       position: absolute;
       color: white;
       cursor: pointer;
+      font-size: 8px;
     }
     .plane {
       color: white;
-      border: 1px solid white;
+      border: 0.5px solid white;
       text-align: center;
-      width: 1.4vmin;
+      width: 1vmin;
       cursor: pointer;
     }
     .tooltip {

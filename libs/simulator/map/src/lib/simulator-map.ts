@@ -1,4 +1,4 @@
-import { LitElement, css, svg, SVGTemplateResult } from 'lit';
+import { LitElement, css, svg, SVGTemplateResult, PropertyValueMap } from 'lit';
 import * as d3 from 'd3';
 import { customElement, property } from 'lit/decorators.js';
 
@@ -8,11 +8,32 @@ export class MapElement extends LitElement {
   @property({ type: Number }) height = window.innerHeight;
   @property({ type: Array }) flights: any[] = [];
 
+  constructor() {
+    super();
+  }
+
   private geojson: any;
   private svg: any;
   private g: any;
   private zoom: any;
   private tooltip: any;
+  private projection: any;
+  private path: any;
+  override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    super.updated(changedProperties);
+
+    // Create a projection for the entire map
+    this.projection = d3.geoMercator()
+      .scale(this.width / 6).translate([this.width / 2, this.height / 2]);
+
+    // Create a path generator
+    this.path = d3.geoPath().projection(this.projection);
+
+    if (changedProperties.has('flights')) {
+      // Call renderMap every time flights property is updated
+      this.renderMap(this.path);
+    }
+  }
 
   static override styles = css`
     :host {
@@ -68,12 +89,6 @@ export class MapElement extends LitElement {
     this.g = this.svg.select('g');
     this.tooltip = this.shadowRoot!.querySelector('.tooltip');
 
-    // Create a projection for the entire world map
-    var projection = d3.geoMercator().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
-
-    // Create a path generator
-    const path = d3.geoPath().projection(projection);
-
     // Add zoom behavior
     this.zoom = d3.zoom<SVGSVGElement, any>()
       .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
@@ -82,13 +97,11 @@ export class MapElement extends LitElement {
       });
 
     this.svg.call(this.zoom);
-
     // Render map with adjusted projection
-    this.renderMap(path);
+    this.renderMap(this.path);
   }
 
   private renderMap(path: any): void {
-
     // Remove any existing elements
     this.g.selectAll("*").remove();
 
@@ -103,14 +116,18 @@ export class MapElement extends LitElement {
       .style("stroke", "#666666"); // Light stroke color for countries
 
     // Render flights
-    this.flights.forEach((flight: {
+    this.flights?.forEach((flight: {
       metadata: any;
-      data: any; left: any; top: any; id: any;
+      data: any;
+      aircraftId: string;
+      position: { latitude: number; longitude: number };
     }) => {
+      const { position } = flight;
+      const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
 
       const foreignObject = this.g.append('foreignObject')
-        .attr('x', flight.left)
-        .attr('y', flight.top)
+        .attr('x', x)
+        .attr('y', y);
 
       // Append a temporary div to the foreignObject
       const tempDiv = foreignObject.append('xhtml:div')
@@ -119,7 +136,7 @@ export class MapElement extends LitElement {
         .style('visibility', 'hidden') // Hide the temporary div
         .html(flight.data);
 
-      // // Append the plane section
+      // Append the plane section
       foreignObject.append('xhtml:section')
         .classed('plane', true)
         .html('x');
@@ -134,7 +151,6 @@ export class MapElement extends LitElement {
       const width = Math.max(divWidth, planeWidth);
       const height = divHeight + planeHeight;
 
-
       // Remove the temporary div
       tempDiv.remove();
 
@@ -143,7 +159,7 @@ export class MapElement extends LitElement {
         .attr('width', width)
         .attr('height', height);
 
-      // Finally, make the foreignObject visible
+      // make the foreignObject visible
       foreignObject.select('.flight-card').style('visibility', 'visible');
 
       const div = foreignObject.append('xhtml:div')
@@ -154,23 +170,23 @@ export class MapElement extends LitElement {
 
       // Add tooltip interaction for flights
       foreignObject.on('mouseover', (event: MouseEvent) => {
-          const flightData = flight.metadata; // Get flight data for the current flight
+        const flightData = flight.metadata; // Get flight data for the current flight
 
-          // Get the position of the mouse pointer relative to the SVG container
-          const svgRect = this.svg.node().getBoundingClientRect();
-          const x = event.clientX - svgRect.left;
-          const y = event.clientY - svgRect.top;
+        // Get the position of the mouse pointer relative to the SVG container
+        const svgRect = this.svg.node().getBoundingClientRect();
+        const x = event.clientX - svgRect.left;
+        const y = event.clientY - svgRect.top;
 
-          // Adjust tooltip position to be over the flight card
-          this.tooltip.style.left = `${x}px`; // Initial left position
-          this.tooltip.style.top = `${y}px`; // Initial top position
+        // Adjust tooltip position to be over the flight card
+        this.tooltip.style.left = `${x}px`; // Initial left position
+        this.tooltip.style.top = `${y}px`; // Initial top position
 
-          // Update tooltip content
-          this.tooltip.innerHTML = flightData;
+        // Update tooltip content
+        this.tooltip.innerHTML = flightData;
 
-          // Show tooltip initially (may still have zero dimensions)
-          this.tooltip.style.display = 'block';
-        })
+        // Show tooltip initially (may still have zero dimensions)
+        this.tooltip.style.display = 'block';
+      })
 
         .on('mouseout', () => {
           // Hide tooltip on mouseout

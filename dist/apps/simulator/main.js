@@ -1,5 +1,28 @@
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i3 = decorators.length - 1, decorator; i3 >= 0; i3--)
@@ -10,12 +33,32 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 
-// libs/simulator/engine/src/lib/simulator-engine.ts
-function simulatorEngine(flights2) {
-  for (const flight of flights2) {
-    flight.left += 10;
+// apps/simulator/src/eventsShim.js
+var require_eventsShim = __commonJS({
+  "apps/simulator/src/eventsShim.js"(exports, module) {
+    var EventEmitter2 = class {
+      constructor() {
+        this.events = {};
+      }
+      on(eventName, listener) {
+        if (!this.events[eventName]) {
+          this.events[eventName] = [];
+        }
+        this.events[eventName].push(listener);
+      }
+      emit(eventName, ...args) {
+        if (this.events[eventName]) {
+          this.events[eventName].forEach((listener) => {
+            listener(...args);
+          });
+        }
+      }
+    };
+    module.exports = {
+      EventEmitter: EventEmitter2
+    };
   }
-}
+});
 
 // node_modules/@lit-labs/ssr-dom-shim/lib/element-internals.js
 var ElementInternalsShim = class ElementInternals {
@@ -774,121 +817,6 @@ s3._$litElement$ = true, s3["finalized", "finalized"] = true, globalThis.litElem
 var r4 = globalThis.litElementPolyfillSupport;
 r4?.({ LitElement: s3 });
 (globalThis.litElementVersions ??= []).push("4.0.4");
-
-// node_modules/@lit/reactive-element/node/decorators/custom-element.js
-var t3 = (t4) => (e4, o5) => {
-  void 0 !== o5 ? o5.addInitializer(() => {
-    customElements.define(t4, e4);
-  }) : customElements.define(t4, e4);
-};
-
-// node_modules/@lit/reactive-element/node/decorators/property.js
-var o4 = { attribute: true, type: String, converter: b, reflect: false, hasChanged: y };
-var r5 = (t4 = o4, e4, r6) => {
-  const { kind: n5, metadata: i3 } = r6;
-  let s4 = globalThis.litPropertyMetadata.get(i3);
-  if (void 0 === s4 && globalThis.litPropertyMetadata.set(i3, s4 = /* @__PURE__ */ new Map()), s4.set(r6.name, t4), "accessor" === n5) {
-    const { name: o5 } = r6;
-    return { set(r7) {
-      const n6 = e4.get.call(this);
-      e4.set.call(this, r7), this.requestUpdate(o5, n6, t4);
-    }, init(e5) {
-      return void 0 !== e5 && this.P(o5, void 0, t4), e5;
-    } };
-  }
-  if ("setter" === n5) {
-    const { name: o5 } = r6;
-    return function(r7) {
-      const n6 = this[o5];
-      e4.call(this, r7), this.requestUpdate(o5, n6, t4);
-    };
-  }
-  throw Error("Unsupported decorator location: " + n5);
-};
-function n4(t4) {
-  return (e4, o5) => "object" == typeof o5 ? r5(t4, e4, o5) : ((t5, e5, o6) => {
-    const r6 = e5.hasOwnProperty(o6);
-    return e5.constructor.createProperty(o6, r6 ? { ...t5, wrapped: true } : t5), r6 ? Object.getOwnPropertyDescriptor(e5, o6) : void 0;
-  })(t4, e4, o5);
-}
-
-// libs/simulator/flight/src/lib/simulator-flight.ts
-var FlightElement = class extends s3 {
-  render() {
-    const longitude2 = (this.longitude ?? 1) % 100;
-    const direction = Math.floor((this.longitude ?? 1) / 100) % 2 ? -1 : 1;
-    return x`
-      <section style="position: absolute; left: ${longitude2 * direction + (direction < 0 ? 100 : 0)}vmin; top: ${this.latitude}vmin;">
-        <section class="plane">x</section>
-
-        <div class="card">
-          <div class="card-info"><strong>ID:</strong> #${this.fid}</div>
-          <div class="card-info"><strong>Latitude:</strong> ${this.latitude}</div>
-          <div class="card-info"><strong>Longitude:</strong> ${Math.floor(longitude2 * direction + (direction < 0 ? 100 : 0))}</div>
-          <div class="card-info"><strong>Direction:</strong> ${direction}</div>
-        </div>
-      </section>
-    `;
-  }
-};
-FlightElement.styles = i`
-    .card {
-      border-radius: 0.8vmin;
-      padding: 1vmin;
-      box-sizing: border-box;
-      margin: 1vmin;
-      font-size: 1vmin;
-      position: absolute;
-      top: -9vmin;
-      left: -9vmin;
-      width: 11vmin;
-      z-index: 1000;
-      cursor: pointer;
-    }
-    .card-info {
-      line-height: 1;
-      color: rgb(255, 255, 255);
-      padding: 0.2vmin 0px;
-    }
-    strong {
-      color: white;
-    }
-
-    .card:hover {
-      background-color: rgb(255, 255, 255);
-      box-shadow: rgba(0, 0, 0, 0.1) 0px 0.2vmin 0.4vmin;
-      z-index: 1001;
-    }
-    .card:hover .card-info {
-      color: rgb(102, 102, 102);
-    }
-    .card:hover strong {
-      color: #333333;
-    }
-
-    .card-info:last-child {
-        border-bottom: none;
-    }
-
-    .plane {
-      color: white;
-      border: 1px solid white;
-      text-align: center;
-      width: 1.4vmin;
-    }
-  `;
-__decorateClass([
-  n4()
-], FlightElement.prototype, "fid", 2);
-__decorateClass([
-  n4()
-], FlightElement.prototype, "longitude", 2);
-__decorateClass([
-  n4()
-], FlightElement.prototype, "latitude", 2);
-FlightElement = __decorateClass([
-  t3("ats-simulator-flight")
-], FlightElement);
 
 // node_modules/d3-array/src/fsum.js
 var Adder = class {
@@ -5463,13 +5391,58 @@ function zoom_default2() {
   return zoom;
 }
 
+// node_modules/@lit/reactive-element/node/decorators/custom-element.js
+var t3 = (t4) => (e4, o5) => {
+  void 0 !== o5 ? o5.addInitializer(() => {
+    customElements.define(t4, e4);
+  }) : customElements.define(t4, e4);
+};
+
+// node_modules/@lit/reactive-element/node/decorators/property.js
+var o4 = { attribute: true, type: String, converter: b, reflect: false, hasChanged: y };
+var r5 = (t4 = o4, e4, r6) => {
+  const { kind: n5, metadata: i3 } = r6;
+  let s4 = globalThis.litPropertyMetadata.get(i3);
+  if (void 0 === s4 && globalThis.litPropertyMetadata.set(i3, s4 = /* @__PURE__ */ new Map()), s4.set(r6.name, t4), "accessor" === n5) {
+    const { name: o5 } = r6;
+    return { set(r7) {
+      const n6 = e4.get.call(this);
+      e4.set.call(this, r7), this.requestUpdate(o5, n6, t4);
+    }, init(e5) {
+      return void 0 !== e5 && this.P(o5, void 0, t4), e5;
+    } };
+  }
+  if ("setter" === n5) {
+    const { name: o5 } = r6;
+    return function(r7) {
+      const n6 = this[o5];
+      e4.call(this, r7), this.requestUpdate(o5, n6, t4);
+    };
+  }
+  throw Error("Unsupported decorator location: " + n5);
+};
+function n4(t4) {
+  return (e4, o5) => "object" == typeof o5 ? r5(t4, e4, o5) : ((t5, e5, o6) => {
+    const r6 = e5.hasOwnProperty(o6);
+    return e5.constructor.createProperty(o6, r6 ? { ...t5, wrapped: true } : t5), r6 ? Object.getOwnPropertyDescriptor(e5, o6) : void 0;
+  })(t4, e4, o5);
+}
+
 // libs/simulator/map/src/lib/simulator-map.ts
 var MapElement = class extends s3 {
   constructor() {
-    super(...arguments);
+    super();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.flights = [];
+  }
+  updated(changedProperties) {
+    super.updated(changedProperties);
+    this.projection = mercator_default().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
+    this.path = path_default().projection(this.projection);
+    if (changedProperties.has("flights")) {
+      this.renderMap(this.path);
+    }
   }
   render() {
     return T`
@@ -5485,19 +5458,19 @@ var MapElement = class extends s3 {
     this.svg = select_default2(this.shadowRoot.querySelector("svg"));
     this.g = this.svg.select("g");
     this.tooltip = this.shadowRoot.querySelector(".tooltip");
-    var projection2 = mercator_default().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
-    const path = path_default().projection(projection2);
     this.zoom = zoom_default2().scaleExtent([1, 8]).on("zoom", (event) => {
       this.g.attr("transform", event.transform);
     });
     this.svg.call(this.zoom);
-    this.renderMap(path);
+    this.renderMap(this.path);
   }
   renderMap(path) {
     this.g.selectAll("*").remove();
     this.g.selectAll(".country").data(this.geojson.features).enter().append("path").attr("class", "country").attr("d", path).style("fill", "#444").style("stroke", "#666666");
-    this.flights.forEach((flight) => {
-      const foreignObject = this.g.append("foreignObject").attr("x", flight.left).attr("y", flight.top);
+    this.flights?.forEach((flight) => {
+      const { position } = flight;
+      const [x2, y3] = this.projection([position.longitude, position.latitude]);
+      const foreignObject = this.g.append("foreignObject").attr("x", x2).attr("y", y3);
       const tempDiv = foreignObject.append("xhtml:div").attr("xmlns", "http://www.w3.org/1999/xhtml").classed("flight-card", true).style("visibility", "hidden").html(flight.data);
       foreignObject.append("xhtml:section").classed("plane", true).html("x");
       const divWidth = tempDiv.node().getBoundingClientRect().width;
@@ -5514,10 +5487,10 @@ var MapElement = class extends s3 {
       foreignObject.on("mouseover", (event) => {
         const flightData = flight.metadata;
         const svgRect = this.svg.node().getBoundingClientRect();
-        const x2 = event.clientX - svgRect.left;
-        const y3 = event.clientY - svgRect.top;
-        this.tooltip.style.left = `${x2}px`;
-        this.tooltip.style.top = `${y3}px`;
+        const x3 = event.clientX - svgRect.left;
+        const y4 = event.clientY - svgRect.top;
+        this.tooltip.style.left = `${x3}px`;
+        this.tooltip.style.top = `${y4}px`;
         this.tooltip.innerHTML = flightData;
         this.tooltip.style.display = "block";
       }).on("mouseout", () => {
@@ -5575,255 +5548,6 @@ __decorateClass([
 MapElement = __decorateClass([
   t3("ats-simulator-map")
 ], MapElement);
-
-// apps/simulator/src/data.ts
-var flights = [
-  {
-    "id": "FL066",
-    "left": 660,
-    "top": 990,
-    data: "469<br>zVUo<br>Ra",
-    metadata: "469<br>zVUo<br>Ra<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL067",
-    "left": 670,
-    "top": 100,
-    data: "93<br>\u2713VLG 18HA<br>360-<br>XI<br>\u2192DEVRO",
-    metadata: "93<br>\u2713VLG 18HA<br>360-<br>XI<br>\u2192DEVRO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL068",
-    "left": 680,
-    "top": 200,
-    data: "43<br>VRYR60VE<br>360-<br>NILANG",
-    metadata: "43<br>VRYR60VE<br>360-<br>NILANG<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL069",
-    "left": 690,
-    "top": 300,
-    data: "63<br>VEZY95KC<br>360-<br>NI RALIX<br>\u27A1TUPAR",
-    metadata: "i63<br>VEZY95KC<br>360-<br>NI RALIX<br>\u27A1TUPAR<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL070",
-    "left": 700,
-    "top": 400,
-    data: "47<br>\u2713BEL7AD<br>350-<br>Z3<br>\u279CURUNA",
-    metadata: "47<br>\u2713BEL7AD<br>350-<br>Z3<br>\u279CURUNA<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL071",
-    "left": 710,
-    "top": 500,
-    data: "42<br>VRYR219Y<br>360-<br>XI<br>\u27A1BOKNO",
-    metadata: "42<br>VRYR219Y<br>360-<br>XI<br>\u27A1BOKNO<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL072",
-    "left": 720,
-    "top": 600,
-    data: "43-5<br>VVLG8830<br>352350<br>R2",
-    metadata: "43-5<br>VVLG8830<br>352350<br>R2<br>Z3 t350 PPN p350<br>OSMOB h..m..<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL073",
-    "left": 730,
-    "top": 700,
-    data: "60<br>VIBE3405<br>350-<br>Z3<br>\u27A1BTZ",
-    metadata: "60<br>VIBE3405<br>350-<br>Z3<br>\u27A1BTZ<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL074",
-    "left": 740,
-    "top": 800,
-    data: "992<br>XyHsQg<br>QGABBIOP",
-    metadata: "992<br>XyHsQg<br>QGABBIOP<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL075",
-    "left": 750,
-    "top": 900,
-    data: "277<br>IrUxcFL<br>Gi",
-    metadata: "277<br>IrUxcFL<br>Gi<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL076",
-    "left": 760,
-    "top": 100,
-    data: "223<br>fM<br>HSl",
-    metadata: "223<br>fM<br>HSl<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL077",
-    "left": 770,
-    "top": 200,
-    data: "414<br>n<br>SyTnAvgdXy",
-    metadata: "414<br>n<br>SyTnAvgdXy<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL078",
-    "left": 780,
-    "top": 300,
-    data: "777<br>qUmDJmNcP<br>CaFoq",
-    metadata: "777<br>qUmDJmNcP<br>CaFoq<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL079",
-    "left": 790,
-    "top": 400,
-    data: "588<br>sGC<br>qbGCBlIeR",
-    metadata: "588<br>sGC<br>qbGCBlIeR<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL080",
-    "left": 800,
-    "top": 500,
-    data: "711<br>pQOr<br>jeeMt",
-    metadata: "711<br>pQOr<br>jeeMt<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL081",
-    "left": 810,
-    "top": 600,
-    data: "428<br>tH<br>d",
-    metadata: "428<br>tH<br>d<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL082",
-    "left": 820,
-    "top": 700,
-    data: "334<br>wBT<br>cTUnuAC",
-    metadata: "334<br>wBT<br>cTUnuAC<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL083",
-    "left": 830,
-    "top": 800,
-    data: "726<br>eIuRd<br>CZG",
-    metadata: "726<br>eIuRd<br>CZG<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL084",
-    "left": 840,
-    "top": 900,
-    data: "328<br>YaLHJyGCUD<br>EZsC",
-    metadata: "328<br>YaLHJyGCUD<br>EZsC<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL085",
-    "left": 850,
-    "top": 100,
-    data: "57<br>VXASnmG<br>RYgiULHaU",
-    metadata: "57<br>VXASnmG<br>RYgiULHaU<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL086",
-    "left": 860,
-    "top": 200,
-    data: "414<br>rLDFjec<br>IZyDHH",
-    metadata: "414<br>rLDFjec<br>IZyDHH<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL087",
-    "left": 870,
-    "top": 300,
-    data: "326<br>ZYWQG<br>nvTeCeYpbG",
-    metadata: "326<br>ZYWQG<br>nvTeCeYpbG<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL088",
-    "left": 880,
-    "top": 400,
-    data: "408<br>ND<br>igUuZor",
-    metadata: "408<br>ND<br>igUuZor<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL089",
-    "left": 890,
-    "top": 500,
-    data: "334<br>ZGQPndLU<br>fjZ",
-    metadata: "334<br>ZGQPndLU<br>fjZ<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL090",
-    "left": 900,
-    "top": 600,
-    data: "781<br>wlXYkdtkvh<br>bTJsGHPV",
-    metadata: "781<br>wlXYkdtkvh<br>bTJsGHPV<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL091",
-    "left": 910,
-    "top": 700,
-    data: "318<br>ii<br>LaYuKIgn",
-    metadata: "318<br>ii<br>LaYuKIgn<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL092",
-    "left": 920,
-    "top": 800,
-    data: "711<br>THYZUavG<br>m",
-    metadata: "711<br>THYZUavG<br>m<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL093",
-    "left": 930,
-    "top": 900,
-    data: "136<br>WmcSvzzsf<br>hAZCQP",
-    metadata: "136<br>WmcSvzzsf<br>hAZCQP<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL094",
-    "left": 940,
-    "top": 100,
-    data: "624<br>BCOjDp<br>pzMVBkb",
-    metadata: "624<br>BCOjDp<br>pzMVBkb<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL095",
-    "left": 950,
-    "top": 200,
-    data: "705<br>rXVTYCSL<br>xuGMhk",
-    metadata: "705<br>rXVTYCSL<br>xuGMhk<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL096",
-    "left": 960,
-    "top": 300,
-    data: "670<br>vaqCbc<br>HIDqI",
-    metadata: "670<br>vaqCbc<br>HIDqI<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL097",
-    "left": 970,
-    "top": 400,
-    data: "501<br>VXsesHWB<br>FGRT",
-    metadata: "501<br>VXsesHWB<br>FGRT<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL098",
-    "left": 980,
-    "top": 500,
-    data: "1<br>lGZZrDlCs<br>N",
-    metadata: "1<br>lGZZrDlCs<br>N<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL099",
-    "left": 990,
-    "top": 600,
-    data: "58<br>RNUZdj<br>XGd",
-    metadata: "58<br>RNUZdj<br>XGd<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  },
-  {
-    "id": "FL100",
-    "left": 999,
-    "top": 999,
-    data: "297<br>wCItqkkr<br>AnamklKJ",
-    metadata: "297<br>wCItqkkr<br>AnamklKJ<br>Z3 t350 PPN p350<br>OSMOB h..m...<br>134.765<br>V<br>@h221@k260 @m.77@36"
-  }
-];
 
 // apps/simulator/src/sectors.json
 var sectors_default = {
@@ -10024,48 +9748,82 @@ var sectors_default = {
   ]
 };
 
+// apps/simulator/src/WebSocketService.ts
+var import_eventsShim = __toESM(require_eventsShim());
+var WebSocketService = class {
+  // Add messageCallback property
+  constructor() {
+    this.messageCallback = null;
+    this.eventEmitter = new import_eventsShim.EventEmitter();
+    this.socket = new WebSocket("ws://racemusaircrafttrafficgenerator.d0e6fvepbddreqau.francecentral.azurecontainer.io:8080/ws");
+    this.socket.onopen = () => {
+      this.eventEmitter.emit("open");
+    };
+    this.socket.onmessage = (event) => {
+      this.handleMessage(event.data);
+    };
+    this.socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      this.eventEmitter.emit("error", error);
+    };
+  }
+  sendMessage(message) {
+    if (this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(message);
+    } else {
+      console.error("WebSocket connection not open.");
+    }
+  }
+  on(event, listener) {
+    this.eventEmitter.on(event, listener);
+  }
+  // Implement onMessage method to register callback for incoming messages
+  onMessage(callback) {
+    this.messageCallback = callback;
+  }
+  handleMessage(data) {
+    if (this.messageCallback) {
+      this.messageCallback(data);
+    }
+  }
+};
+var WebSocketService_default = WebSocketService;
+
 // apps/simulator/src/main.ts
 var MyElement = class extends s3 {
   constructor() {
-    super(...arguments);
-    this.flights = flights;
-    this.speed = 250;
-    this.interval = 0;
+    super();
+    this.webSocketService = new WebSocketService_default();
+    this.webSocketService.onMessage(this.handleWebSocketMessage.bind(this));
+  }
+  handleWebSocketMessage(data) {
+    this.flights = { ...JSON.parse(data) };
+    this.requestUpdate();
+  }
+  startSendingData() {
+    fetch("http://racemusaircrafttrafficgenerator.d0e6fvepbddreqau.francecentral.azurecontainer.io:8080/send").then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+      }
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      } else {
+        return response.text();
+      }
+    }).then((data) => {
+      console.log("Received data:", data);
+    }).catch((error) => {
+      console.error("Error fetching data:", error);
+    });
   }
   connectedCallback() {
     super.connectedCallback();
-    console.log(sectors_default);
-  }
-  loadDigipair() {
-    import("https://chatbot.digipair.ai/index.js");
-    this.addEventListener("simulator-start", () => {
-      this.startEngine();
-    });
-    this.addEventListener("simulator-stop", () => {
-      this.stopEngine();
-    });
-    this.addEventListener("simulator-set", ({ detail }) => {
-      this.stopEngine();
-      this.flights = detail;
-      this.requestUpdate();
-    });
-  }
-  startEngine() {
-    this.interval = setInterval(() => {
-      simulatorEngine(this.flights);
-      this.requestUpdate();
-    }, this.speed);
-  }
-  stopEngine() {
-    if (!this.interval)
-      return;
-    clearInterval(this.interval);
-    this.interval = 0;
   }
   render() {
     return x`
       <section style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; font-size: 1vmin;">
-        <ats-simulator-map .geojson=${sectors_default} .flights=${this.flights}></ats-simulator-map>
+        <ats-simulator-map .geojson=${sectors_default} .flights=${this.flights?.aircrafts}></ats-simulator-map>
       </section>
     `;
   }

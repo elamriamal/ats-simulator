@@ -7,10 +7,22 @@ const d3 = require("d3");
 const decorators_js_1 = require("lit/decorators.js");
 let MapElement = class MapElement extends lit_1.LitElement {
     constructor() {
-        super(...arguments);
+        super();
         this.width = window.innerWidth;
         this.height = window.innerHeight;
         this.flights = [];
+    }
+    updated(changedProperties) {
+        super.updated(changedProperties);
+        // Create a projection for the entire map
+        this.projection = d3.geoMercator()
+            .scale(this.width / 6).translate([this.width / 2, this.height / 2]);
+        // Create a path generator
+        this.path = d3.geoPath().projection(this.projection);
+        if (changedProperties.has('flights')) {
+            // Call renderMap every time flights property is updated
+            this.renderMap(this.path);
+        }
     }
     render() {
         return (0, lit_1.svg) `
@@ -26,10 +38,6 @@ let MapElement = class MapElement extends lit_1.LitElement {
         this.svg = d3.select(this.shadowRoot.querySelector('svg'));
         this.g = this.svg.select('g');
         this.tooltip = this.shadowRoot.querySelector('.tooltip');
-        // Create a projection for the entire world map
-        var projection = d3.geoMercator().scale(this.width / 6).translate([this.width / 2, this.height / 2]);
-        // Create a path generator
-        const path = d3.geoPath().projection(projection);
         // Add zoom behavior
         this.zoom = d3.zoom()
             .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
@@ -38,9 +46,10 @@ let MapElement = class MapElement extends lit_1.LitElement {
         });
         this.svg.call(this.zoom);
         // Render map with adjusted projection
-        this.renderMap(path);
+        this.renderMap(this.path);
     }
     renderMap(path) {
+        var _a;
         // Remove any existing elements
         this.g.selectAll("*").remove();
         // Render countries
@@ -53,17 +62,19 @@ let MapElement = class MapElement extends lit_1.LitElement {
             .style("fill", "#444") // Dark grey fill color for countries
             .style("stroke", "#666666"); // Light stroke color for countries
         // Render flights
-        this.flights.forEach((flight) => {
+        (_a = this.flights) === null || _a === void 0 ? void 0 : _a.forEach((flight) => {
+            const { position } = flight;
+            const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
             const foreignObject = this.g.append('foreignObject')
-                .attr('x', flight.left)
-                .attr('y', flight.top);
+                .attr('x', x)
+                .attr('y', y);
             // Append a temporary div to the foreignObject
             const tempDiv = foreignObject.append('xhtml:div')
                 .attr('xmlns', 'http://www.w3.org/1999/xhtml')
                 .classed('flight-card', true)
                 .style('visibility', 'hidden') // Hide the temporary div
                 .html(flight.data);
-            // // Append the plane section
+            // Append the plane section
             foreignObject.append('xhtml:section')
                 .classed('plane', true)
                 .html('x');
@@ -81,7 +92,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
             foreignObject
                 .attr('width', width)
                 .attr('height', height);
-            // Finally, make the foreignObject visible
+            // make the foreignObject visible
             foreignObject.select('.flight-card').style('visibility', 'visible');
             const div = foreignObject.append('xhtml:div')
                 .attr('xmlns', 'http://www.w3.org/1999/xhtml')
@@ -160,6 +171,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", Array)
 ], MapElement.prototype, "flights", void 0);
 exports.MapElement = MapElement = tslib_1.__decorate([
-    (0, decorators_js_1.customElement)('ats-simulator-map')
+    (0, decorators_js_1.customElement)('ats-simulator-map'),
+    tslib_1.__metadata("design:paramtypes", [])
 ], MapElement);
 //# sourceMappingURL=simulator-map.js.map

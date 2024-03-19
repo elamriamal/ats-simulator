@@ -1,61 +1,56 @@
-import { simulatorEngine } from '@ats/simulator-engine';
-import '@ats/simulator-flight';
 import '@ats/simulator-map';
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { geojson, flights } from './data';
-import geoJSONData from './sectors.json';
+import geojson from './sectors.json';
+import WebSocketService from './WebSocketService';
 
 @customElement('ats-simulator')
 export class MyElement extends LitElement {
-  private flights = flights;
-  private speed = 250;
-  private interval: any = 0;
+  private webSocketService: WebSocketService;
+  private flights: any;
+  constructor() {
+    super();
+    this.webSocketService = new WebSocketService();
+    this.webSocketService.onMessage(this.handleWebSocketMessage.bind(this)); // Bind the callback function
+  }
+  private handleWebSocketMessage(data: any) {
+    this.flights = { ...JSON.parse(data) };
+    // Trigger re-rendering of the component
+    this.requestUpdate();
+  }
 
+  startSendingData() {
+    // Start sending data via REST service
+    fetch('http://racemusaircrafttrafficgenerator.d0e6fvepbddreqau.francecentral.azurecontainer.io:8080/send')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+        }
+        // Check if the content type is JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return response.json(); // Parse response as JSON
+        } else {
+          return response.text(); // Read response as text
+        }
+      })
+      .then(data => {
+        // Process the data
+        console.log('Received data:', data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }
   override connectedCallback(): void {
     super.connectedCallback();
-    // this.loadDigipair();
-    console.log(geoJSONData);
-    
-  }
-
-  private loadDigipair(): void {
-    import('' + 'https://chatbot.digipair.ai/index.js');
-
-    this.addEventListener('simulator-start', () => {
-      this.startEngine();
-    });
-
-    this.addEventListener('simulator-stop', () => {
-      this.stopEngine();
-    });
-
-    this.addEventListener('simulator-set', ({ detail }: any) => {
-      this.stopEngine();
-      this.flights = detail;
-      this.requestUpdate();
-    });
-  }
-
-  private startEngine(): void {
-    this.interval = setInterval(() => {
-      simulatorEngine(this.flights);
-      this.requestUpdate();
-    }, this.speed);
-  }
-
-  private stopEngine(): void {
-    if (!this.interval)
-      return;
-
-    clearInterval(this.interval);
-    this.interval = 0;
+    // this.startSendingData();
   }
 
   override render() {
     return html`
       <section style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; font-size: 1vmin;">
-        <ats-simulator-map .geojson=${geoJSONData} .flights=${this.flights}></ats-simulator-map>
+        <ats-simulator-map .geojson=${geojson} .flights=${this.flights?.aircrafts}></ats-simulator-map>
       </section>
     `;
   }

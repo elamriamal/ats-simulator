@@ -5593,6 +5593,7 @@ var MapElement = class extends s3 {
   firstUpdated() {
     this.svg = select_default2(this.shadowRoot.querySelector("svg"));
     this.g = this.svg.select("g");
+    this.g.attr("clip-path", "inset(5%)");
     this.tooltip = this.shadowRoot.querySelector(".tooltip");
     this.zoom = zoom_default2().scaleExtent([1, 8]).on("zoom", (event) => {
       this.g.attr("transform", event.transform);
@@ -5602,7 +5603,7 @@ var MapElement = class extends s3 {
   }
   renderMap(path) {
     this.g.selectAll("*").remove();
-    this.g.selectAll(".country").data(this.geojson.features).enter().append("path").attr("class", "country").attr("d", path).style("fill", "#444").style("stroke", "#666666");
+    this.g.selectAll(".country").data(this.geojson.features).enter().append("path").attr("d", path).style("fill", "#444").style("stroke", "#666666");
     this.flights?.forEach((flight) => {
       const { position } = flight;
       const [x2, y3] = this.projection([position.longitude, position.latitude]);
@@ -9894,9 +9895,11 @@ var WebSocketService = class {
     this.eventEmitter = new import_eventsShim.EventEmitter();
     this.socket = new WebSocket("ws://racemusaircrafttrafficgenerator.d0e6fvepbddreqau.francecentral.azurecontainer.io:8080/ws");
     this.socket.onopen = () => {
+      console.log("WebSocket connected");
       this.eventEmitter.emit("open");
     };
     this.socket.onmessage = (event) => {
+      console.log("WebSocket data", event.data);
       this.handleMessage(event.data);
     };
     this.socket.onerror = (error) => {

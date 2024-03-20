@@ -41,6 +41,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
     firstUpdated() {
         this.svg = d3.select(this.shadowRoot.querySelector('svg'));
         this.g = this.svg.select('g');
+        this.g.attr("clip-path", "inset(5%)");
         this.tooltip = this.shadowRoot.querySelector('.tooltip');
         // Add zoom behavior
         this.zoom = d3.zoom()
@@ -61,7 +62,6 @@ let MapElement = class MapElement extends lit_1.LitElement {
             .data(this.geojson.features)
             .enter()
             .append("path")
-            .attr("class", "country")
             .attr("d", path)
             .style("fill", "#444") // Dark grey fill color for countries
             .style("stroke", "#666666"); // Light stroke color for countries

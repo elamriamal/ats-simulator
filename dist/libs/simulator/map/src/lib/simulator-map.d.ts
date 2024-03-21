@@ -5,6 +5,10 @@ export declare class MapElement extends LitElement {
     flights: any[];
     constructor();
     private geojson;
+    private beacons;
+    private airports;
+    private airwaypoints;
+    private airways;
     private svg;
     private g;
     private zoom;

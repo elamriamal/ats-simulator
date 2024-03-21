@@ -5,7 +5,12 @@ const tslib_1 = require("tslib");
 const lit_1 = require("lit");
 const d3 = require("d3");
 const decorators_js_1 = require("lit/decorators.js");
-const utils_1 = require("./utils");
+const sectors_1 = require("./sectors");
+const flights_1 = require("./flights");
+const beacons_1 = require("./beacons");
+const airports_1 = require("./airports");
+const airwaypoints_1 = require("./airwaypoints");
+const airways_1 = require("./airways");
 let MapElement = class MapElement extends lit_1.LitElement {
     constructor() {
         super();
@@ -26,7 +31,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
         this.path = d3.geoPath().projection(this.projection);
         if (changedProperties.has('flights')) {
             // Call renderMap every time flights property is updated
-            this.renderMap(this.path);
+            this.renderMap();
         }
     }
     render() {
@@ -46,69 +51,30 @@ let MapElement = class MapElement extends lit_1.LitElement {
         this.tooltip = this.shadowRoot.querySelector('.tooltip');
         // Add zoom behavior
         this.zoom = d3.zoom()
-            .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
+            .scaleExtent([1, 10]) // Set minimum and maximum zoom scale
             .on('zoom', (event) => {
             // Update the transform attribute of the <g> element
             this.g.attr('transform', event.transform);
         });
         this.svg.call(this.zoom);
         // Render map with adjusted projection
-        this.renderMap(this.path);
+        this.renderMap();
     }
-    renderMap(path) {
-        var _a;
+    renderMap() {
         // Remove any existing elements
         this.g.selectAll("*").remove();
-        // Render countries
-        this.g.selectAll(".country")
-            .data(this.geojson.features)
-            .enter()
-            .append("path")
-            .attr("d", path)
-            .style("fill", "#444") // Dark grey fill color for countries
-            .style("stroke", "#666666"); // Light stroke color for countries
+        // Render sectors
+        (0, sectors_1.default)(this.g, this.geojson, this.path);
+        // Render beacons
+        (0, beacons_1.default)(this.g, this.beacons, this.path);
+        // Render airports
+        (0, airports_1.default)(this.g, this.airports, this.path);
+        // Render Airwaypoints
+        (0, airwaypoints_1.default)(this.g, this.airwaypoints, this.path);
+        // Render airways
+        (0, airways_1.default)(this.g, this.airways, this.path);
         // Render flights
-        (_a = this.flights) === null || _a === void 0 ? void 0 : _a.forEach((flight) => {
-            var _a, _b;
-            const foreignObjectId = `flight-foreign-object-${flight.aircraftId}`;
-            const { position } = flight;
-            const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
-            const foreignObject = this.g.append('foreignObject')
-                .attr('id', foreignObjectId)
-                .attr('x', x)
-                .attr('y', y);
-            // Append the plane section
-            foreignObject.append('xhtml:section')
-                .classed('plane', true)
-                .html('x');
-            // Update foreignObject dimensions with calculated width and height
-            foreignObject
-                .attr('width', 50)
-                .attr('height', 50);
-            const div = foreignObject.append('xhtml:div')
-                .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-                .classed('flight-card', true);
-            div.append('p').html(`${flight === null || flight === void 0 ? void 0 : flight.aircraftId} <br> ${Math.floor((_a = flight === null || flight === void 0 ? void 0 : flight.position) === null || _a === void 0 ? void 0 : _a.cas)} - ${Math.floor((_b = flight === null || flight === void 0 ? void 0 : flight.position) === null || _b === void 0 ? void 0 : _b.hdg)}`);
-            // Add tooltip interaction for flights
-            foreignObject.select('.plane').on('mouseover', (event) => {
-                var _a, _b, _c;
-                const flightData = `${flight === null || flight === void 0 ? void 0 : flight.aircraftId}<br>${Math.floor((_a = flight === null || flight === void 0 ? void 0 : flight.position) === null || _a === void 0 ? void 0 : _a.cas)} - ${Math.floor((_b = flight === null || flight === void 0 ? void 0 : flight.position) === null || _b === void 0 ? void 0 : _b.hdg)}<br>${(_c = (0, utils_1.generateRandomData)()) === null || _c === void 0 ? void 0 : _c.metadata}`;
-                const svgRect = this.svg.node().getBoundingClientRect();
-                const x = event.clientX - svgRect.left;
-                const y = event.clientY - svgRect.top;
-                // Check if the mouse coordinates intersect with the bounding box of the current flight's foreignObject
-                const bbox = foreignObject.node().getBoundingClientRect();
-                if (x >= bbox.left && x <= bbox.right && y >= bbox.top && y <= bbox.bottom) {
-                    this.tooltip.style.left = `${x - 50}px`;
-                    this.tooltip.style.top = `${y - 28}px`;
-                    this.tooltip.innerHTML = flightData;
-                    this.tooltip.style.display = 'block';
-                }
-            })
-                .on('mouseout', () => {
-                this.tooltip.style.display = 'none';
-            });
-        });
+        (0, flights_1.default)(this.g, this.flights, this.projection, this.tooltip);
     }
 };
 exports.MapElement = MapElement;
@@ -117,15 +83,11 @@ MapElement.styles = (0, lit_1.css) `
       display: block;
       overflow: hidden; /* Hide overflow content */
     }
-    svg {
-      display: block;
-      background-color: #444; 
-    }
     .flight-card {
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 0.5rem;
+      font-size: 0.3rem;
       width: 50px;
       min-width: 50px;
       max-width: 50px;
@@ -142,16 +104,12 @@ MapElement.styles = (0, lit_1.css) `
       border: 0.2px solid white;
       text-align: center;
       cursor: pointer;
-      width: 5px;
-      min-width: 5px;
-      max-width: 5px;
-      height: 5px;
-      min-height: 5px;
-      max-height: 5px;
-      width: 100%; /* Ensure contents fill the available space */
-      height: 100%;
-      margin: 0; /* Reset margins */
-      padding: 0; /* Reset padding */
+      width: 8px;
+      min-width: 8px;
+      max-width: 8px;
+      height: 8px;
+      min-height: 8px;
+      max-height: 8px;
     }
     .tooltip {
       position: absolute;
@@ -166,7 +124,7 @@ MapElement.styles = (0, lit_1.css) `
       border-radius: 3px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.10);
       padding: 8px;
-      font-size: 8px;
+      font-size: 0.5rem;
     }
   `;
 tslib_1.__decorate([

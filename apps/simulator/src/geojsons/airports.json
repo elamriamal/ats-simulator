@@ -1,0 +1,3152 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "BKPR"
+      },
+      "geometry": {
+        "coordinates": [
+           21.0358,
+           42.5742
+          ],
+          "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "CYYZ"
+      },
+      "geometry": {
+        "coordinates": [
+           -79.6306,
+           43.6772
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "DFFD"
+      },
+      "geometry": {
+        "coordinates": [
+           -1.5119,
+           12.3536
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "DNAA"
+      },
+      "geometry": {
+        "coordinates": [
+           7.265,
+           9.005
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EBBR"
+      },
+      "geometry": {
+        "coordinates": [
+           4.4844,
+           50.9014
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EBCI"
+      },
+      "geometry": {
+        "coordinates": [
+           4.4528,
+           50.46
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EBLG"
+      },
+      "geometry": {
+        "coordinates": [
+           5.4428,
+           50.6364
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDB"
+      },
+      "geometry": {
+        "coordinates": [
+           13.5006,
+           52.3622
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDF"
+      },
+      "geometry": {
+        "coordinates": [
+           8.5706,
+           50.0333
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDH"
+      },
+      "geometry": {
+        "coordinates": [
+           9.9883,
+           53.6303
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDK"
+      },
+      "geometry": {
+        "coordinates": [
+           7.1428,
+           50.8658
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDL"
+      },
+      "geometry": {
+        "coordinates": [
+           6.7572,
+           51.2808
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDM"
+      },
+      "geometry": {
+        "coordinates": [
+           11.7861,
+           48.3539
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDN"
+      },
+      "geometry": {
+        "coordinates": [
+           11.0781,
+           49.4986
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDP"
+      },
+      "geometry": {
+        "coordinates": [
+           12.2364,
+           51.4239
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDR"
+      },
+      "geometry": {
+        "coordinates": [
+           7.1094,
+           49.2144
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDS"
+      },
+      "geometry": {
+        "coordinates": [
+           9.2219,
+           48.69
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDT"
+      },
+      "geometry": {
+        "coordinates": [
+           13.2878,
+           52.5597
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDDV"
+      },
+      "geometry": {
+        "coordinates": [
+           9.6836,
+           52.4603
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDFH"
+      },
+      "geometry": {
+        "coordinates": [
+           7.2639,
+           49.9486
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDJA"
+      },
+      "geometry": {
+        "coordinates": [
+           10.2394,
+           47.9889
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDLP"
+      },
+      "geometry": {
+        "coordinates": [
+           8.6164,
+           51.6142
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EDSB"
+      },
+      "geometry": {
+        "coordinates": [
+           8.0806,
+           48.7794
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EFHK"
+      },
+      "geometry": {
+        "coordinates": [
+           24.9633,
+           60.3172
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGBB"
+      },
+      "geometry": {
+        "coordinates": [
+           -1.7481,
+           52.4539
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGCC"
+      },
+      "geometry": {
+        "coordinates": [
+           -2.275,
+           53.3539
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGFF"
+      },
+      "geometry": {
+        "coordinates": [
+           -3.3433,
+           51.3967
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGGD"
+      },
+      "geometry": {
+        "coordinates": [
+           -2.7192,
+           51.3828
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGGP"
+      },
+      "geometry": {
+        "coordinates": [
+           -2.8497,
+           53.3336
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGGW"
+      },
+      "geometry": {
+        "coordinates": [
+           -0.3683,
+           51.8747
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGHH"
+      },
+      "geometry": {
+        "coordinates": [
+           -1.8425,
+           50.78
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGKK"
+      },
+      "geometry": {
+        "coordinates": [
+           -0.1903,
+           51.1481
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGLL"
+      },
+      "geometry": {
+        "coordinates": [
+           -0.4614,
+           51.4775
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGNM"
+      },
+      "geometry": {
+        "coordinates": [
+           -1.6608,
+           53.8661
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGNT"
+      },
+      "geometry": {
+        "coordinates": [
+           -1.6897,
+           55.0381
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGPF"
+      },
+      "geometry": {
+        "coordinates": [
+           -4.4331,
+           55.8719
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGPH"
+      },
+      "geometry": {
+        "coordinates": [
+           -3.3725,
+           55.95
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGSS"
+      },
+      "geometry": {
+        "coordinates": [
+           0.235,
+           51.885
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGTE"
+      },
+      "geometry": {
+        "coordinates": [
+           -3.4139,
+           50.7342
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EGVN"
+      },
+      "geometry": {
+        "coordinates": [
+           -1.5831,
+           51.75
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EHAM"
+      },
+      "geometry": {
+        "coordinates": [
+           4.7642,
+           52.3081
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EHRD"
+      },
+      "geometry": {
+        "coordinates": [
+           4.4372,
+           51.9569
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EIDW"
+      },
+      "geometry": {
+        "coordinates": [
+           -6.27,
+           53.4214
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EINN"
+      },
+      "geometry": {
+        "coordinates": [
+           -8.9247,
+           52.7019
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EKBI"
+      },
+      "geometry": {
+        "coordinates": [
+           9.1517,
+           55.7403
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EKCH"
+      },
+      "geometry": {
+        "coordinates": [
+           12.6561,
+           55.6181
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EKYT"
+      },
+      "geometry": {
+        "coordinates": [
+           9.8492,
+           57.0928
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ELLX"
+      },
+      "geometry": {
+        "coordinates": [
+           6.2044,
+           49.6233
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ENBR"
+      },
+      "geometry": {
+        "coordinates": [
+           5.2181,
+           60.2936
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ENGM"
+      },
+      "geometry": {
+        "coordinates": [
+           11.0839,
+           60.2028
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EPKK"
+      },
+      "geometry": {
+        "coordinates": [
+           19.7847,
+           50.0778
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EPKT"
+      },
+      "geometry": {
+        "coordinates": [
+           19.08,
+           50.4742
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EPWA"
+      },
+      "geometry": {
+        "coordinates": [
+           20.9672,
+           52.1658
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EPWR"
+      },
+      "geometry": {
+        "coordinates": [
+           16.8858,
+           51.1028
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ESGG"
+      },
+      "geometry": {
+        "coordinates": [
+           12.2911,
+           57.66
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ESSA"
+      },
+      "geometry": {
+        "coordinates": [
+           17.9186,
+           59.6519
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EVRA"
+      },
+      "geometry": {
+        "coordinates": [
+           23.9711,
+           56.9236
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "EYVI"
+      },
+      "geometry": {
+        "coordinates": [
+           25.2878,
+           54.6369
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "FKKD"
+      },
+      "geometry": {
+        "coordinates": [
+           9.7083,
+           4.0117
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "FMNN"
+      },
+      "geometry": {
+        "coordinates": [
+           48.3092,
+           -13.3181
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "FZAA"
+      },
+      "geometry": {
+        "coordinates": [
+           15.445,
+           -4.385
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "GMMN"
+      },
+      "geometry": {
+        "coordinates": [
+           -7.5817,
+           33.3642
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "HAAB"
+      },
+      "geometry": {
+        "coordinates": [
+           38.8,
+           8.9833
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "HECA"
+      },
+      "geometry": {
+        "coordinates": [
+           31.4139,
+           30.1114
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "HEGN"
+      },
+      "geometry": {
+        "coordinates": [
+           33.8008,
+           27.1786
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "HESH"
+      },
+      "geometry": {
+        "coordinates": [
+           34.3933,
+           27.9786
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "HRYR"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1333,
+           -1.9667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "KBGR"
+      },
+      "geometry": {
+        "coordinates": [
+           -68.8283,
+           44.8067
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "KBOS"
+      },
+      "geometry": {
+        "coordinates": [
+           -71.0056,
+           42.3642
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "KEWR"
+      },
+      "geometry": {
+        "coordinates": [
+           -74.1683,
+           40.6967
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "KFLL"
+      },
+      "geometry": {
+        "coordinates": [
+           -80.15,
+           26.0667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "KIAD"
+      },
+      "geometry": {
+        "coordinates": [
+           -77.4567,
+           38.945
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "KJFK"
+      },
+      "geometry": {
+        "coordinates": [
+           -73.7783,
+           40.6403
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "KSFO"
+      },
+      "geometry": {
+        "coordinates": [
+           -122.3833,
+           37.6167
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LATI"
+      },
+      "geometry": {
+        "coordinates": [
+           19.7206,
+           41.4147
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LBBG"
+      },
+      "geometry": {
+        "coordinates": [
+           27.5153,
+           42.5703
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LBSF"
+      },
+      "geometry": {
+        "coordinates": [
+           23.4083,
+           42.695
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LBWN"
+      },
+      "geometry": {
+        "coordinates": [
+           27.8253,
+           43.2319
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LCLK"
+      },
+      "geometry": {
+        "coordinates": [
+           33.6303,
+           34.8789
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LCPH"
+      },
+      "geometry": {
+        "coordinates": [
+           32.485,
+           34.7183
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LCRA"
+      },
+      "geometry": {
+        "coordinates": [
+           32.9908,
+           34.595
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LDZA"
+      },
+      "geometry": {
+        "coordinates": [
+           16.0689,
+           45.7431
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LEBL"
+      },
+      "geometry": {
+        "coordinates": [
+           2.0783,
+           41.2969
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LEMD"
+      },
+      "geometry": {
+        "coordinates": [
+           -3.5608,
+           40.4722
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LEMG"
+      },
+      "geometry": {
+        "coordinates": [
+           -4.4992,
+           36.675
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LEPA"
+      },
+      "geometry": {
+        "coordinates": [
+           2.7389,
+           39.5517
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFLL"
+      },
+      "geometry": {
+        "coordinates": [
+           5.0811,
+           45.7256
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFML"
+      },
+      "geometry": {
+        "coordinates": [
+           5.215,
+           43.4367
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFMN"
+      },
+      "geometry": {
+        "coordinates": [
+           7.215,
+           43.6653
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFPB"
+      },
+      "geometry": {
+        "coordinates": [
+           2.4414,
+           48.9694
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFPG"
+      },
+      "geometry": {
+        "coordinates": [
+           2.5478,
+           49.0097
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFPO"
+      },
+      "geometry": {
+        "coordinates": [
+           2.3794,
+           48.7233
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFSB"
+      },
+      "geometry": {
+        "coordinates": [
+           7.5292,
+           47.59
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LFTH"
+      },
+      "geometry": {
+        "coordinates": [
+           6.1461,
+           43.0972
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LGAV"
+      },
+      "geometry": {
+        "coordinates": [
+           23.9444,
+           37.9367
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LGMK"
+      },
+      "geometry": {
+        "coordinates": [
+           25.3472,
+           37.4372
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LGRP"
+      },
+      "geometry": {
+        "coordinates": [
+           28.0861,
+           36.4053
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LGTS"
+      },
+      "geometry": {
+        "coordinates": [
+           22.9708,
+           40.5197
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LHBP"
+      },
+      "geometry": {
+        "coordinates": [
+           19.2619,
+           47.4394
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LICC"
+      },
+      "geometry": {
+        "coordinates": [
+           15.0639,
+           37.4667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIEO"
+      },
+      "geometry": {
+        "coordinates": [
+           9.5178,
+           40.8986
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIMC"
+      },
+      "geometry": {
+        "coordinates": [
+           8.7231,
+           45.63
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIME"
+      },
+      "geometry": {
+        "coordinates": [
+           9.7003,
+           45.6689
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIPE"
+      },
+      "geometry": {
+        "coordinates": [
+           11.2969,
+           44.5308
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIPZ"
+      },
+      "geometry": {
+        "coordinates": [
+           12.3519,
+           45.5053
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIRF"
+      },
+      "geometry": {
+        "coordinates": [
+           12.2389,
+           41.8003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIRN"
+      },
+      "geometry": {
+        "coordinates": [
+           14.2908,
+           40.8844
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LIRP"
+      },
+      "geometry": {
+        "coordinates": [
+           10.3956,
+           43.6828
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LJLJ"
+      },
+      "geometry": {
+        "coordinates": [
+           14.4561,
+           46.2244
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LKMT"
+      },
+      "geometry": {
+        "coordinates": [
+           18.1108,
+           49.6961
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LKPR"
+      },
+      "geometry": {
+        "coordinates": [
+           14.26,
+           50.1008
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LKTB"
+      },
+      "geometry": {
+        "coordinates": [
+           16.6939,
+           49.1514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LLBG"
+      },
+      "geometry": {
+        "coordinates": [
+           34.8856,
+           32.0094
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LOWI"
+      },
+      "geometry": {
+        "coordinates": [
+           11.3439,
+           47.2603
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LOWW"
+      },
+      "geometry": {
+        "coordinates": [
+           16.5697,
+           48.1103
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LQSA"
+      },
+      "geometry": {
+        "coordinates": [
+           18.3317,
+           43.8244
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LQTZ"
+      },
+      "geometry": {
+        "coordinates": [
+           18.7247,
+           44.4586
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LRIA"
+      },
+      "geometry": {
+        "coordinates": [
+           27.6208,
+           47.1803
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LROD"
+      },
+      "geometry": {
+        "coordinates": [
+           21.9025,
+           47.0253
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LROP"
+      },
+      "geometry": {
+        "coordinates": [
+           26.085,
+           44.5711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LRTR"
+      },
+      "geometry": {
+        "coordinates": [
+           21.3378,
+           45.8097
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LSGG"
+      },
+      "geometry": {
+        "coordinates": [
+           6.1094,
+           46.2383
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LSZH"
+      },
+      "geometry": {
+        "coordinates": [
+           8.5481,
+           47.4581
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAC"
+      },
+      "geometry": {
+        "coordinates": [
+           32.995,
+           40.1281
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAF"
+      },
+      "geometry": {
+        "coordinates": [
+           35.2803,
+           36.9822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.7928,
+           36.9003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAJ"
+      },
+      "geometry": {
+        "coordinates": [
+           37.4789,
+           36.9478
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAN"
+      },
+      "geometry": {
+        "coordinates": [
+           32.5625,
+           37.9806
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAR"
+      },
+      "geometry": {
+        "coordinates": [
+           36.9025,
+           39.8142
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAT"
+      },
+      "geometry": {
+        "coordinates": [
+           38.0831,
+           38.4322
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAU"
+      },
+      "geometry": {
+        "coordinates": [
+           35.4953,
+           38.7703
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAY"
+      },
+      "geometry": {
+        "coordinates": [
+           29.705,
+           37.7878
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTAZ"
+      },
+      "geometry": {
+        "coordinates": [
+           34.5267,
+           38.7753
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTBA"
+      },
+      "geometry": {
+        "coordinates": [
+           28.8142,
+           40.9761
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTBJ"
+      },
+      "geometry": {
+        "coordinates": [
+           27.155,
+           38.2892
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTBQ"
+      },
+      "geometry": {
+        "coordinates": [
+           30.0833,
+           40.735
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTBR"
+      },
+      "geometry": {
+        "coordinates": [
+           29.5619,
+           40.2558
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTBS"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7914,
+           36.7125
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCA"
+      },
+      "geometry": {
+        "coordinates": [
+           39.2814,
+           38.5978
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCB"
+      },
+      "geometry": {
+        "coordinates": [
+           38.0819,
+           40.9672
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCC"
+      },
+      "geometry": {
+        "coordinates": [
+           40.2011,
+           37.8925
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCE"
+      },
+      "geometry": {
+        "coordinates": [
+           41.1706,
+           39.9558
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCF"
+      },
+      "geometry": {
+        "coordinates": [
+           43.0989,
+           40.5586
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCG"
+      },
+      "geometry": {
+        "coordinates": [
+           39.7853,
+           40.9958
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCI"
+      },
+      "geometry": {
+        "coordinates": [
+           43.3322,
+           38.4681
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCJ"
+      },
+      "geometry": {
+        "coordinates": [
+           41.1164,
+           37.9322
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCK"
+      },
+      "geometry": {
+        "coordinates": [
+           41.6689,
+           38.7447
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCN"
+      },
+      "geometry": {
+        "coordinates": [
+           36.9519,
+           37.5383
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCO"
+      },
+      "geometry": {
+        "coordinates": [
+           43.0286,
+           39.6475
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCR"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6406,
+           37.2328
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCS"
+      },
+      "geometry": {
+        "coordinates": [
+           38.9083,
+           37.4567
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTCV"
+      },
+      "geometry": {
+        "coordinates": [
+           42.06,
+           37.3639
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTDA"
+      },
+      "geometry": {
+        "coordinates": [
+           36.2986,
+           36.3722
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTFC"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3669,
+           37.8558
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTFE"
+      },
+      "geometry": {
+        "coordinates": [
+           27.6814,
+           37.2472
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTFG"
+      },
+      "geometry": {
+        "coordinates": [
+           32.3014,
+           36.2994
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTFH"
+      },
+      "geometry": {
+        "coordinates": [
+           36.5486,
+           41.2656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTFJ"
+      },
+      "geometry": {
+        "coordinates": [
+           29.3092,
+           40.8983
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LTFM"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7519,
+           41.2753
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LUKK"
+      },
+      "geometry": {
+        "coordinates": [
+           28.9308,
+           46.9278
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LYBE"
+      },
+      "geometry": {
+        "coordinates": [
+           20.3069,
+           44.8194
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LYPG"
+      },
+      "geometry": {
+        "coordinates": [
+           19.2519,
+           42.3594
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LYTV"
+      },
+      "geometry": {
+        "coordinates": [
+           18.7233,
+           42.4047
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LZIB"
+      },
+      "geometry": {
+        "coordinates": [
+           17.2128,
+           48.17
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "LZKZ"
+      },
+      "geometry": {
+        "coordinates": [
+           21.2411,
+           48.6631
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OAIX"
+      },
+      "geometry": {
+        "coordinates": [
+           69.265,
+           34.9461
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OBBI"
+      },
+      "geometry": {
+        "coordinates": [
+           50.6333,
+           26.3
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OEJN"
+      },
+      "geometry": {
+        "coordinates": [
+           39.1553,
+           21.6811
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OEMA"
+      },
+      "geometry": {
+        "coordinates": [
+           39.705,
+           24.5533
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OERK"
+      },
+      "geometry": {
+        "coordinates": [
+           46.7,
+           24.9667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OIIE"
+      },
+      "geometry": {
+        "coordinates": [
+           51.1522,
+           35.4161
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OITT"
+      },
+      "geometry": {
+        "coordinates": [
+           46.235,
+           38.1339
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OJAI"
+      },
+      "geometry": {
+        "coordinates": [
+           35.9933,
+           31.7225
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OJAM"
+      },
+      "geometry": {
+        "coordinates": [
+           35.9917,
+           31.9728
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OKBK"
+      },
+      "geometry": {
+        "coordinates": [
+           47.9667,
+           29.2167
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OLBA"
+      },
+      "geometry": {
+        "coordinates": [
+           35.49,
+           33.8192
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OMAA"
+      },
+      "geometry": {
+        "coordinates": [
+           54.65,
+           24.4333
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OMDB"
+      },
+      "geometry": {
+        "coordinates": [
+           55.36,
+           25.2492
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OMDW"
+      },
+      "geometry": {
+        "coordinates": [
+           55.1719,
+           24.8861
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OMFJ"
+      },
+      "geometry": {
+        "coordinates": [
+           56.3267,
+           25.11
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OMSJ"
+      },
+      "geometry": {
+        "coordinates": [
+           55.5167,
+           25.3333
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OOMS"
+      },
+      "geometry": {
+        "coordinates": [
+           58.2667,
+           23.5833
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ORBI"
+      },
+      "geometry": {
+        "coordinates": [
+           44.2344,
+           33.2625
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ORER"
+      },
+      "geometry": {
+        "coordinates": [
+           43.9631,
+           36.2375
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ORSU"
+      },
+      "geometry": {
+        "coordinates": [
+           45.3147,
+           35.5608
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OTBD"
+      },
+      "geometry": {
+        "coordinates": [
+           51.5667,
+           25.2667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OTBH"
+      },
+      "geometry": {
+        "coordinates": [
+           51.3147,
+           25.1172
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "OTHH"
+      },
+      "geometry": {
+        "coordinates": [
+           51.6083,
+           25.2744
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "RKSI"
+      },
+      "geometry": {
+        "coordinates": [
+           126.4392,
+           37.4625
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UAAA"
+      },
+      "geometry": {
+        "coordinates": [
+           77.0406,
+           43.3519
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UACC"
+      },
+      "geometry": {
+        "coordinates": [
+           71.4669,
+           51.0222
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UATG"
+      },
+      "geometry": {
+        "coordinates": [
+           51.8214,
+           47.1219
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UBBB"
+      },
+      "geometry": {
+        "coordinates": [
+           50.0514,
+           40.4697
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UCFM"
+      },
+      "geometry": {
+        "coordinates": [
+           74.4775,
+           43.0614
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UDYZ"
+      },
+      "geometry": {
+        "coordinates": [
+           44.3958,
+           40.1472
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UGKO"
+      },
+      "geometry": {
+        "coordinates": [
+           42.4828,
+           42.1769
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UGSB"
+      },
+      "geometry": {
+        "coordinates": [
+           41.5994,
+           41.6103
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UGTB"
+      },
+      "geometry": {
+        "coordinates": [
+           44.9547,
+           41.6692
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UKBB"
+      },
+      "geometry": {
+        "coordinates": [
+           30.8933,
+           50.3447
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UKDE"
+      },
+      "geometry": {
+        "coordinates": [
+           35.315,
+           47.8672
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UKHH"
+      },
+      "geometry": {
+        "coordinates": [
+           36.29,
+           49.9269
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UKLL"
+      },
+      "geometry": {
+        "coordinates": [
+           23.9583,
+           49.8097
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UKOO"
+      },
+      "geometry": {
+        "coordinates": [
+           30.6764,
+           46.4267
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ULLI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.2625,
+           59.8003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UMII"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3497,
+           55.1264
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UMMS"
+      },
+      "geometry": {
+        "coordinates": [
+           28.0308,
+           53.8825
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UNTT"
+      },
+      "geometry": {
+        "coordinates": [
+           85.2106,
+           56.3831
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UNWW"
+      },
+      "geometry": {
+        "coordinates": [
+           86.8783,
+           53.81
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "URKK"
+      },
+      "geometry": {
+        "coordinates": [
+           39.17,
+           45.0347
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "URMM"
+      },
+      "geometry": {
+        "coordinates": [
+           43.0831,
+           44.2267
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "URMT"
+      },
+      "geometry": {
+        "coordinates": [
+           42.1122,
+           45.1092
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "URRP"
+      },
+      "geometry": {
+        "coordinates": [
+           39.9247,
+           47.4939
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "URSS"
+      },
+      "geometry": {
+        "coordinates": [
+           39.9483,
+           43.445
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "USCC"
+      },
+      "geometry": {
+        "coordinates": [
+           61.505,
+           55.305
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "USSS"
+      },
+      "geometry": {
+        "coordinates": [
+           60.8031,
+           56.7431
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UTAA"
+      },
+      "geometry": {
+        "coordinates": [
+           58.3633,
+           37.9917
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UTAK"
+      },
+      "geometry": {
+        "coordinates": [
+           53.0067,
+           40.0633
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UTSA"
+      },
+      "geometry": {
+        "coordinates": [
+           65.1717,
+           40.1167
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UTSS"
+      },
+      "geometry": {
+        "coordinates": [
+           66.9503,
+           39.6667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UTTT"
+      },
+      "geometry": {
+        "coordinates": [
+           69.2833,
+           41.2567
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UUBW"
+      },
+      "geometry": {
+        "coordinates": [
+           38.1517,
+           55.5533
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UUDD"
+      },
+      "geometry": {
+        "coordinates": [
+           37.9064,
+           55.4086
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UUEE"
+      },
+      "geometry": {
+        "coordinates": [
+           37.4131,
+           55.9725
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UUOB"
+      },
+      "geometry": {
+        "coordinates": [
+           36.59,
+           50.6439
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UUWW"
+      },
+      "geometry": {
+        "coordinates": [
+           37.2731,
+           55.5992
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UWKD"
+      },
+      "geometry": {
+        "coordinates": [
+           49.2803,
+           55.6069
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "UWUU"
+      },
+      "geometry": {
+        "coordinates": [
+           55.875,
+           54.5567
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VABB"
+      },
+      "geometry": {
+        "coordinates": [
+           72.8333,
+           19.0908
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VCBI"
+      },
+      "geometry": {
+        "coordinates": [
+           79.8842,
+           7.1692
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VGHS"
+      },
+      "geometry": {
+        "coordinates": [
+           90.4083,
+           23.835
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VIDP"
+      },
+      "geometry": {
+        "coordinates": [
+           77.1133,
+           28.5686
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VOBL"
+      },
+      "geometry": {
+        "coordinates": [
+           77.7061,
+           13.1978
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VOMM"
+      },
+      "geometry": {
+        "coordinates": [
+           80.1769,
+           12.9936
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VTBS"
+      },
+      "geometry": {
+        "coordinates": [
+           100.7472,
+           13.6811
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VTSP"
+      },
+      "geometry": {
+        "coordinates": [
+           98.3167,
+           8.1133
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "VVTS"
+      },
+      "geometry": {
+        "coordinates": [
+           106.65,
+           10.8167
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "WSSS"
+      },
+      "geometry": {
+        "coordinates": [
+           103.9892,
+           1.3592
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "YPPH"
+      },
+      "geometry": {
+        "coordinates": [
+           115.9667,
+           -31.94
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ZBAA"
+      },
+      "geometry": {
+        "coordinates": [
+           116.6,
+           40.0667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ZHHH"
+      },
+      "geometry": {
+        "coordinates": [
+           114.2067,
+           30.785
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ZUCK"
+      },
+      "geometry": {
+        "coordinates": [
+           106.64,
+           29.72
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airport",
+        "name": "ZUUU"
+      },
+      "geometry": {
+        "coordinates": [
+           103.9483,
+           30.58
+          ],
+          "type": "Point"
+      }
+    }]
+}

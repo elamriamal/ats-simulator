@@ -5428,6 +5428,11 @@ function n4(t4) {
   })(t4, e4, o5);
 }
 
+// libs/simulator/map/src/lib/sectors.ts
+function renderSectors(svg, geojson, path) {
+  svg.selectAll(".country").data(geojson.features).enter().append("path").attr("d", path).style("fill", "#868686").style("stroke", "white");
+}
+
 // libs/simulator/map/src/lib/utils.ts
 function generateRandomData() {
   const word1 = generateRandomWord();
@@ -5449,6 +5454,110 @@ function generateRandomWord() {
   return word;
 }
 
+// libs/simulator/map/src/lib/flights.ts
+function renderFlights(svg, flights, projection2, tooltip) {
+  flights?.forEach((flight) => {
+    const foreignObjectId = `flight-foreign-object-${flight.aircraftId}`;
+    const { position } = flight;
+    const [x2, y3] = projection2([position.longitude, position.latitude]);
+    const foreignObject = svg.append("foreignObject").attr("id", foreignObjectId).attr("x", x2).attr("y", y3);
+    foreignObject.append("xhtml:section").classed("plane", true).html("x");
+    foreignObject.attr("width", 50).attr("height", 50);
+    const div = foreignObject.append("xhtml:div").attr("xmlns", "http://www.w3.org/1999/xhtml").classed("flight-card", true);
+    div.append("p").html(`${flight?.aircraftId} <br> ${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}`);
+    foreignObject.select(".plane").on("mouseover", (event) => {
+      const flightData = `${flight?.aircraftId}<br>${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}<br>${generateRandomData()?.metadata}`;
+      const bbox = foreignObject.node().getBoundingClientRect();
+      const tooltipX = bbox.left + bbox.width - 100;
+      const tooltipY = bbox.top - 28;
+      tooltip.innerHTML = flightData;
+      tooltip.style.left = `${tooltipX}px`;
+      tooltip.style.top = `${tooltipY}px`;
+      tooltip.style.display = "block";
+    }).on("mouseout", () => {
+      tooltip.style.display = "none";
+    });
+  });
+}
+
+// libs/simulator/map/src/lib/beacons.ts
+function renderBeacons(svg, beacons, path) {
+  svg.selectAll(".country").data(beacons.features).enter().append("polygon").attr("points", function(d3) {
+    if (!path) {
+      return "";
+    }
+    var centroid = path.centroid(d3);
+    if (!centroid || isNaN(centroid[0]) || isNaN(centroid[1])) {
+      return "";
+    }
+    var x2 = centroid[0];
+    var y3 = centroid[1];
+    var size = 1;
+    return x2 + "," + (y3 - size) + " " + (x2 - size) + "," + (y3 + size) + " " + (x2 + size) + "," + (y3 + size);
+  }).style("fill", "black").style("stroke", "black");
+  svg.selectAll(".beacon-label").data(beacons.features).enter().append("text").attr("x", function(d3) {
+    if (!path || !path.centroid(d3))
+      return 0;
+    return path.centroid(d3)[0];
+  }).attr("y", function(d3) {
+    if (!path || !path.centroid(d3))
+      return 0;
+    return path.centroid(d3)[1] + 3;
+  }).text(function(d3) {
+    return d3.properties.name;
+  }).attr("text-anchor", "middle").style("fill", "black").style("font-size", "0.2rem");
+}
+
+// libs/simulator/map/src/lib/airports.ts
+function renderAirports(svg, airports, path) {
+  svg.selectAll(".airport").data(airports.features[1]).enter().append("path").attr("class", "airport").attr("d", function(d3) {
+    if (!path) {
+      return "";
+    }
+    return path(d3);
+  }).style("fill", "none").style("stroke", "black").attr("transform", function(d3) {
+    if (!path) {
+      return "";
+    }
+    var scale = 0.3;
+    var centroid = path.centroid(d3);
+    return "translate(" + centroid + ") scale(" + scale + ")";
+  });
+}
+
+// libs/simulator/map/src/lib/airwaypoints.ts
+function renderAirwaypoints(svg, airwaypoints, path) {
+  svg.selectAll(".country").data(airwaypoints.features).append("polygon").attr("points", function(d3) {
+    if (!path) {
+      return "";
+    }
+    var centroid = path.centroid(d3);
+    if (!centroid || isNaN(centroid[0]) || isNaN(centroid[1])) {
+      return "";
+    }
+    var x2 = centroid[0];
+    var y3 = centroid[1];
+    var size = 1;
+    return x2 + "," + (y3 - size) + " " + (x2 - size) + "," + (y3 + size) + " " + (x2 + size) + "," + (y3 + size);
+  }).style("fill", "black").style("stroke", "black");
+  svg.selectAll(".airwaypoints-label").data(airwaypoints.features).enter().append("text").attr("x", function(d3) {
+    if (!path || !path.centroid(d3))
+      return 0;
+    return path.centroid(d3)[0];
+  }).attr("y", function(d3) {
+    if (!path || !path.centroid(d3))
+      return 0;
+    return path.centroid(d3)[1] + 3;
+  }).text(function(d3) {
+    return d3.properties.name;
+  }).attr("text-anchor", "middle").style("fill", "black").style("font-size", "0.2rem");
+}
+
+// libs/simulator/map/src/lib/airways.ts
+function renderAirways(svg, airways, path) {
+  svg.selectAll(".country").data(airways.features).enter().append("path").attr("d", path).style("fill", "none").style("stroke", "black");
+}
+
 // libs/simulator/map/src/lib/simulator-map.ts
 var MapElement = class extends s3 {
   constructor() {
@@ -5464,7 +5573,7 @@ var MapElement = class extends s3 {
     this.projection = mercator_default().center(center).scale(scale).translate([this.width / 2, this.height / 2]);
     this.path = path_default().projection(this.projection);
     if (changedProperties.has("flights")) {
-      this.renderMap(this.path);
+      this.renderMap();
     }
   }
   render() {
@@ -5482,40 +5591,20 @@ var MapElement = class extends s3 {
     this.g = this.svg.select("g");
     this.g.attr("clip-path", "inset(5%)");
     this.tooltip = this.shadowRoot.querySelector(".tooltip");
-    this.zoom = zoom_default2().scaleExtent([1, 8]).on("zoom", (event) => {
+    this.zoom = zoom_default2().scaleExtent([1, 10]).on("zoom", (event) => {
       this.g.attr("transform", event.transform);
     });
     this.svg.call(this.zoom);
-    this.renderMap(this.path);
+    this.renderMap();
   }
-  renderMap(path) {
+  renderMap() {
     this.g.selectAll("*").remove();
-    this.g.selectAll(".country").data(this.geojson.features).enter().append("path").attr("d", path).style("fill", "#444").style("stroke", "#666666");
-    this.flights?.forEach((flight) => {
-      const foreignObjectId = `flight-foreign-object-${flight.aircraftId}`;
-      const { position } = flight;
-      const [x2, y3] = this.projection([position.longitude, position.latitude]);
-      const foreignObject = this.g.append("foreignObject").attr("id", foreignObjectId).attr("x", x2).attr("y", y3);
-      foreignObject.append("xhtml:section").classed("plane", true).html("x");
-      foreignObject.attr("width", 50).attr("height", 50);
-      const div = foreignObject.append("xhtml:div").attr("xmlns", "http://www.w3.org/1999/xhtml").classed("flight-card", true);
-      div.append("p").html(`${flight?.aircraftId} <br> ${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}`);
-      foreignObject.select(".plane").on("mouseover", (event) => {
-        const flightData = `${flight?.aircraftId}<br>${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}<br>${generateRandomData()?.metadata}`;
-        const svgRect = this.svg.node().getBoundingClientRect();
-        const x3 = event.clientX - svgRect.left;
-        const y4 = event.clientY - svgRect.top;
-        const bbox = foreignObject.node().getBoundingClientRect();
-        if (x3 >= bbox.left && x3 <= bbox.right && y4 >= bbox.top && y4 <= bbox.bottom) {
-          this.tooltip.style.left = `${x3 - 50}px`;
-          this.tooltip.style.top = `${y4 - 28}px`;
-          this.tooltip.innerHTML = flightData;
-          this.tooltip.style.display = "block";
-        }
-      }).on("mouseout", () => {
-        this.tooltip.style.display = "none";
-      });
-    });
+    renderSectors(this.g, this.geojson, this.path);
+    renderBeacons(this.g, this.beacons, this.path);
+    renderAirports(this.g, this.airports, this.path);
+    renderAirwaypoints(this.g, this.airwaypoints, this.path);
+    renderAirways(this.g, this.airways, this.path);
+    renderFlights(this.g, this.flights, this.projection, this.tooltip);
   }
 };
 MapElement.styles = i`
@@ -5523,15 +5612,11 @@ MapElement.styles = i`
       display: block;
       overflow: hidden; /* Hide overflow content */
     }
-    svg {
-      display: block;
-      background-color: #444; 
-    }
     .flight-card {
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 0.5rem;
+      font-size: 0.3rem;
       width: 50px;
       min-width: 50px;
       max-width: 50px;
@@ -5548,16 +5633,12 @@ MapElement.styles = i`
       border: 0.2px solid white;
       text-align: center;
       cursor: pointer;
-      width: 5px;
-      min-width: 5px;
-      max-width: 5px;
-      height: 5px;
-      min-height: 5px;
-      max-height: 5px;
-      width: 100%; /* Ensure contents fill the available space */
-      height: 100%;
-      margin: 0; /* Reset margins */
-      padding: 0; /* Reset padding */
+      width: 8px;
+      min-width: 8px;
+      max-width: 8px;
+      height: 8px;
+      min-height: 8px;
+      max-height: 8px;
     }
     .tooltip {
       position: absolute;
@@ -5572,7 +5653,7 @@ MapElement.styles = i`
       border-radius: 3px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.10);
       padding: 8px;
-      font-size: 8px;
+      font-size: 0.5rem;
     }
   `;
 __decorateClass([
@@ -5588,7 +5669,7 @@ MapElement = __decorateClass([
   t3("ats-simulator-map")
 ], MapElement);
 
-// apps/simulator/src/sectors.json
+// apps/simulator/src/geojsons/sectors.json
 var sectors_default = {
   type: "FeatureCollection",
   features: [
@@ -9787,6 +9868,52450 @@ var sectors_default = {
   ]
 };
 
+// apps/simulator/src/geojsons/beacons.json
+var beacons_default = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AA1AA"
+      },
+      geometry: {
+        coordinates: [
+          36.65,
+          42.4611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AA2AA"
+      },
+      geometry: {
+        coordinates: [
+          37.3856,
+          42.3356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AA3AA"
+      },
+      geometry: {
+        coordinates: [
+          32.1775,
+          39.4633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AA4AA"
+      },
+      geometry: {
+        coordinates: [
+          31.3656,
+          38.2031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABACO"
+      },
+      geometry: {
+        coordinates: [
+          28.7547,
+          40.9806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABBAS"
+      },
+      geometry: {
+        coordinates: [
+          37.725,
+          33.4333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABDIK"
+      },
+      geometry: {
+        coordinates: [
+          41.9553,
+          37.6883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABELA"
+      },
+      geometry: {
+        coordinates: [
+          42.6003,
+          44.1914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABILO"
+      },
+      geometry: {
+        coordinates: [
+          30,
+          34.3233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABISI"
+      },
+      geometry: {
+        coordinates: [
+          31.9525,
+          40.3628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABKAL"
+      },
+      geometry: {
+        coordinates: [
+          41.5319,
+          38.0194
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABKEV"
+      },
+      geometry: {
+        coordinates: [
+          32.0483,
+          42.5839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABLON"
+      },
+      geometry: {
+        coordinates: [
+          23.7356,
+          38.1694
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABNIN"
+      },
+      geometry: {
+        coordinates: [
+          28.2483,
+          40.7819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABORA"
+      },
+      geometry: {
+        coordinates: [
+          26.3408,
+          44.5522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABRAN"
+      },
+      geometry: {
+        coordinates: [
+          33.1222,
+          43.6172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABROD"
+      },
+      geometry: {
+        coordinates: [
+          49.5069,
+          40.6989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABRUT"
+      },
+      geometry: {
+        coordinates: [
+          25.1831,
+          44.4503
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABSAX"
+      },
+      geometry: {
+        coordinates: [
+          32.5836,
+          42.3336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABTEK"
+      },
+      geometry: {
+        coordinates: [
+          49.3056,
+          41.8108
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABTER"
+      },
+      geometry: {
+        coordinates: [
+          25.8417,
+          46.2531
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABTON"
+      },
+      geometry: {
+        coordinates: [
+          46.7714,
+          46.0206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ABVEX"
+      },
+      geometry: {
+        coordinates: [
+          40.6578,
+          40.8942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC039"
+      },
+      geometry: {
+        coordinates: [
+          32.2217,
+          40.3022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC040"
+      },
+      geometry: {
+        coordinates: [
+          32.4567,
+          40.3808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC046"
+      },
+      geometry: {
+        coordinates: [
+          32.8639,
+          40.6144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC048"
+      },
+      geometry: {
+        coordinates: [
+          32.9794,
+          39.6208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC049"
+      },
+      geometry: {
+        coordinates: [
+          33.1,
+          39.7972
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC050"
+      },
+      geometry: {
+        coordinates: [
+          33.5283,
+          39.7747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC051"
+      },
+      geometry: {
+        coordinates: [
+          33.6436,
+          40.1867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC052"
+      },
+      geometry: {
+        coordinates: [
+          33.5144,
+          40.0525
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC053"
+      },
+      geometry: {
+        coordinates: [
+          33.4372,
+          39.9719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC054"
+      },
+      geometry: {
+        coordinates: [
+          33.3475,
+          39.8778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC055"
+      },
+      geometry: {
+        coordinates: [
+          33.0692,
+          40.035
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC056"
+      },
+      geometry: {
+        coordinates: [
+          33.1592,
+          40.1292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC057"
+      },
+      geometry: {
+        coordinates: [
+          33.2364,
+          40.2097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC058"
+      },
+      geometry: {
+        coordinates: [
+          33.3139,
+          40.2903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC059"
+      },
+      geometry: {
+        coordinates: [
+          33.3917,
+          40.3708
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC062"
+      },
+      geometry: {
+        coordinates: [
+          32.4219,
+          40.3356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC063"
+      },
+      geometry: {
+        coordinates: [
+          32.5286,
+          40.4447
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC064"
+      },
+      geometry: {
+        coordinates: [
+          32.6522,
+          40.3761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC065"
+      },
+      geometry: {
+        coordinates: [
+          32.4781,
+          40.1922
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC066"
+      },
+      geometry: {
+        coordinates: [
+          32.6011,
+          40.1233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC067"
+      },
+      geometry: {
+        coordinates: [
+          32.6778,
+          40.2044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC069"
+      },
+      geometry: {
+        coordinates: [
+          32.8781,
+          40.2169
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC070"
+      },
+      geometry: {
+        coordinates: [
+          32.8011,
+          40.1361
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC076"
+      },
+      geometry: {
+        coordinates: [
+          32.4219,
+          39.9328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC080"
+      },
+      geometry: {
+        coordinates: [
+          33.6344,
+          40.1864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC081"
+      },
+      geometry: {
+        coordinates: [
+          33.4258,
+          39.9703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC083"
+      },
+      geometry: {
+        coordinates: [
+          33.3872,
+          39.93
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC084"
+      },
+      geometry: {
+        coordinates: [
+          33.31,
+          39.8492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC085"
+      },
+      geometry: {
+        coordinates: [
+          33.2594,
+          39.5711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC086"
+      },
+      geometry: {
+        coordinates: [
+          33.375,
+          39.6925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC087"
+      },
+      geometry: {
+        coordinates: [
+          33.1111,
+          39.8378
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC088"
+      },
+      geometry: {
+        coordinates: [
+          33.1881,
+          39.9186
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC089"
+      },
+      geometry: {
+        coordinates: [
+          33.265,
+          39.9992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC090"
+      },
+      geometry: {
+        coordinates: [
+          33.1425,
+          40.0683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC091"
+      },
+      geometry: {
+        coordinates: [
+          33.0656,
+          39.9875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC411"
+      },
+      geometry: {
+        coordinates: [
+          32.8253,
+          40.1778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC422"
+      },
+      geometry: {
+        coordinates: [
+          32.9022,
+          40.2586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC433"
+      },
+      geometry: {
+        coordinates: [
+          32.9794,
+          40.3394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC444"
+      },
+      geometry: {
+        coordinates: [
+          33.0567,
+          40.4203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC455"
+      },
+      geometry: {
+        coordinates: [
+          33.1342,
+          40.5008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC611"
+      },
+      geometry: {
+        coordinates: [
+          32.8792,
+          40.0072
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC612"
+      },
+      geometry: {
+        coordinates: [
+          32.74,
+          40.0869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC613"
+      },
+      geometry: {
+        coordinates: [
+          32.5319,
+          40.2053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC614"
+      },
+      geometry: {
+        coordinates: [
+          32.2867,
+          40.4039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC615"
+      },
+      geometry: {
+        coordinates: [
+          32.97,
+          39.7833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC619"
+      },
+      geometry: {
+        coordinates: [
+          32.81,
+          39.6633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC630"
+      },
+      geometry: {
+        coordinates: [
+          32.9794,
+          39.8953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC688"
+      },
+      geometry: {
+        coordinates: [
+          32.7547,
+          40.2853
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC711"
+      },
+      geometry: {
+        coordinates: [
+          33.1164,
+          40.2464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC712"
+      },
+      geometry: {
+        coordinates: [
+          32.9975,
+          40.3194
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC713"
+      },
+      geometry: {
+        coordinates: [
+          32.9014,
+          40.3783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC714"
+      },
+      geometry: {
+        coordinates: [
+          32.6767,
+          40.5153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC715"
+      },
+      geometry: {
+        coordinates: [
+          32.6203,
+          40.5497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC721"
+      },
+      geometry: {
+        coordinates: [
+          33.2006,
+          40.3269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AC722"
+      },
+      geometry: {
+        coordinates: [
+          33.2767,
+          40.3997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ACCUA"
+      },
+      geometry: {
+        coordinates: [
+          28.0314,
+          41.6756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADA"
+      },
+      geometry: {
+        coordinates: [
+          35.2103,
+          36.9406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADANO"
+      },
+      geometry: {
+        coordinates: [
+          45.8333,
+          39.6667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADASU"
+      },
+      geometry: {
+        coordinates: [
+          31.3889,
+          36.7511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADAXA"
+      },
+      geometry: {
+        coordinates: [
+          35.2678,
+          36.9747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADAXD"
+      },
+      geometry: {
+        coordinates: [
+          35.2928,
+          36.9894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADBEL"
+      },
+      geometry: {
+        coordinates: [
+          31.7464,
+          36.9053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADEKI"
+      },
+      geometry: {
+        coordinates: [
+          46.75,
+          41.2967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADESO"
+      },
+      geometry: {
+        coordinates: [
+          26.5111,
+          36.5333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADGEN"
+      },
+      geometry: {
+        coordinates: [
+          48.1581,
+          40.5322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADILA"
+      },
+      geometry: {
+        coordinates: [
+          45.495,
+          39.9967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADINA"
+      },
+      geometry: {
+        coordinates: [
+          30.505,
+          43.8033
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADKAR"
+      },
+      geometry: {
+        coordinates: [
+          35.1978,
+          36.7925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADL"
+      },
+      geometry: {
+        coordinates: [
+          39.9469,
+          43.4031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADLAS"
+      },
+      geometry: {
+        coordinates: [
+          33.32,
+          34.9619
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADNAK"
+      },
+      geometry: {
+        coordinates: [
+          47.2139,
+          45.7094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADNET"
+      },
+      geometry: {
+        coordinates: [
+          39.84,
+          44.3692
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADNOS"
+      },
+      geometry: {
+        coordinates: [
+          40.8533,
+          39.3183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADORU"
+      },
+      geometry: {
+        coordinates: [
+          26.5683,
+          41.8717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADRES"
+      },
+      geometry: {
+        coordinates: [
+          37.3336,
+          37.1714
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADSEP"
+      },
+      geometry: {
+        coordinates: [
+          36.5481,
+          37.6858
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADUGA"
+      },
+      geometry: {
+        coordinates: [
+          39.59,
+          45.5647
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADULI"
+      },
+      geometry: {
+        coordinates: [
+          25.8697,
+          44.4553
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADUMU"
+      },
+      geometry: {
+        coordinates: [
+          33.0778,
+          42.0711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADUNO"
+      },
+      geometry: {
+        coordinates: [
+          25.4522,
+          42.0608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADUPA"
+      },
+      geometry: {
+        coordinates: [
+          33.1917,
+          38.7214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADVER"
+      },
+      geometry: {
+        coordinates: [
+          22.9867,
+          43.4222
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ADVOK"
+      },
+      geometry: {
+        coordinates: [
+          36.5011,
+          39.5036
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AFGAR"
+      },
+      geometry: {
+        coordinates: [
+          27.8069,
+          41.4503
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGAPI"
+      },
+      geometry: {
+        coordinates: [
+          30,
+          34.87
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGAPU"
+      },
+      geometry: {
+        coordinates: [
+          24.3264,
+          38.4225
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGASU"
+      },
+      geometry: {
+        coordinates: [
+          21.8081,
+          45.8811
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGATO"
+      },
+      geometry: {
+        coordinates: [
+          48.5386,
+          42.2664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGBET"
+      },
+      geometry: {
+        coordinates: [
+          26.8975,
+          41.04
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGDAM"
+      },
+      geometry: {
+        coordinates: [
+          49.2214,
+          40.2644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGDOR"
+      },
+      geometry: {
+        coordinates: [
+          43.8542,
+          43.3547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGH"
+      },
+      geometry: {
+        coordinates: [
+          22.7919,
+          39.2161
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGINA"
+      },
+      geometry: {
+        coordinates: [
+          44.0867,
+          39.3233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGISA"
+      },
+      geometry: {
+        coordinates: [
+          23.3483,
+          39.7333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGISO"
+      },
+      geometry: {
+        coordinates: [
+          43.4958,
+          41.6278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGNEP"
+      },
+      geometry: {
+        coordinates: [
+          22.9597,
+          45.45
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AGOLA"
+      },
+      geometry: {
+        coordinates: [
+          43.3153,
+          45.7997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AI533"
+      },
+      geometry: {
+        coordinates: [
+          30.11,
+          36.9294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AI712"
+      },
+      geometry: {
+        coordinates: [
+          31.5383,
+          36.6342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKAKI"
+      },
+      geometry: {
+        coordinates: [
+          41.3714,
+          41.7578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKBUK"
+      },
+      geometry: {
+        coordinates: [
+          27.4606,
+          37.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKCAK"
+      },
+      geometry: {
+        coordinates: [
+          30.7247,
+          41.4289
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKEDO"
+      },
+      geometry: {
+        coordinates: [
+          35.4469,
+          40.9528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKIMO"
+      },
+      geometry: {
+        coordinates: [
+          29.4011,
+          37.2206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKINA"
+      },
+      geometry: {
+        coordinates: [
+          26.2486,
+          36.9803
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKORO"
+      },
+      geometry: {
+        coordinates: [
+          24.3933,
+          37.21
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKSEK"
+      },
+      geometry: {
+        coordinates: [
+          28.2231,
+          36.9261
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKT"
+      },
+      geometry: {
+        coordinates: [
+          32.9717,
+          34.6164
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AKUTU"
+      },
+      geometry: {
+        coordinates: [
+          42.5886,
+          40.6347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALABO"
+      },
+      geometry: {
+        coordinates: [
+          48.8653,
+          43.2047
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALANI"
+      },
+      geometry: {
+        coordinates: [
+          23.9917,
+          36.9111
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALE"
+      },
+      geometry: {
+        coordinates: [
+          37.2067,
+          36.1781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALEDA"
+      },
+      geometry: {
+        coordinates: [
+          27.8394,
+          39.8608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALEGI"
+      },
+      geometry: {
+        coordinates: [
+          42.9986,
+          44.7247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALENO"
+      },
+      geometry: {
+        coordinates: [
+          29.8414,
+          43.9692
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALIKA"
+      },
+      geometry: {
+        coordinates: [
+          41.5347,
+          42.2525
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALIKI"
+      },
+      geometry: {
+        coordinates: [
+          25.3489,
+          35.925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALIKO"
+      },
+      geometry: {
+        coordinates: [
+          22.4494,
+          40.7719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALINO"
+      },
+      geometry: {
+        coordinates: [
+          34.3978,
+          44.6756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALIVI"
+      },
+      geometry: {
+        coordinates: [
+          26.6458,
+          43.1872
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALKIS"
+      },
+      geometry: {
+        coordinates: [
+          30,
+          35.2
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALMUS"
+      },
+      geometry: {
+        coordinates: [
+          36.6656,
+          40.7742
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALPAY"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          36.8322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALRAM"
+      },
+      geometry: {
+        coordinates: [
+          44.6267,
+          37.7083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALSUS"
+      },
+      geometry: {
+        coordinates: [
+          34.6567,
+          35.035
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALTAX"
+      },
+      geometry: {
+        coordinates: [
+          49.3617,
+          32.5039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALTIN"
+      },
+      geometry: {
+        coordinates: [
+          29.4092,
+          36.7656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALUBA"
+      },
+      geometry: {
+        coordinates: [
+          46.9792,
+          42.6844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALUVO"
+      },
+      geometry: {
+        coordinates: [
+          48.1661,
+          40.6089
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALVAR"
+      },
+      geometry: {
+        coordinates: [
+          41.7431,
+          39.9958
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ALX"
+      },
+      geometry: {
+        coordinates: [
+          25.9567,
+          40.8539
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMAKO"
+      },
+      geometry: {
+        coordinates: [
+          33.9336,
+          34.7903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMALA"
+      },
+      geometry: {
+        coordinates: [
+          24.8328,
+          40.5686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMANI"
+      },
+      geometry: {
+        coordinates: [
+          26.4994,
+          39.3322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMAXI"
+      },
+      geometry: {
+        coordinates: [
+          25.7828,
+          35.0978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMEIS"
+      },
+      geometry: {
+        coordinates: [
+          28.6817,
+          40.9872
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMGOL"
+      },
+      geometry: {
+        coordinates: [
+          31.435,
+          46.0733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMIBO"
+      },
+      geometry: {
+        coordinates: [
+          21.6075,
+          34.9444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMLAV"
+      },
+      geometry: {
+        coordinates: [
+          29.7661,
+          44.1619
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMONO"
+      },
+      geometry: {
+        coordinates: [
+          29.87,
+          34.9722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMSIV"
+      },
+      geometry: {
+        coordinates: [
+          23.2617,
+          39.9103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMTAR"
+      },
+      geometry: {
+        coordinates: [
+          21.9383,
+          34
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AMTOV"
+      },
+      geometry: {
+        coordinates: [
+          26.1519,
+          43.1725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANAGU"
+      },
+      geometry: {
+        coordinates: [
+          46.0156,
+          41.6306
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANAKA"
+      },
+      geometry: {
+        coordinates: [
+          37.3475,
+          45.0022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANASA"
+      },
+      geometry: {
+        coordinates: [
+          22.5553,
+          44.3119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANEDO"
+      },
+      geometry: {
+        coordinates: [
+          29.6919,
+          46.3633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANEPI"
+      },
+      geometry: {
+        coordinates: [
+          22.195,
+          37.4064
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANK"
+      },
+      geometry: {
+        coordinates: [
+          32.8283,
+          39.9533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANKXA"
+      },
+      geometry: {
+        coordinates: [
+          32.9831,
+          40.1139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANKXD"
+      },
+      geometry: {
+        coordinates: [
+          33.0092,
+          40.1411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANTAR"
+      },
+      geometry: {
+        coordinates: [
+          28.2667,
+          33.8
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ANTOP"
+      },
+      geometry: {
+        coordinates: [
+          34.8583,
+          42.0525
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "APAKJ"
+      },
+      geometry: {
+        coordinates: [
+          44.1244,
+          36.3511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "APLON"
+      },
+      geometry: {
+        coordinates: [
+          32.0667,
+          33.8667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "APROB"
+      },
+      geometry: {
+        coordinates: [
+          25.0025,
+          43.9733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "APSER"
+      },
+      geometry: {
+        coordinates: [
+          29.8483,
+          39.3672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "APSID"
+      },
+      geometry: {
+        coordinates: [
+          27.6022,
+          40.7969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "APTOX"
+      },
+      geometry: {
+        coordinates: [
+          32.5042,
+          41.5931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "APVAS"
+      },
+      geometry: {
+        coordinates: [
+          36.6683,
+          40.7642
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARA"
+      },
+      geometry: {
+        coordinates: [
+          21.4294,
+          38.1589
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARB"
+      },
+      geometry: {
+        coordinates: [
+          48.4347,
+          38.3156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARBAD"
+      },
+      geometry: {
+        coordinates: [
+          33.4767,
+          43.99
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARGES"
+      },
+      geometry: {
+        coordinates: [
+          26.8267,
+          44.0822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARI"
+      },
+      geometry: {
+        coordinates: [
+          43.0269,
+          39.6458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARK"
+      },
+      geometry: {
+        coordinates: [
+          49.8539,
+          34.1372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARKIN"
+      },
+      geometry: {
+        coordinates: [
+          39.9167,
+          39.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARKUT"
+      },
+      geometry: {
+        coordinates: [
+          38.0917,
+          44.0264
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARLAT"
+      },
+      geometry: {
+        coordinates: [
+          38.7019,
+          41.0969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARLOS"
+      },
+      geometry: {
+        coordinates: [
+          23,
+          34.6253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARMAM"
+      },
+      geometry: {
+        coordinates: [
+          28.4714,
+          37.2394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARMUD"
+      },
+      geometry: {
+        coordinates: [
+          33.4856,
+          39.2217
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARNAS"
+      },
+      geometry: {
+        coordinates: [
+          23.4806,
+          40.5281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARNAX"
+      },
+      geometry: {
+        coordinates: [
+          25.8294,
+          44.3786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARNOV"
+      },
+      geometry: {
+        coordinates: [
+          26.7681,
+          42.7478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARPAG"
+      },
+      geometry: {
+        coordinates: [
+          37.2744,
+          37.2625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARPEM"
+      },
+      geometry: {
+        coordinates: [
+          31.9481,
+          41.8803
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARPUT"
+      },
+      geometry: {
+        coordinates: [
+          38.9419,
+          38.8422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARSUG"
+      },
+      geometry: {
+        coordinates: [
+          38.2722,
+          41.1331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARTAR"
+      },
+      geometry: {
+        coordinates: [
+          38.8447,
+          37.0939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARTAT"
+      },
+      geometry: {
+        coordinates: [
+          29.6242,
+          42.3639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ARVUT"
+      },
+      geometry: {
+        coordinates: [
+          27.2803,
+          37.3422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASBEP"
+      },
+      geometry: {
+        coordinates: [
+          32.1236,
+          42.2628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASBOM"
+      },
+      geometry: {
+        coordinates: [
+          37.0414,
+          37.2589
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASDEV"
+      },
+      geometry: {
+        coordinates: [
+          29.1214,
+          40.8292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASGUK"
+      },
+      geometry: {
+        coordinates: [
+          29.6861,
+          40.1753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASIMI"
+      },
+      geometry: {
+        coordinates: [
+          27.7311,
+          36.4656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASKEM"
+      },
+      geometry: {
+        coordinates: [
+          34.4103,
+          45.2247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASKER"
+      },
+      geometry: {
+        coordinates: [
+          38.7847,
+          38.2769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASKOS"
+      },
+      geometry: {
+        coordinates: [
+          24.2703,
+          40.6381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASKUT"
+      },
+      geometry: {
+        coordinates: [
+          28.2378,
+          46.4031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASMAP"
+      },
+      geometry: {
+        coordinates: [
+          30.7114,
+          40.6314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASMIK"
+      },
+      geometry: {
+        coordinates: [
+          44.2333,
+          40.6614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASMOB"
+      },
+      geometry: {
+        coordinates: [
+          32.2328,
+          41.6694
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASNEL"
+      },
+      geometry: {
+        coordinates: [
+          26.33,
+          44.5367
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASNIR"
+      },
+      geometry: {
+        coordinates: [
+          28.3622,
+          32.6469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASNOT"
+      },
+      geometry: {
+        coordinates: [
+          42.9547,
+          33.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASNUT"
+      },
+      geometry: {
+        coordinates: [
+          27.0081,
+          40.2283
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASPIS"
+      },
+      geometry: {
+        coordinates: [
+          32.2283,
+          33.4817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASPIV"
+      },
+      geometry: {
+        coordinates: [
+          24.7064,
+          40.7689
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASPOK"
+      },
+      geometry: {
+        coordinates: [
+          48.83,
+          36.9883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASPUL"
+      },
+      geometry: {
+        coordinates: [
+          40.4128,
+          38.5517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASRIL"
+      },
+      geometry: {
+        coordinates: [
+          47.7536,
+          34.4703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASTAL"
+      },
+      geometry: {
+        coordinates: [
+          33.1244,
+          40.7406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASTIS"
+      },
+      geometry: {
+        coordinates: [
+          26.2328,
+          36.5653
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASTOV"
+      },
+      geometry: {
+        coordinates: [
+          22.5344,
+          37.4208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ASVOD"
+      },
+      geometry: {
+        coordinates: [
+          37.5728,
+          40.0822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATBOG"
+      },
+      geometry: {
+        coordinates: [
+          26.9311,
+          43.5558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATCOS"
+      },
+      geometry: {
+        coordinates: [
+          28.6328,
+          40.8942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATFIR"
+      },
+      geometry: {
+        coordinates: [
+          23.7747,
+          41.4017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATGIT"
+      },
+      geometry: {
+        coordinates: [
+          29.7492,
+          38.2014
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATGOB"
+      },
+      geometry: {
+        coordinates: [
+          31.2508,
+          40.7253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATH"
+      },
+      geometry: {
+        coordinates: [
+          23.9719,
+          37.9481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATKAN"
+      },
+      geometry: {
+        coordinates: [
+          27.8494,
+          39.52
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATLAN"
+      },
+      geometry: {
+        coordinates: [
+          25.4261,
+          35.8475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATLIT"
+      },
+      geometry: {
+        coordinates: [
+          34.9153,
+          32.6978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATLOM"
+      },
+      geometry: {
+        coordinates: [
+          39.3486,
+          37.3856
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATMAK"
+      },
+      geometry: {
+        coordinates: [
+          27.4906,
+          43.0556
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATNOP"
+      },
+      geometry: {
+        coordinates: [
+          34.8583,
+          42.0522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATPIX"
+      },
+      geometry: {
+        coordinates: [
+          30.6236,
+          41.7533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATPOX"
+      },
+      geometry: {
+        coordinates: [
+          24.735,
+          39.1117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATPUM"
+      },
+      geometry: {
+        coordinates: [
+          40.3758,
+          41.1933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATRAP"
+      },
+      geometry: {
+        coordinates: [
+          26.6297,
+          44.6436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATRIV"
+      },
+      geometry: {
+        coordinates: [
+          37.3186,
+          40.2125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATSAL"
+      },
+      geometry: {
+        coordinates: [
+          28.7189,
+          37.5003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATSUB"
+      },
+      geometry: {
+        coordinates: [
+          31.6239,
+          36.585
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATV"
+      },
+      geometry: {
+        coordinates: [
+          23.8044,
+          37.8886
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATVAM"
+      },
+      geometry: {
+        coordinates: [
+          39.5831,
+          41.6433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATVAS"
+      },
+      geometry: {
+        coordinates: [
+          28.7786,
+          41.7625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ATVEP"
+      },
+      geometry: {
+        coordinates: [
+          26.9536,
+          41.4622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AYT"
+      },
+      geometry: {
+        coordinates: [
+          30.7944,
+          36.9206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AYT01"
+      },
+      geometry: {
+        coordinates: [
+          30.81,
+          36.9533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AYT02"
+      },
+      geometry: {
+        coordinates: [
+          30.8331,
+          36.9494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AYT03"
+      },
+      geometry: {
+        coordinates: [
+          30.8367,
+          36.9314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AYTXA"
+      },
+      geometry: {
+        coordinates: [
+          30.7903,
+          36.885
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AYTXD"
+      },
+      geometry: {
+        coordinates: [
+          30.7947,
+          36.9153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AZABI"
+      },
+      geometry: {
+        coordinates: [
+          49.5,
+          44.74
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "AZBUL"
+      },
+      geometry: {
+        coordinates: [
+          33.3619,
+          39.3822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA090"
+      },
+      geometry: {
+        coordinates: [
+          28.9647,
+          41.0372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA091"
+      },
+      geometry: {
+        coordinates: [
+          28.9406,
+          40.9406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA092"
+      },
+      geometry: {
+        coordinates: [
+          28.7744,
+          40.8481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA095"
+      },
+      geometry: {
+        coordinates: [
+          29.1969,
+          41.015
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA234"
+      },
+      geometry: {
+        coordinates: [
+          29.6375,
+          39.9567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA235"
+      },
+      geometry: {
+        coordinates: [
+          29.2189,
+          40.0308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA243"
+      },
+      geometry: {
+        coordinates: [
+          30.3589,
+          40.4758
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA246"
+      },
+      geometry: {
+        coordinates: [
+          29.0558,
+          40.3028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA247"
+      },
+      geometry: {
+        coordinates: [
+          28.8244,
+          40.4158
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA248"
+      },
+      geometry: {
+        coordinates: [
+          28.6944,
+          40.5011
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA355"
+      },
+      geometry: {
+        coordinates: [
+          26.9467,
+          41.1914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA356"
+      },
+      geometry: {
+        coordinates: [
+          27.1658,
+          40.8211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA357"
+      },
+      geometry: {
+        coordinates: [
+          27.5572,
+          40.7139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA358"
+      },
+      geometry: {
+        coordinates: [
+          27.7869,
+          40.7117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA359"
+      },
+      geometry: {
+        coordinates: [
+          28.6022,
+          40.8344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA366"
+      },
+      geometry: {
+        coordinates: [
+          27.4503,
+          40.565
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA444"
+      },
+      geometry: {
+        coordinates: [
+          30.0786,
+          40.5814
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA445"
+      },
+      geometry: {
+        coordinates: [
+          29.5997,
+          40.5808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA446"
+      },
+      geometry: {
+        coordinates: [
+          29.2869,
+          40.5794
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA447"
+      },
+      geometry: {
+        coordinates: [
+          28.6986,
+          40.7947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA457"
+      },
+      geometry: {
+        coordinates: [
+          28.3792,
+          41.3133
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BA458"
+      },
+      geometry: {
+        coordinates: [
+          28.1214,
+          40.9981
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BABIB"
+      },
+      geometry: {
+        coordinates: [
+          29.0514,
+          46.1786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BABIL"
+      },
+      geometry: {
+        coordinates: [
+          43.0767,
+          32.58
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BABIN"
+      },
+      geometry: {
+        coordinates: [
+          31,
+          44.425
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BABLI"
+      },
+      geometry: {
+        coordinates: [
+          36.8631,
+          36.9533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BABSA"
+      },
+      geometry: {
+        coordinates: [
+          30.305,
+          38.0156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BABUR"
+      },
+      geometry: {
+        coordinates: [
+          49.5,
+          45.3867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BADEL"
+      },
+      geometry: {
+        coordinates: [
+          24.0739,
+          37.0006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BADEM"
+      },
+      geometry: {
+        coordinates: [
+          38.66,
+          37.6044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BADIR"
+      },
+      geometry: {
+        coordinates: [
+          45.3667,
+          41.4833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BADKA"
+      },
+      geometry: {
+        coordinates: [
+          29.1108,
+          45.3775
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BADKO"
+      },
+      geometry: {
+        coordinates: [
+          43.5069,
+          44.5114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BADOG"
+      },
+      geometry: {
+        coordinates: [
+          21.9814,
+          36.0517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BADOX"
+      },
+      geometry: {
+        coordinates: [
+          33.9753,
+          39.3319
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAFRA"
+      },
+      geometry: {
+        coordinates: [
+          35.9664,
+          41.5086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAG"
+      },
+      geometry: {
+        coordinates: [
+          32.8103,
+          40.0697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAGEM"
+      },
+      geometry: {
+        coordinates: [
+          44.4806,
+          41.5989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAGLU"
+      },
+      geometry: {
+        coordinates: [
+          29.3253,
+          38.0711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAGRI"
+      },
+      geometry: {
+        coordinates: [
+          29.8033,
+          45.1867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAGVA"
+      },
+      geometry: {
+        coordinates: [
+          46.2933,
+          41.0414
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAKIR"
+      },
+      geometry: {
+        coordinates: [
+          33.3244,
+          39.4378
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAKLO"
+      },
+      geometry: {
+        coordinates: [
+          26.4922,
+          42.5428
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAKPI"
+      },
+      geometry: {
+        coordinates: [
+          29.6592,
+          38.7494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAKRI"
+      },
+      geometry: {
+        coordinates: [
+          38.2817,
+          43.8981
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALAX"
+      },
+      geometry: {
+        coordinates: [
+          33.7808,
+          39.4575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALBI"
+      },
+      geometry: {
+        coordinates: [
+          25.7542,
+          44.905
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALED"
+      },
+      geometry: {
+        coordinates: [
+          32.3417,
+          45.4417
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALEG"
+      },
+      geometry: {
+        coordinates: [
+          39.3183,
+          45.6531
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALIK"
+      },
+      geometry: {
+        coordinates: [
+          27.3,
+          43.6767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALIM"
+      },
+      geometry: {
+        coordinates: [
+          41.1242,
+          38.4297
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALMA"
+      },
+      geometry: {
+        coordinates: [
+          35.05,
+          34.4833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALON"
+      },
+      geometry: {
+        coordinates: [
+          39.6083,
+          40.0917
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALSU"
+      },
+      geometry: {
+        coordinates: [
+          29.4236,
+          37.4583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BALUM"
+      },
+      geometry: {
+        coordinates: [
+          37.6667,
+          42.6833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAMDA"
+      },
+      geometry: {
+        coordinates: [
+          43.7989,
+          43.4714
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAMLA"
+      },
+      geometry: {
+        coordinates: [
+          38.9028,
+          40.6403
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAMOG"
+      },
+      geometry: {
+        coordinates: [
+          45.2153,
+          43.4664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAMOS"
+      },
+      geometry: {
+        coordinates: [
+          23.5611,
+          39.2947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAMUP"
+      },
+      geometry: {
+        coordinates: [
+          32.0172,
+          42.5875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAN"
+      },
+      geometry: {
+        coordinates: [
+          35.9558,
+          35.22
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BANAG"
+      },
+      geometry: {
+        coordinates: [
+          44.6236,
+          40.0611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BANRO"
+      },
+      geometry: {
+        coordinates: [
+          27.9953,
+          36.4947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BANUR"
+      },
+      geometry: {
+        coordinates: [
+          30.9667,
+          43.6833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BANUT"
+      },
+      geometry: {
+        coordinates: [
+          39.9853,
+          42.9897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAPAX"
+      },
+      geometry: {
+        coordinates: [
+          34.1742,
+          35.7017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAPNI"
+      },
+      geometry: {
+        coordinates: [
+          45.5278,
+          43.325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAPSI"
+      },
+      geometry: {
+        coordinates: [
+          27.9042,
+          38.0022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BARAD"
+      },
+      geometry: {
+        coordinates: [
+          45.0833,
+          41.3586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BARPE"
+      },
+      geometry: {
+        coordinates: [
+          26.9781,
+          40.9261
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BARUK"
+      },
+      geometry: {
+        coordinates: [
+          28.5697,
+          44.5414
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BARUS"
+      },
+      geometry: {
+        coordinates: [
+          42.8417,
+          41.905
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BASEM"
+      },
+      geometry: {
+        coordinates: [
+          37.6519,
+          33.5603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BASKA"
+      },
+      geometry: {
+        coordinates: [
+          43.4486,
+          42.5831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BASMU"
+      },
+      geometry: {
+        coordinates: [
+          30.5425,
+          40.6667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAT"
+      },
+      geometry: {
+        coordinates: [
+          41.12,
+          37.9375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BATNU"
+      },
+      geometry: {
+        coordinates: [
+          32.7239,
+          36.1608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BATUK"
+      },
+      geometry: {
+        coordinates: [
+          28.1467,
+          37.25
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAU01"
+      },
+      geometry: {
+        coordinates: [
+          49.7606,
+          40.5708
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAU05"
+      },
+      geometry: {
+        coordinates: [
+          49.9444,
+          40.5056
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAVBO"
+      },
+      geometry: {
+        coordinates: [
+          33.73,
+          41.8
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAVES"
+      },
+      geometry: {
+        coordinates: [
+          24.7269,
+          35.4247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAVGA"
+      },
+      geometry: {
+        coordinates: [
+          22.665,
+          42.5939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAVTI"
+      },
+      geometry: {
+        coordinates: [
+          40.2547,
+          40.6628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BAYIR"
+      },
+      geometry: {
+        coordinates: [
+          41.4039,
+          38.5947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB101"
+      },
+      geometry: {
+        coordinates: [
+          49.99,
+          40.2867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB103"
+      },
+      geometry: {
+        coordinates: [
+          49.7047,
+          40.2758
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB105"
+      },
+      geometry: {
+        coordinates: [
+          49.4369,
+          40.2828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB107"
+      },
+      geometry: {
+        coordinates: [
+          49.7694,
+          40.6292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB501"
+      },
+      geometry: {
+        coordinates: [
+          49.9608,
+          40.7217
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB503"
+      },
+      geometry: {
+        coordinates: [
+          49.9597,
+          40.8953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB504"
+      },
+      geometry: {
+        coordinates: [
+          49.9642,
+          40.9819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB506"
+      },
+      geometry: {
+        coordinates: [
+          49.8644,
+          40.9711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB512"
+      },
+      geometry: {
+        coordinates: [
+          49.85,
+          40.7186
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BB516"
+      },
+      geometry: {
+        coordinates: [
+          49.6011,
+          40.1292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BDR"
+      },
+      geometry: {
+        coordinates: [
+          27.6814,
+          37.2469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BDRXD"
+      },
+      geometry: {
+        coordinates: [
+          27.6492,
+          37.255
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEBOT"
+      },
+      geometry: {
+        coordinates: [
+          37.2472,
+          43.0894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEBRI"
+      },
+      geometry: {
+        coordinates: [
+          47.1472,
+          40.1647
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEDOP"
+      },
+      geometry: {
+        coordinates: [
+          32.2325,
+          41.9269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEGAL"
+      },
+      geometry: {
+        coordinates: [
+          25.7719,
+          44.6006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEKIR"
+      },
+      geometry: {
+        coordinates: [
+          47.8883,
+          41.0583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEKIS"
+      },
+      geometry: {
+        coordinates: [
+          36.9883,
+          43.1381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEKVA"
+      },
+      geometry: {
+        coordinates: [
+          21.695,
+          40.9344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BELGI"
+      },
+      geometry: {
+        coordinates: [
+          25.8833,
+          40.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BELNI"
+      },
+      geometry: {
+        coordinates: [
+          45.9203,
+          43.9197
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BELSU"
+      },
+      geometry: {
+        coordinates: [
+          34.2864,
+          39.1308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEMTO"
+      },
+      geometry: {
+        coordinates: [
+          42.3883,
+          45.2517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BENEM"
+      },
+      geometry: {
+        coordinates: [
+          29.3167,
+          36.1833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BENGO"
+      },
+      geometry: {
+        coordinates: [
+          22.9669,
+          42.7225
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BENTA"
+      },
+      geometry: {
+        coordinates: [
+          33.9558,
+          40.1514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEPES"
+      },
+      geometry: {
+        coordinates: [
+          28.3222,
+          45.3481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEPTO"
+      },
+      geometry: {
+        coordinates: [
+          32.0533,
+          36.2697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BERAP"
+      },
+      geometry: {
+        coordinates: [
+          21.6306,
+          37.4111
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BERGO"
+      },
+      geometry: {
+        coordinates: [
+          27.1328,
+          38.9989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BERTU"
+      },
+      geometry: {
+        coordinates: [
+          32.2367,
+          45.81
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BESES"
+      },
+      geometry: {
+        coordinates: [
+          28.2761,
+          36.3311
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BESLI"
+      },
+      geometry: {
+        coordinates: [
+          24.0342,
+          43.4022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BETEG"
+      },
+      geometry: {
+        coordinates: [
+          36.3833,
+          45.1833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BETIZ"
+      },
+      geometry: {
+        coordinates: [
+          29.3586,
+          41.6533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BETOR"
+      },
+      geometry: {
+        coordinates: [
+          48.4403,
+          43.8681
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BEYAZ"
+      },
+      geometry: {
+        coordinates: [
+          42.7881,
+          38.505
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BGD"
+      },
+      geometry: {
+        coordinates: [
+          44.2553,
+          33.2844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BGS"
+      },
+      geometry: {
+        coordinates: [
+          27.4986,
+          42.5531
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BH310"
+      },
+      geometry: {
+        coordinates: [
+          26.52,
+          40.2183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIBAM"
+      },
+      geometry: {
+        coordinates: [
+          28.4011,
+          40.8728
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIFOK"
+      },
+      geometry: {
+        coordinates: [
+          26.2864,
+          38.9719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIG"
+      },
+      geometry: {
+        coordinates: [
+          27.3653,
+          40.2842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIMDU"
+      },
+      geometry: {
+        coordinates: [
+          27.1919,
+          39.9842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIMVO"
+      },
+      geometry: {
+        coordinates: [
+          33.1319,
+          42.4561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BINBI"
+      },
+      geometry: {
+        coordinates: [
+          29.6356,
+          43.7183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BINOL"
+      },
+      geometry: {
+        coordinates: [
+          40.1086,
+          43.6883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BINOM"
+      },
+      geometry: {
+        coordinates: [
+          28.7336,
+          46.2725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIRMA"
+      },
+      geometry: {
+        coordinates: [
+          30.5617,
+          44.98
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIRPU"
+      },
+      geometry: {
+        coordinates: [
+          29.1747,
+          36.3189
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BISNA"
+      },
+      geometry: {
+        coordinates: [
+          49.2833,
+          42.2333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BITLA"
+      },
+      geometry: {
+        coordinates: [
+          21.3581,
+          40.8756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BIVBU"
+      },
+      geometry: {
+        coordinates: [
+          24.3317,
+          44.9206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BKPR"
+      },
+      geometry: {
+        coordinates: [
+          21.0358,
+          42.5728
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BKZ"
+      },
+      geometry: {
+        coordinates: [
+          29.1428,
+          41.1269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BLAJA"
+      },
+      geometry: {
+        coordinates: [
+          24.0117,
+          46.1814
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BLB"
+      },
+      geometry: {
+        coordinates: [
+          33.5514,
+          44.6911
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BLB01"
+      },
+      geometry: {
+        coordinates: [
+          33.7642,
+          44.7344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BLB02"
+      },
+      geometry: {
+        coordinates: [
+          33.3967,
+          44.6339
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BLB03"
+      },
+      geometry: {
+        coordinates: [
+          33.7692,
+          44.6342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BLB04"
+      },
+      geometry: {
+        coordinates: [
+          33.4506,
+          44.5656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BLO"
+      },
+      geometry: {
+        coordinates: [
+          23.8139,
+          42.6672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BNG"
+      },
+      geometry: {
+        coordinates: [
+          40.6008,
+          38.8556
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BOBVO"
+      },
+      geometry: {
+        coordinates: [
+          23.0911,
+          43.3922
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BODMO"
+      },
+      geometry: {
+        coordinates: [
+          26.4214,
+          43.1808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BOMKI"
+      },
+      geometry: {
+        coordinates: [
+          32.03,
+          44.535
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BONAM"
+      },
+      geometry: {
+        coordinates: [
+          44.2997,
+          38.0489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BONEK"
+      },
+      geometry: {
+        coordinates: [
+          32.9347,
+          35.0731
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BORES"
+      },
+      geometry: {
+        coordinates: [
+          45.3603,
+          38.4747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BOSIS"
+      },
+      geometry: {
+        coordinates: [
+          33.74,
+          34.6233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BOTNA"
+      },
+      geometry: {
+        coordinates: [
+          28.2881,
+          46.3511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BOXIX"
+      },
+      geometry: {
+        coordinates: [
+          46.1567,
+          35.29
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BOYAT"
+      },
+      geometry: {
+        coordinates: [
+          37.2433,
+          37.1208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BOZ"
+      },
+      geometry: {
+        coordinates: [
+          23.1911,
+          42.77
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BRONZ"
+      },
+      geometry: {
+        coordinates: [
+          30.3494,
+          37.2697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BRY"
+      },
+      geometry: {
+        coordinates: [
+          29.5936,
+          40.2625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BRYXA"
+      },
+      geometry: {
+        coordinates: [
+          29.6042,
+          40.2642
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BRYXD"
+      },
+      geometry: {
+        coordinates: [
+          29.6022,
+          40.2597
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BSE"
+      },
+      geometry: {
+        coordinates: [
+          26.2306,
+          44.5297
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BSW"
+      },
+      geometry: {
+        coordinates: [
+          25.9519,
+          44.4722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUDED"
+      },
+      geometry: {
+        coordinates: [
+          47.3422,
+          37.8869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUFRA"
+      },
+      geometry: {
+        coordinates: [
+          24.7056,
+          42.5122
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUK"
+      },
+      geometry: {
+        coordinates: [
+          33.105,
+          40.2419
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUKEL"
+      },
+      geometry: {
+        coordinates: [
+          25.7258,
+          45.0778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BULEN"
+      },
+      geometry: {
+        coordinates: [
+          25.8167,
+          43.75
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BULUT"
+      },
+      geometry: {
+        coordinates: [
+          38.9022,
+          38.7561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUMAR"
+      },
+      geometry: {
+        coordinates: [
+          48.9217,
+          42.0283
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUMOM"
+      },
+      geometry: {
+        coordinates: [
+          33.2297,
+          38.0144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUNAG"
+      },
+      geometry: {
+        coordinates: [
+          30.4333,
+          46.0667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUNIR"
+      },
+      geometry: {
+        coordinates: [
+          25.8442,
+          44.7131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUNIS"
+      },
+      geometry: {
+        coordinates: [
+          49.9856,
+          40.6389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUPUN"
+      },
+      geometry: {
+        coordinates: [
+          37.9056,
+          37.3944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUREK"
+      },
+      geometry: {
+        coordinates: [
+          21.1969,
+          41.8322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BURUD"
+      },
+      geometry: {
+        coordinates: [
+          34.64,
+          44.57
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUSOK"
+      },
+      geometry: {
+        coordinates: [
+          26.6008,
+          44.5325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUSRA"
+      },
+      geometry: {
+        coordinates: [
+          36.6167,
+          32.3333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "BUVAK"
+      },
+      geometry: {
+        coordinates: [
+          27.4375,
+          42.9906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CAK"
+      },
+      geometry: {
+        coordinates: [
+          35.7,
+          34.3006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CAY"
+      },
+      geometry: {
+        coordinates: [
+          32.0444,
+          41.5139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CENGO"
+      },
+      geometry: {
+        coordinates: [
+          28.0911,
+          37.0656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CENTR"
+      },
+      geometry: {
+        coordinates: [
+          35.7242,
+          39.0672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CETUL"
+      },
+      geometry: {
+        coordinates: [
+          28.6269,
+          44.6975
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CLD"
+      },
+      geometry: {
+        coordinates: [
+          27.8964,
+          37.8147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CND"
+      },
+      geometry: {
+        coordinates: [
+          28.4783,
+          44.2856
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CNK"
+      },
+      geometry: {
+        coordinates: [
+          26.4275,
+          40.1353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "COPSA"
+      },
+      geometry: {
+        coordinates: [
+          24.2328,
+          46.1311
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "COPXX"
+      },
+      geometry: {
+        coordinates: [
+          35.7242,
+          39.0672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CRD"
+      },
+      geometry: {
+        coordinates: [
+          29.7042,
+          37.7897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CRL"
+      },
+      geometry: {
+        coordinates: [
+          27.9422,
+          41.1522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CRLXA"
+      },
+      geometry: {
+        coordinates: [
+          27.9053,
+          41.1294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CRLXD"
+      },
+      geometry: {
+        coordinates: [
+          27.9325,
+          41.1469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CRM"
+      },
+      geometry: {
+        coordinates: [
+          36.5489,
+          41.2656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CRMXA"
+      },
+      geometry: {
+        coordinates: [
+          36.5408,
+          41.2811
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CRMXD"
+      },
+      geometry: {
+        coordinates: [
+          36.5758,
+          41.2622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CTP"
+      },
+      geometry: {
+        coordinates: [
+          30.0714,
+          40.7375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CTR01"
+      },
+      geometry: {
+        coordinates: [
+          33.0164,
+          40.29
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CTR02"
+      },
+      geometry: {
+        coordinates: [
+          33.1758,
+          40.2028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CTR03"
+      },
+      geometry: {
+        coordinates: [
+          32.8989,
+          39.9158
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CTR04"
+      },
+      geometry: {
+        coordinates: [
+          32.7667,
+          40.0292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "CUBUK"
+      },
+      geometry: {
+        coordinates: [
+          33.1044,
+          40.2417
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAL"
+      },
+      geometry: {
+        coordinates: [
+          28.7822,
+          36.6894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAL05"
+      },
+      geometry: {
+        coordinates: [
+          28.8089,
+          36.7697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAL14"
+      },
+      geometry: {
+        coordinates: [
+          28.58,
+          36.7753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAL15"
+      },
+      geometry: {
+        coordinates: [
+          28.7383,
+          36.8692
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAL16"
+      },
+      geometry: {
+        coordinates: [
+          28.7503,
+          36.8203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAL21"
+      },
+      geometry: {
+        coordinates: [
+          28.5844,
+          36.5975
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAL99"
+      },
+      geometry: {
+        coordinates: [
+          28.6375,
+          36.8269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DALXA"
+      },
+      geometry: {
+        coordinates: [
+          28.7858,
+          36.7006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DALXD"
+      },
+      geometry: {
+        coordinates: [
+          28.795,
+          36.7267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAM"
+      },
+      geometry: {
+        coordinates: [
+          36.4686,
+          33.365
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAMAT"
+      },
+      geometry: {
+        coordinates: [
+          40.6647,
+          39.9561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAMLA"
+      },
+      geometry: {
+        coordinates: [
+          31.0911,
+          37.3614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAMOS"
+      },
+      geometry: {
+        coordinates: [
+          47.7558,
+          37.4386
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DANUL"
+      },
+      geometry: {
+        coordinates: [
+          28.4564,
+          44.9067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAPEM"
+      },
+      geometry: {
+        coordinates: [
+          48.6997,
+          32.8572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAPUK"
+      },
+      geometry: {
+        coordinates: [
+          38.6739,
+          33.0275
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DARIP"
+      },
+      geometry: {
+        coordinates: [
+          21.0125,
+          33.5236
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DARIX"
+      },
+      geometry: {
+        coordinates: [
+          43.8986,
+          36.7781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAROS"
+      },
+      geometry: {
+        coordinates: [
+          33.1483,
+          35.0117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DARUN"
+      },
+      geometry: {
+        coordinates: [
+          46.7097,
+          38.5608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DASDA"
+      },
+      geometry: {
+        coordinates: [
+          46.8706,
+          38.6931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DASIS"
+      },
+      geometry: {
+        coordinates: [
+          44.2083,
+          38.9097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DASNI"
+      },
+      geometry: {
+        coordinates: [
+          30.85,
+          35.6167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DAXEN"
+      },
+      geometry: {
+        coordinates: [
+          37.6847,
+          32.7458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DDM"
+      },
+      geometry: {
+        coordinates: [
+          23.2172,
+          37.4778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEDIM"
+      },
+      geometry: {
+        coordinates: [
+          29.2686,
+          39.3972
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEDIN"
+      },
+      geometry: {
+        coordinates: [
+          24.0794,
+          42.5942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEDON"
+      },
+      geometry: {
+        coordinates: [
+          45.2467,
+          41.7153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEKEK"
+      },
+      geometry: {
+        coordinates: [
+          29.3231,
+          40.3344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEKIT"
+      },
+      geometry: {
+        coordinates: [
+          45.2594,
+          40.1333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEKOP"
+      },
+      geometry: {
+        coordinates: [
+          43.8039,
+          37.7783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DELAV"
+      },
+      geometry: {
+        coordinates: [
+          26.6117,
+          35.8547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DELEL"
+      },
+      geometry: {
+        coordinates: [
+          40.8903,
+          40.965
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DELIN"
+      },
+      geometry: {
+        coordinates: [
+          25.165,
+          43.1342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DELMI"
+      },
+      geometry: {
+        coordinates: [
+          43.2244,
+          33.3217
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DELOX"
+      },
+      geometry: {
+        coordinates: [
+          26.7133,
+          37.5106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEMAG"
+      },
+      geometry: {
+        coordinates: [
+          21.1533,
+          35.5181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEMEB"
+      },
+      geometry: {
+        coordinates: [
+          39.2317,
+          37.5639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEMED"
+      },
+      geometry: {
+        coordinates: [
+          37.8106,
+          42.9806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEN"
+      },
+      geometry: {
+        coordinates: [
+          28.6028,
+          38.5781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DENAK"
+      },
+      geometry: {
+        coordinates: [
+          26.4356,
+          45.0022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DENEN"
+      },
+      geometry: {
+        coordinates: [
+          31.4106,
+          41.2506
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DENKI"
+      },
+      geometry: {
+        coordinates: [
+          45.8561,
+          32.3744
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DENUB"
+      },
+      geometry: {
+        coordinates: [
+          29.4433,
+          44.0664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEREG"
+      },
+      geometry: {
+        coordinates: [
+          21.23,
+          44.4256
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEREL"
+      },
+      geometry: {
+        coordinates: [
+          32.1933,
+          40.7139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DERIL"
+      },
+      geometry: {
+        coordinates: [
+          44.415,
+          37.7344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DERNU"
+      },
+      geometry: {
+        coordinates: [
+          45.1147,
+          35.2972
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DERYA"
+      },
+      geometry: {
+        coordinates: [
+          30.8119,
+          36.4156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DESAV"
+      },
+      geometry: {
+        coordinates: [
+          29.8606,
+          40.7256
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DESEL"
+      },
+      geometry: {
+        coordinates: [
+          32.6592,
+          44.4358
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DESEM"
+      },
+      geometry: {
+        coordinates: [
+          30.0019,
+          38.1522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DESHE"
+      },
+      geometry: {
+        coordinates: [
+          35.5425,
+          32.8506
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DESPO"
+      },
+      geometry: {
+        coordinates: [
+          34.3817,
+          34.4483
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DETIR"
+      },
+      geometry: {
+        coordinates: [
+          47.3353,
+          44.5231
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DETOS"
+      },
+      geometry: {
+        coordinates: [
+          36.6711,
+          41.7583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DEVMU"
+      },
+      geometry: {
+        coordinates: [
+          32.4608,
+          41.8722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DF"
+      },
+      geometry: {
+        coordinates: [
+          44.5656,
+          41.9167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIBAT"
+      },
+      geometry: {
+        coordinates: [
+          37.2583,
+          44.5731
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIDIS"
+      },
+      geometry: {
+        coordinates: [
+          25.2428,
+          37.2028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIGAM"
+      },
+      geometry: {
+        coordinates: [
+          31.1117,
+          45.2583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIGBO"
+      },
+      geometry: {
+        coordinates: [
+          28.4044,
+          41.4936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIGIL"
+      },
+      geometry: {
+        coordinates: [
+          39.0772,
+          38.1953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIGTI"
+      },
+      geometry: {
+        coordinates: [
+          26.3214,
+          41.1253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIKER"
+      },
+      geometry: {
+        coordinates: [
+          25.8244,
+          44.5028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIKNI"
+      },
+      geometry: {
+        coordinates: [
+          23.2064,
+          40.8992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIKUL"
+      },
+      geometry: {
+        coordinates: [
+          44.6067,
+          43.2053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DILAS"
+      },
+      geometry: {
+        coordinates: [
+          25.8208,
+          44.5561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DILMO"
+      },
+      geometry: {
+        coordinates: [
+          23.1433,
+          36.1164
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DILOP"
+      },
+      geometry: {
+        coordinates: [
+          23.7164,
+          38.3333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DILVO"
+      },
+      geometry: {
+        coordinates: [
+          23.9369,
+          42.31
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIMOS"
+      },
+      geometry: {
+        coordinates: [
+          35.0544,
+          45.4783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIMPA"
+      },
+      geometry: {
+        coordinates: [
+          41.9433,
+          45.7969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DINAP"
+      },
+      geometry: {
+        coordinates: [
+          41.8319,
+          43.525
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DINEN"
+      },
+      geometry: {
+        coordinates: [
+          25.9922,
+          42.4997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DINRO"
+      },
+      geometry: {
+        coordinates: [
+          28.8083,
+          43.7
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIPAS"
+      },
+      geometry: {
+        coordinates: [
+          34.2394,
+          43.7208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIPOS"
+      },
+      geometry: {
+        coordinates: [
+          32.8033,
+          34.7567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIRAL"
+      },
+      geometry: {
+        coordinates: [
+          27.5542,
+          44.5108
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIRER"
+      },
+      geometry: {
+        coordinates: [
+          21.4097,
+          44.9883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIRMI"
+      },
+      geometry: {
+        coordinates: [
+          24.8497,
+          36.0561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIRUN"
+      },
+      geometry: {
+        coordinates: [
+          38.1719,
+          43.0864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DISKA"
+      },
+      geometry: {
+        coordinates: [
+          45.2928,
+          41.4639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DISOR"
+      },
+      geometry: {
+        coordinates: [
+          22.7583,
+          41.2472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DITAX"
+      },
+      geometry: {
+        coordinates: [
+          22.3372,
+          45.4689
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DIVDI"
+      },
+      geometry: {
+        coordinates: [
+          28.8883,
+          41.6064
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DKA"
+      },
+      geometry: {
+        coordinates: [
+          33.7417,
+          34.9969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DOKUB"
+      },
+      geometry: {
+        coordinates: [
+          29.8958,
+          38.8914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DOLAP"
+      },
+      geometry: {
+        coordinates: [
+          22.7683,
+          43.3742
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DOLOT"
+      },
+      geometry: {
+        coordinates: [
+          33.47,
+          43.7017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DOLUM"
+      },
+      geometry: {
+        coordinates: [
+          38.8617,
+          45.3781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DONDU"
+      },
+      geometry: {
+        coordinates: [
+          37.0581,
+          37.5864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DONIV"
+      },
+      geometry: {
+        coordinates: [
+          21.1694,
+          44.7489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DOPUS"
+      },
+      geometry: {
+        coordinates: [
+          28.3592,
+          35.2719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DOREN"
+      },
+      geometry: {
+        coordinates: [
+          33.2833,
+          35.9333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DORUK"
+      },
+      geometry: {
+        coordinates: [
+          42.1853,
+          39.2792
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DOTAM"
+      },
+      geometry: {
+        coordinates: [
+          23.4069,
+          42.3567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DRAMO"
+      },
+      geometry: {
+        coordinates: [
+          26.6111,
+          41.0344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DRZ"
+      },
+      geometry: {
+        coordinates: [
+          40.1694,
+          35.2925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DUGLA"
+      },
+      geometry: {
+        coordinates: [
+          27.2244,
+          39.4989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DULAV"
+      },
+      geometry: {
+        coordinates: [
+          45.6333,
+          38.95
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DUMM1"
+      },
+      geometry: {
+        coordinates: [
+          35.7242,
+          39.0672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DUMM2"
+      },
+      geometry: {
+        coordinates: [
+          35.7242,
+          39.0839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DUMM3"
+      },
+      geometry: {
+        coordinates: [
+          35.7242,
+          39.1006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DUNAV"
+      },
+      geometry: {
+        coordinates: [
+          28.4819,
+          45.1272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DVA"
+      },
+      geometry: {
+        coordinates: [
+          22.9689,
+          45.8281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DYB"
+      },
+      geometry: {
+        coordinates: [
+          40.2081,
+          37.8733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "DZF"
+      },
+      geometry: {
+        coordinates: [
+          48.3783,
+          32.4381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EBEDI"
+      },
+      geometry: {
+        coordinates: [
+          39.1236,
+          39.725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EBOKA"
+      },
+      geometry: {
+        coordinates: [
+          22.3481,
+          35.3875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDASA"
+      },
+      geometry: {
+        coordinates: [
+          30.1244,
+          39.46
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDASI"
+      },
+      geometry: {
+        coordinates: [
+          22.4275,
+          40.4575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDASU"
+      },
+      geometry: {
+        coordinates: [
+          42.7767,
+          40.6067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDATA"
+      },
+      geometry: {
+        coordinates: [
+          47.1833,
+          40.6069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDELU"
+      },
+      geometry: {
+        coordinates: [
+          47.5106,
+          40.8478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDETA"
+      },
+      geometry: {
+        coordinates: [
+          24.9311,
+          45.7689
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDIKA"
+      },
+      geometry: {
+        coordinates: [
+          22.8786,
+          42.2769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EDISI"
+      },
+      geometry: {
+        coordinates: [
+          30.1464,
+          36.8492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EGN"
+      },
+      geometry: {
+        coordinates: [
+          23.4264,
+          37.7661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKDAM"
+      },
+      geometry: {
+        coordinates: [
+          29.6172,
+          40.4347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKI"
+      },
+      geometry: {
+        coordinates: [
+          27.4261,
+          40.9511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKMEK"
+      },
+      geometry: {
+        coordinates: [
+          33.9433,
+          40.5036
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKMEL"
+      },
+      geometry: {
+        coordinates: [
+          30.1828,
+          40.3767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKMIM"
+      },
+      geometry: {
+        coordinates: [
+          30.4817,
+          38.2347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKMIN"
+      },
+      geometry: {
+        coordinates: [
+          40.8844,
+          38.2842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKNAB"
+      },
+      geometry: {
+        coordinates: [
+          22.5008,
+          45.7278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKNUD"
+      },
+      geometry: {
+        coordinates: [
+          30.8103,
+          38.1292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKPOS"
+      },
+      geometry: {
+        coordinates: [
+          43.3772,
+          40.6906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKSEN"
+      },
+      geometry: {
+        coordinates: [
+          30.6703,
+          37.8906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKSIB"
+      },
+      geometry: {
+        coordinates: [
+          27.4358,
+          40.0153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKSOL"
+      },
+      geometry: {
+        coordinates: [
+          26.9403,
+          43.1989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKSUK"
+      },
+      geometry: {
+        coordinates: [
+          34.3372,
+          41.4025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKTEL"
+      },
+      geometry: {
+        coordinates: [
+          38.9978,
+          37.8267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKTES"
+      },
+      geometry: {
+        coordinates: [
+          40.2044,
+          40.9853
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKTOD"
+      },
+      geometry: {
+        coordinates: [
+          37.7067,
+          40.5919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EKTOS"
+      },
+      geometry: {
+        coordinates: [
+          23.2919,
+          37.1236
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELDEN"
+      },
+      geometry: {
+        coordinates: [
+          35.4292,
+          39.9097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELDET"
+      },
+      geometry: {
+        coordinates: [
+          23.7558,
+          44.2861
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELF"
+      },
+      geometry: {
+        coordinates: [
+          23.5286,
+          38.0575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELGEX"
+      },
+      geometry: {
+        coordinates: [
+          38.1128,
+          37.1806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELGOV"
+      },
+      geometry: {
+        coordinates: [
+          28.0175,
+          40.5944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELIKA"
+      },
+      geometry: {
+        coordinates: [
+          34.5833,
+          33.8319
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELMAS"
+      },
+      geometry: {
+        coordinates: [
+          30.7083,
+          37.5833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELMUV"
+      },
+      geometry: {
+        coordinates: [
+          29.7111,
+          40.7708
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELNEM"
+      },
+      geometry: {
+        coordinates: [
+          38.1981,
+          39.7567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELNUG"
+      },
+      geometry: {
+        coordinates: [
+          28.71,
+          41.1264
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELPIS"
+      },
+      geometry: {
+        coordinates: [
+          22.6031,
+          40.3261
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELROP"
+      },
+      geometry: {
+        coordinates: [
+          32.6533,
+          36.5061
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELRUR"
+      },
+      geometry: {
+        coordinates: [
+          27.1936,
+          43.3964
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELSIV"
+      },
+      geometry: {
+        coordinates: [
+          45.3706,
+          40.6311
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELTOX"
+      },
+      geometry: {
+        coordinates: [
+          43.3694,
+          40.0997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELVAB"
+      },
+      geometry: {
+        coordinates: [
+          25.0908,
+          44.1644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELVAS"
+      },
+      geometry: {
+        coordinates: [
+          21.8419,
+          38.5247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ELVON"
+      },
+      geometry: {
+        coordinates: [
+          29.4389,
+          40.1931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMBAG"
+      },
+      geometry: {
+        coordinates: [
+          42.2086,
+          38.1267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMBIX"
+      },
+      geometry: {
+        coordinates: [
+          30.0181,
+          39.9619
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMEDA"
+      },
+      geometry: {
+        coordinates: [
+          33.8033,
+          34.4817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMGER"
+      },
+      geometry: {
+        coordinates: [
+          39.7717,
+          43.9464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMGIM"
+      },
+      geometry: {
+        coordinates: [
+          29.5422,
+          39.9094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMIDO"
+      },
+      geometry: {
+        coordinates: [
+          42.915,
+          36.77
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMILI"
+      },
+      geometry: {
+        coordinates: [
+          34.0444,
+          34.6389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMKUD"
+      },
+      geometry: {
+        coordinates: [
+          30.2775,
+          38.6053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMLAD"
+      },
+      geometry: {
+        coordinates: [
+          37.6181,
+          41.1869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EMLUX"
+      },
+      geometry: {
+        coordinates: [
+          37.7042,
+          36.8994
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ENEDA"
+      },
+      geometry: {
+        coordinates: [
+          46.455,
+          35.8697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ENESU"
+      },
+      geometry: {
+        coordinates: [
+          27.3306,
+          41.4753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ENFOR"
+      },
+      geometry: {
+        coordinates: [
+          36.2747,
+          39.8739
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ENIMA"
+      },
+      geometry: {
+        coordinates: [
+          24.9025,
+          45.0794
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EPALO"
+      },
+      geometry: {
+        coordinates: [
+          25.0103,
+          35.7156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EPEKI"
+      },
+      geometry: {
+        coordinates: [
+          30.2206,
+          40.9139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERANA"
+      },
+      geometry: {
+        coordinates: [
+          22.2394,
+          41.1633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERCIS"
+      },
+      geometry: {
+        coordinates: [
+          34.9436,
+          38.2703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERDOM"
+      },
+      geometry: {
+        coordinates: [
+          23.2892,
+          43.5175
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERESO"
+      },
+      geometry: {
+        coordinates: [
+          25.9436,
+          39.2919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERGAN"
+      },
+      geometry: {
+        coordinates: [
+          39.0272,
+          38.515
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERGEP"
+      },
+      geometry: {
+        coordinates: [
+          33.9625,
+          37.4439
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERGIN"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          37.23
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERGUN"
+      },
+      geometry: {
+        coordinates: [
+          34.7389,
+          40.7464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERH"
+      },
+      geometry: {
+        coordinates: [
+          38.1119,
+          38.4625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERHAN"
+      },
+      geometry: {
+        coordinates: [
+          35.2289,
+          38.5239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERIDU"
+      },
+      geometry: {
+        coordinates: [
+          39.1697,
+          41.2153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERIMA"
+      },
+      geometry: {
+        coordinates: [
+          26.1344,
+          37.7481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERIMO"
+      },
+      geometry: {
+        coordinates: [
+          32.9217,
+          33.125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERKAL"
+      },
+      geometry: {
+        coordinates: [
+          29.9797,
+          40.9867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERKOS"
+      },
+      geometry: {
+        coordinates: [
+          37.8839,
+          41.1644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERKUK"
+      },
+      geometry: {
+        coordinates: [
+          32.9431,
+          39.2153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERLEB"
+      },
+      geometry: {
+        coordinates: [
+          28.5547,
+          41.1211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERLEV"
+      },
+      geometry: {
+        coordinates: [
+          49.2419,
+          40.7303
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERMEM"
+      },
+      geometry: {
+        coordinates: [
+          36.9197,
+          37.8114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERMOD"
+      },
+      geometry: {
+        coordinates: [
+          35.28,
+          39.2233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERMUP"
+      },
+      geometry: {
+        coordinates: [
+          31.0228,
+          42.0006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERN"
+      },
+      geometry: {
+        coordinates: [
+          39.5292,
+          39.7083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERPIM"
+      },
+      geometry: {
+        coordinates: [
+          42.7089,
+          38.1069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERSEN"
+      },
+      geometry: {
+        coordinates: [
+          30.6661,
+          40.8656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERTAS"
+      },
+      geometry: {
+        coordinates: [
+          29.1467,
+          41.4614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERTEK"
+      },
+      geometry: {
+        coordinates: [
+          39.2994,
+          38.9564
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERVAG"
+      },
+      geometry: {
+        coordinates: [
+          30.1828,
+          39.0653
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERVAK"
+      },
+      geometry: {
+        coordinates: [
+          36.7269,
+          40.5119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERZ"
+      },
+      geometry: {
+        coordinates: [
+          41.2069,
+          39.9567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERZXA"
+      },
+      geometry: {
+        coordinates: [
+          41.1925,
+          39.9578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ERZXD"
+      },
+      geometry: {
+        coordinates: [
+          41.1478,
+          39.9567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESALO"
+      },
+      geometry: {
+        coordinates: [
+          30.4586,
+          45.7747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESB"
+      },
+      geometry: {
+        coordinates: [
+          33.0125,
+          40.1467
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESENA"
+      },
+      geometry: {
+        coordinates: [
+          26.8725,
+          43.0269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESENK"
+      },
+      geometry: {
+        coordinates: [
+          42.9381,
+          38.7447
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESEPO"
+      },
+      geometry: {
+        coordinates: [
+          39.5583,
+          39.8519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESERI"
+      },
+      geometry: {
+        coordinates: [
+          32.3856,
+          34.4819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESIRI"
+      },
+      geometry: {
+        coordinates: [
+          21.4628,
+          44.3244
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESKIN"
+      },
+      geometry: {
+        coordinates: [
+          28.3981,
+          39.05
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESOPO"
+      },
+      geometry: {
+        coordinates: [
+          24.5022,
+          39.3394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESOSU"
+      },
+      geometry: {
+        coordinates: [
+          33.5381,
+          41.6072
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESOTA"
+      },
+      geometry: {
+        coordinates: [
+          41.7725,
+          37.77
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESR"
+      },
+      geometry: {
+        coordinates: [
+          30.5122,
+          39.8131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESRXA"
+      },
+      geometry: {
+        coordinates: [
+          30.5997,
+          39.7842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ESRXD"
+      },
+      geometry: {
+        coordinates: [
+          30.5639,
+          39.7839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETAMP"
+      },
+      geometry: {
+        coordinates: [
+          29.7289,
+          39.5797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETAVA"
+      },
+      geometry: {
+        coordinates: [
+          29.1047,
+          45.7
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETEKA"
+      },
+      geometry: {
+        coordinates: [
+          24.0064,
+          39.1578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETERU"
+      },
+      geometry: {
+        coordinates: [
+          27.06,
+          36.4681
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETESU"
+      },
+      geometry: {
+        coordinates: [
+          39.3544,
+          39.1381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETIDA"
+      },
+      geometry: {
+        coordinates: [
+          22.4178,
+          43.6858
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETILI"
+      },
+      geometry: {
+        coordinates: [
+          23.0419,
+          35.8317
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETISI"
+      },
+      geometry: {
+        coordinates: [
+          43.2956,
+          40.2003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETNIL"
+      },
+      geometry: {
+        coordinates: [
+          31.3967,
+          45.7814
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETRIL"
+      },
+      geometry: {
+        coordinates: [
+          23.8931,
+          42.7506
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETRUD"
+      },
+      geometry: {
+        coordinates: [
+          24.8111,
+          39.1078
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETUBA"
+      },
+      geometry: {
+        coordinates: [
+          26.5961,
+          42.8144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETUNO"
+      },
+      geometry: {
+        coordinates: [
+          34.0678,
+          44.2042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETVER"
+      },
+      geometry: {
+        coordinates: [
+          34.2272,
+          38.6158
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ETVOL"
+      },
+      geometry: {
+        coordinates: [
+          49.0486,
+          40.3092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVBIR"
+      },
+      geometry: {
+        coordinates: [
+          28.4931,
+          40.9975
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVBOL"
+      },
+      geometry: {
+        coordinates: [
+          29.6383,
+          37.1711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVENO"
+      },
+      geometry: {
+        coordinates: [
+          30,
+          35.8333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVGEG"
+      },
+      geometry: {
+        coordinates: [
+          31.1075,
+          42.4572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVIKA"
+      },
+      geometry: {
+        coordinates: [
+          27.5139,
+          45.6125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVIVI"
+      },
+      geometry: {
+        coordinates: [
+          23.4556,
+          41.4028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVKAM"
+      },
+      geometry: {
+        coordinates: [
+          35.4131,
+          42.1514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVKIT"
+      },
+      geometry: {
+        coordinates: [
+          33.7544,
+          36.2611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVKOR"
+      },
+      geometry: {
+        coordinates: [
+          32,
+          36.4289
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVLAP"
+      },
+      geometry: {
+        coordinates: [
+          31.5858,
+          41.5375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVLIB"
+      },
+      geometry: {
+        coordinates: [
+          21.7728,
+          35.0328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVLIG"
+      },
+      geometry: {
+        coordinates: [
+          31.4831,
+          40.4661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVNOT"
+      },
+      geometry: {
+        coordinates: [
+          29.9706,
+          40.7844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVORA"
+      },
+      geometry: {
+        coordinates: [
+          30.95,
+          33.4
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVPIM"
+      },
+      geometry: {
+        coordinates: [
+          32.3664,
+          41.895
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVPUV"
+      },
+      geometry: {
+        coordinates: [
+          32.7594,
+          41.8003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVSAS"
+      },
+      geometry: {
+        coordinates: [
+          40.1886,
+          39.3247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVSEP"
+      },
+      geometry: {
+        coordinates: [
+          26.1881,
+          40.1567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVTAD"
+      },
+      geometry: {
+        coordinates: [
+          29.6567,
+          41.2478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EVUNU"
+      },
+      geometry: {
+        coordinates: [
+          28.7514,
+          35.9492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EXELA"
+      },
+      geometry: {
+        coordinates: [
+          29.5478,
+          35.9556
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EXIGA"
+      },
+      geometry: {
+        coordinates: [
+          26.8869,
+          43.4758
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EZN"
+      },
+      geometry: {
+        coordinates: [
+          38.8869,
+          39.9369
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "EZS"
+      },
+      geometry: {
+        coordinates: [
+          39.2239,
+          38.7081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FATIH"
+      },
+      geometry: {
+        coordinates: [
+          28.7994,
+          41.2281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FENER"
+      },
+      geometry: {
+        coordinates: [
+          28.3578,
+          41.2864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FILIZ"
+      },
+      geometry: {
+        coordinates: [
+          39.4703,
+          38.8664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FIRAS"
+      },
+      geometry: {
+        coordinates: [
+          37.92,
+          33.8719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FIRAT"
+      },
+      geometry: {
+        coordinates: [
+          37.6542,
+          37.1389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ050"
+      },
+      geometry: {
+        coordinates: [
+          29.4242,
+          40.9408
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ060"
+      },
+      geometry: {
+        coordinates: [
+          29.4817,
+          40.8508
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ075"
+      },
+      geometry: {
+        coordinates: [
+          29.5658,
+          40.9986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ421"
+      },
+      geometry: {
+        coordinates: [
+          28.5589,
+          41.4989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ422"
+      },
+      geometry: {
+        coordinates: [
+          28.3439,
+          41.2383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ439"
+      },
+      geometry: {
+        coordinates: [
+          29.2825,
+          41.1358
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ521"
+      },
+      geometry: {
+        coordinates: [
+          27.5142,
+          41.2344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ522"
+      },
+      geometry: {
+        coordinates: [
+          27.8936,
+          41.1244
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ523"
+      },
+      geometry: {
+        coordinates: [
+          28.1811,
+          41.0397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ541"
+      },
+      geometry: {
+        coordinates: [
+          27.5031,
+          41.0408
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ621"
+      },
+      geometry: {
+        coordinates: [
+          27.7103,
+          40.4617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ622"
+      },
+      geometry: {
+        coordinates: [
+          27.82,
+          40.6797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ623"
+      },
+      geometry: {
+        coordinates: [
+          27.9733,
+          40.6794
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ624"
+      },
+      geometry: {
+        coordinates: [
+          28.3186,
+          40.6786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ625"
+      },
+      geometry: {
+        coordinates: [
+          28.5194,
+          40.7108
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ630"
+      },
+      geometry: {
+        coordinates: [
+          28.6422,
+          40.6714
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ631"
+      },
+      geometry: {
+        coordinates: [
+          28.6967,
+          40.5931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ632"
+      },
+      geometry: {
+        coordinates: [
+          28.7786,
+          40.53
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ633"
+      },
+      geometry: {
+        coordinates: [
+          28.8808,
+          40.4878
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ634"
+      },
+      geometry: {
+        coordinates: [
+          28.995,
+          40.4703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ635"
+      },
+      geometry: {
+        coordinates: [
+          29.1106,
+          40.4792
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ636"
+      },
+      geometry: {
+        coordinates: [
+          29.0789,
+          40.5761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ637"
+      },
+      geometry: {
+        coordinates: [
+          29.0469,
+          40.6731
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ719"
+      },
+      geometry: {
+        coordinates: [
+          29.7544,
+          41.1239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ720"
+      },
+      geometry: {
+        coordinates: [
+          29.5106,
+          40.9483
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ721"
+      },
+      geometry: {
+        coordinates: [
+          29.5119,
+          40.7458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ722"
+      },
+      geometry: {
+        coordinates: [
+          29.465,
+          40.5625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ723"
+      },
+      geometry: {
+        coordinates: [
+          29.465,
+          40.4875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ724"
+      },
+      geometry: {
+        coordinates: [
+          29.4122,
+          40.4053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ725"
+      },
+      geometry: {
+        coordinates: [
+          29.2158,
+          40.4031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ730"
+      },
+      geometry: {
+        coordinates: [
+          29.1211,
+          40.4467
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ731"
+      },
+      geometry: {
+        coordinates: [
+          28.9928,
+          40.4372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ732"
+      },
+      geometry: {
+        coordinates: [
+          28.8661,
+          40.4564
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ733"
+      },
+      geometry: {
+        coordinates: [
+          28.7525,
+          40.5033
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ734"
+      },
+      geometry: {
+        coordinates: [
+          28.6614,
+          40.5733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ735"
+      },
+      geometry: {
+        coordinates: [
+          28.6008,
+          40.6606
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ736"
+      },
+      geometry: {
+        coordinates: [
+          28.7664,
+          40.7044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ737"
+      },
+      geometry: {
+        coordinates: [
+          28.8906,
+          40.7375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ821"
+      },
+      geometry: {
+        coordinates: [
+          30.4433,
+          40.3492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ822"
+      },
+      geometry: {
+        coordinates: [
+          29.7875,
+          40.2547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ823"
+      },
+      geometry: {
+        coordinates: [
+          29.5483,
+          40.2644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ922"
+      },
+      geometry: {
+        coordinates: [
+          29.4764,
+          40.0897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ971"
+      },
+      geometry: {
+        coordinates: [
+          29.4711,
+          40.2019
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FJ972"
+      },
+      geometry: {
+        coordinates: [
+          29.3344,
+          40.3528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FLR"
+      },
+      geometry: {
+        coordinates: [
+          25.7081,
+          44.5008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM010"
+      },
+      geometry: {
+        coordinates: [
+          28.6753,
+          41.3817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM015"
+      },
+      geometry: {
+        coordinates: [
+          28.6383,
+          41.4797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM020"
+      },
+      geometry: {
+        coordinates: [
+          28.55,
+          41.3803
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM021"
+      },
+      geometry: {
+        coordinates: [
+          28.5528,
+          41.2492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM022"
+      },
+      geometry: {
+        coordinates: [
+          28.5883,
+          41.0664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM030"
+      },
+      geometry: {
+        coordinates: [
+          28.7253,
+          41.3822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM035"
+      },
+      geometry: {
+        coordinates: [
+          28.7264,
+          41.4656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM036"
+      },
+      geometry: {
+        coordinates: [
+          28.7969,
+          41.6144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM037"
+      },
+      geometry: {
+        coordinates: [
+          28.9314,
+          41.7336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM038"
+      },
+      geometry: {
+        coordinates: [
+          29.4464,
+          41.9289
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM039"
+      },
+      geometry: {
+        coordinates: [
+          29.7717,
+          41.9889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM040"
+      },
+      geometry: {
+        coordinates: [
+          28.8803,
+          41.3839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM041"
+      },
+      geometry: {
+        coordinates: [
+          28.9183,
+          41.2583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM042"
+      },
+      geometry: {
+        coordinates: [
+          28.8286,
+          41.0475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM043"
+      },
+      geometry: {
+        coordinates: [
+          28.9089,
+          40.8747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM090"
+      },
+      geometry: {
+        coordinates: [
+          28.6019,
+          41.5753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM091"
+      },
+      geometry: {
+        coordinates: [
+          28.2461,
+          41.8172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM095"
+      },
+      geometry: {
+        coordinates: [
+          28.7278,
+          41.6022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM096"
+      },
+      geometry: {
+        coordinates: [
+          28.5342,
+          41.7119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM375"
+      },
+      geometry: {
+        coordinates: [
+          28.2714,
+          41.1478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM385"
+      },
+      geometry: {
+        coordinates: [
+          28.3819,
+          41.1492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM395"
+      },
+      geometry: {
+        coordinates: [
+          28.7128,
+          41.1531
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM401"
+      },
+      geometry: {
+        coordinates: [
+          30.1611,
+          41.6939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM402"
+      },
+      geometry: {
+        coordinates: [
+          30.0058,
+          41.7017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM403"
+      },
+      geometry: {
+        coordinates: [
+          29.8558,
+          41.7767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM404"
+      },
+      geometry: {
+        coordinates: [
+          29.7053,
+          41.8514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM405"
+      },
+      geometry: {
+        coordinates: [
+          29.5942,
+          41.7258
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM406"
+      },
+      geometry: {
+        coordinates: [
+          29.4836,
+          41.6
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM407"
+      },
+      geometry: {
+        coordinates: [
+          29.2558,
+          41.5342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM408"
+      },
+      geometry: {
+        coordinates: [
+          29.1725,
+          41.4561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM410"
+      },
+      geometry: {
+        coordinates: [
+          29.1725,
+          41.3394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM411"
+      },
+      geometry: {
+        coordinates: [
+          29.3064,
+          41.2606
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM412"
+      },
+      geometry: {
+        coordinates: [
+          29.4036,
+          41.1553
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM413"
+      },
+      geometry: {
+        coordinates: [
+          29.4556,
+          41.0333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM414"
+      },
+      geometry: {
+        coordinates: [
+          29.4583,
+          40.9053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM415"
+      },
+      geometry: {
+        coordinates: [
+          29.2839,
+          40.9228
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM416"
+      },
+      geometry: {
+        coordinates: [
+          29.1531,
+          40.9358
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM417"
+      },
+      geometry: {
+        coordinates: [
+          29.0222,
+          40.9489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM451"
+      },
+      geometry: {
+        coordinates: [
+          30.4667,
+          41.7194
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM452"
+      },
+      geometry: {
+        coordinates: [
+          30.295,
+          41.7542
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM453"
+      },
+      geometry: {
+        coordinates: [
+          30.2075,
+          41.8742
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM454"
+      },
+      geometry: {
+        coordinates: [
+          30.12,
+          41.9889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM455"
+      },
+      geometry: {
+        coordinates: [
+          29.9439,
+          41.9153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM456"
+      },
+      geometry: {
+        coordinates: [
+          29.7683,
+          41.8414
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM457"
+      },
+      geometry: {
+        coordinates: [
+          29.7278,
+          41.8469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM458"
+      },
+      geometry: {
+        coordinates: [
+          29.4603,
+          41.7989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM460"
+      },
+      geometry: {
+        coordinates: [
+          29.4597,
+          41.6708
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM461"
+      },
+      geometry: {
+        coordinates: [
+          29.4594,
+          41.5428
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM462"
+      },
+      geometry: {
+        coordinates: [
+          29.4092,
+          41.4203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM463"
+      },
+      geometry: {
+        coordinates: [
+          29.3139,
+          41.3142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM464"
+      },
+      geometry: {
+        coordinates: [
+          29.1819,
+          41.2333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM465"
+      },
+      geometry: {
+        coordinates: [
+          29.0919,
+          41.3483
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM466"
+      },
+      geometry: {
+        coordinates: [
+          29.0242,
+          41.4344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM467"
+      },
+      geometry: {
+        coordinates: [
+          28.9564,
+          41.5206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM501"
+      },
+      geometry: {
+        coordinates: [
+          30.4542,
+          40.8864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM503"
+      },
+      geometry: {
+        coordinates: [
+          30.1119,
+          41.1161
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM505"
+      },
+      geometry: {
+        coordinates: [
+          29.8242,
+          40.8683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM507"
+      },
+      geometry: {
+        coordinates: [
+          29.5828,
+          40.8725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM510"
+      },
+      geometry: {
+        coordinates: [
+          29.4122,
+          40.9097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM511"
+      },
+      geometry: {
+        coordinates: [
+          29.4122,
+          41.0281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM512"
+      },
+      geometry: {
+        coordinates: [
+          29.3642,
+          41.1406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM513"
+      },
+      geometry: {
+        coordinates: [
+          29.2744,
+          41.2375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM514"
+      },
+      geometry: {
+        coordinates: [
+          29.1506,
+          41.3103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM515"
+      },
+      geometry: {
+        coordinates: [
+          29.0856,
+          41.2231
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM516"
+      },
+      geometry: {
+        coordinates: [
+          29.0208,
+          41.1361
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM517"
+      },
+      geometry: {
+        coordinates: [
+          28.9558,
+          41.0486
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM551"
+      },
+      geometry: {
+        coordinates: [
+          30.4308,
+          40.9008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM552"
+      },
+      geometry: {
+        coordinates: [
+          30.0103,
+          40.9264
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM553"
+      },
+      geometry: {
+        coordinates: [
+          29.7608,
+          40.8211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM554"
+      },
+      geometry: {
+        coordinates: [
+          29.5203,
+          40.9392
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM555"
+      },
+      geometry: {
+        coordinates: [
+          29.3517,
+          40.8911
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM556"
+      },
+      geometry: {
+        coordinates: [
+          29.0603,
+          40.9661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM557"
+      },
+      geometry: {
+        coordinates: [
+          29.1306,
+          41.1239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM560"
+      },
+      geometry: {
+        coordinates: [
+          29.1594,
+          41.2622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM561"
+      },
+      geometry: {
+        coordinates: [
+          29.2811,
+          41.3367
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM562"
+      },
+      geometry: {
+        coordinates: [
+          29.3692,
+          41.4347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM563"
+      },
+      geometry: {
+        coordinates: [
+          29.4156,
+          41.5478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM564"
+      },
+      geometry: {
+        coordinates: [
+          29.4158,
+          41.6661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM565"
+      },
+      geometry: {
+        coordinates: [
+          29.2839,
+          41.6514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM566"
+      },
+      geometry: {
+        coordinates: [
+          29.1519,
+          41.6367
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM567"
+      },
+      geometry: {
+        coordinates: [
+          29.02,
+          41.6217
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM602"
+      },
+      geometry: {
+        coordinates: [
+          29.8692,
+          40.4122
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM603"
+      },
+      geometry: {
+        coordinates: [
+          29.9692,
+          40.5214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM604"
+      },
+      geometry: {
+        coordinates: [
+          29.9692,
+          40.6747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM650"
+      },
+      geometry: {
+        coordinates: [
+          29.8028,
+          40.2311
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM651"
+      },
+      geometry: {
+        coordinates: [
+          29.7739,
+          40.3653
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM652"
+      },
+      geometry: {
+        coordinates: [
+          29.8942,
+          40.4956
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM701"
+      },
+      geometry: {
+        coordinates: [
+          27.0678,
+          41.1181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM702"
+      },
+      geometry: {
+        coordinates: [
+          27.2383,
+          41.1961
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM704"
+      },
+      geometry: {
+        coordinates: [
+          27.4233,
+          40.9633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM705"
+      },
+      geometry: {
+        coordinates: [
+          27.6489,
+          40.8964
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM706"
+      },
+      geometry: {
+        coordinates: [
+          27.8028,
+          40.8933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM710"
+      },
+      geometry: {
+        coordinates: [
+          27.9319,
+          40.9131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM711"
+      },
+      geometry: {
+        coordinates: [
+          27.9233,
+          41.0411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM712"
+      },
+      geometry: {
+        coordinates: [
+          27.965,
+          41.1656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM713"
+      },
+      geometry: {
+        coordinates: [
+          28.0528,
+          41.2753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM714"
+      },
+      geometry: {
+        coordinates: [
+          28.1797,
+          41.3606
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM715"
+      },
+      geometry: {
+        coordinates: [
+          28.2767,
+          41.2489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM716"
+      },
+      geometry: {
+        coordinates: [
+          28.3492,
+          41.165
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM717"
+      },
+      geometry: {
+        coordinates: [
+          28.4211,
+          41.0811
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM751"
+      },
+      geometry: {
+        coordinates: [
+          27.1167,
+          41.0581
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM752"
+      },
+      geometry: {
+        coordinates: [
+          27.2408,
+          41.1756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM753"
+      },
+      geometry: {
+        coordinates: [
+          27.3653,
+          41.2933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM754"
+      },
+      geometry: {
+        coordinates: [
+          27.505,
+          41.2086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM755"
+      },
+      geometry: {
+        coordinates: [
+          27.6444,
+          41.1239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM756"
+      },
+      geometry: {
+        coordinates: [
+          27.7936,
+          41.0936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM757"
+      },
+      geometry: {
+        coordinates: [
+          27.9258,
+          41.0922
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM758"
+      },
+      geometry: {
+        coordinates: [
+          28.0989,
+          41.1183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM801"
+      },
+      geometry: {
+        coordinates: [
+          27.1194,
+          41.8108
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM802"
+      },
+      geometry: {
+        coordinates: [
+          27.3661,
+          41.6822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM804"
+      },
+      geometry: {
+        coordinates: [
+          27.5133,
+          41.4
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM807"
+      },
+      geometry: {
+        coordinates: [
+          28.0369,
+          41.5561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM808"
+      },
+      geometry: {
+        coordinates: [
+          28.2075,
+          41.4494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM810"
+      },
+      geometry: {
+        coordinates: [
+          28.2039,
+          41.3328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM811"
+      },
+      geometry: {
+        coordinates: [
+          28.0869,
+          41.2539
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM812"
+      },
+      geometry: {
+        coordinates: [
+          28.0056,
+          41.1528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM813"
+      },
+      geometry: {
+        coordinates: [
+          27.9672,
+          41.0381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM814"
+      },
+      geometry: {
+        coordinates: [
+          27.975,
+          40.9197
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM815"
+      },
+      geometry: {
+        coordinates: [
+          28.1044,
+          40.9392
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM816"
+      },
+      geometry: {
+        coordinates: [
+          28.2339,
+          40.9589
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM817"
+      },
+      geometry: {
+        coordinates: [
+          28.3636,
+          40.9781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM852"
+      },
+      geometry: {
+        coordinates: [
+          27.2286,
+          41.6925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM853"
+      },
+      geometry: {
+        coordinates: [
+          27.3378,
+          41.5742
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM854"
+      },
+      geometry: {
+        coordinates: [
+          27.5036,
+          41.66
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM855"
+      },
+      geometry: {
+        coordinates: [
+          27.67,
+          41.7453
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM856"
+      },
+      geometry: {
+        coordinates: [
+          27.7931,
+          41.7942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM857"
+      },
+      geometry: {
+        coordinates: [
+          27.9656,
+          41.7603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM860"
+      },
+      geometry: {
+        coordinates: [
+          27.6261,
+          41.6419
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM861"
+      },
+      geometry: {
+        coordinates: [
+          27.9536,
+          41.5236
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM862"
+      },
+      geometry: {
+        coordinates: [
+          27.9939,
+          41.4092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM863"
+      },
+      geometry: {
+        coordinates: [
+          28.0767,
+          41.3086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM864"
+      },
+      geometry: {
+        coordinates: [
+          28.1944,
+          41.2306
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM865"
+      },
+      geometry: {
+        coordinates: [
+          28.2664,
+          41.3147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM866"
+      },
+      geometry: {
+        coordinates: [
+          28.3386,
+          41.3986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM867"
+      },
+      geometry: {
+        coordinates: [
+          28.4108,
+          41.4828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM917"
+      },
+      geometry: {
+        coordinates: [
+          28.9261,
+          41.6483
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM955"
+      },
+      geometry: {
+        coordinates: [
+          28.51,
+          41.9183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FM956"
+      },
+      geometry: {
+        coordinates: [
+          28.205,
+          41.8906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FOCSA"
+      },
+      geometry: {
+        coordinates: [
+          26.6897,
+          45.9947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "FSK"
+      },
+      geometry: {
+        coordinates: [
+          22.9914,
+          41.0986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAKSU"
+      },
+      geometry: {
+        coordinates: [
+          33.8142,
+          42.1892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GALIM"
+      },
+      geometry: {
+        coordinates: [
+          34.9667,
+          32.8333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GALMI"
+      },
+      geometry: {
+        coordinates: [
+          30.0256,
+          44.1333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAMAN"
+      },
+      geometry: {
+        coordinates: [
+          36.5917,
+          45
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAP"
+      },
+      geometry: {
+        coordinates: [
+          38.9047,
+          37.4581
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAPDI"
+      },
+      geometry: {
+        coordinates: [
+          28.7322,
+          41.0283
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAPVO"
+      },
+      geometry: {
+        coordinates: [
+          24.1456,
+          42.6817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAPXA"
+      },
+      geometry: {
+        coordinates: [
+          38.8833,
+          37.4344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAPXD"
+      },
+      geometry: {
+        coordinates: [
+          38.9133,
+          37.4614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GASNI"
+      },
+      geometry: {
+        coordinates: [
+          45.7,
+          43.3886
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GASRU"
+      },
+      geometry: {
+        coordinates: [
+          26.0994,
+          42.2511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAYEM"
+      },
+      geometry: {
+        coordinates: [
+          29.63,
+          41.0458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAZ"
+      },
+      geometry: {
+        coordinates: [
+          37.4728,
+          36.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAZXA"
+      },
+      geometry: {
+        coordinates: [
+          37.4944,
+          36.9444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GAZXD"
+      },
+      geometry: {
+        coordinates: [
+          37.4633,
+          36.9511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GDR"
+      },
+      geometry: {
+        coordinates: [
+          43.8861,
+          39.9725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GEGSA"
+      },
+      geometry: {
+        coordinates: [
+          43.4014,
+          43.4953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GELBU"
+      },
+      geometry: {
+        coordinates: [
+          27.1408,
+          40.9353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GELIN"
+      },
+      geometry: {
+        coordinates: [
+          40.7858,
+          39.6981
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GELKI"
+      },
+      geometry: {
+        coordinates: [
+          31.6808,
+          36.5786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GELSU"
+      },
+      geometry: {
+        coordinates: [
+          40.5569,
+          39.5583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GEM"
+      },
+      geometry: {
+        coordinates: [
+          36.0286,
+          39.1542
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GENDO"
+      },
+      geometry: {
+        coordinates: [
+          24.7947,
+          36.9214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GENOS"
+      },
+      geometry: {
+        coordinates: [
+          31.9011,
+          34.6789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GEPAP"
+      },
+      geometry: {
+        coordinates: [
+          42.4808,
+          33.8183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GERGI"
+      },
+      geometry: {
+        coordinates: [
+          25.5219,
+          42.1833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GERMI"
+      },
+      geometry: {
+        coordinates: [
+          23.1244,
+          38.1656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GERZE"
+      },
+      geometry: {
+        coordinates: [
+          35.1661,
+          41.8322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GESAD"
+      },
+      geometry: {
+        coordinates: [
+          28.335,
+          32.9447
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GESBA"
+      },
+      geometry: {
+        coordinates: [
+          21.79,
+          45.9228
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GETKO"
+      },
+      geometry: {
+        coordinates: [
+          40.5383,
+          40.4547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIBUX"
+      },
+      geometry: {
+        coordinates: [
+          41.1833,
+          33.0833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIDRO"
+      },
+      geometry: {
+        coordinates: [
+          28.7342,
+          45.8219
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIKAS"
+      },
+      geometry: {
+        coordinates: [
+          24.6669,
+          39.4997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIKUN"
+      },
+      geometry: {
+        coordinates: [
+          23.6364,
+          44.6703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GILAB"
+      },
+      geometry: {
+        coordinates: [
+          49.26,
+          40.1883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GILOS"
+      },
+      geometry: {
+        coordinates: [
+          26.9003,
+          36.4875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIMUR"
+      },
+      geometry: {
+        coordinates: [
+          44.1322,
+          42.0167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GINAM"
+      },
+      geometry: {
+        coordinates: [
+          21.3764,
+          43.3086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GINLI"
+      },
+      geometry: {
+        coordinates: [
+          28.7744,
+          41.8711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIPAR"
+      },
+      geometry: {
+        coordinates: [
+          47.5867,
+          41.2183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIPAS"
+      },
+      geometry: {
+        coordinates: [
+          31.8111,
+          33.6933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIPDA"
+      },
+      geometry: {
+        coordinates: [
+          32.2047,
+          42.2469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIRET"
+      },
+      geometry: {
+        coordinates: [
+          39.4853,
+          43.7231
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIRNO"
+      },
+      geometry: {
+        coordinates: [
+          33.2544,
+          41.0172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GISOS"
+      },
+      geometry: {
+        coordinates: [
+          29.0058,
+          35.0047
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GITGI"
+      },
+      geometry: {
+        coordinates: [
+          28.5914,
+          40.9919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GITMU"
+      },
+      geometry: {
+        coordinates: [
+          21.3144,
+          45.8969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GITVO"
+      },
+      geometry: {
+        coordinates: [
+          28.6083,
+          41.67
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIVEV"
+      },
+      geometry: {
+        coordinates: [
+          32.2839,
+          42.0778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIVIS"
+      },
+      geometry: {
+        coordinates: [
+          25.405,
+          36.1231
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GIVMO"
+      },
+      geometry: {
+        coordinates: [
+          49.4647,
+          40.57
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GKA"
+      },
+      geometry: {
+        coordinates: [
+          25.9236,
+          40.1797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GLT"
+      },
+      geometry: {
+        coordinates: [
+          27.9278,
+          45.4164
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GND"
+      },
+      geometry: {
+        coordinates: [
+          46.2956,
+          40.7536
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GNV"
+      },
+      geometry: {
+        coordinates: [
+          38.0122,
+          44.5725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOBIT"
+      },
+      geometry: {
+        coordinates: [
+          33.8869,
+          39.7761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GODEK"
+      },
+      geometry: {
+        coordinates: [
+          22.9894,
+          43.1267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GODNA"
+      },
+      geometry: {
+        coordinates: [
+          46.9158,
+          38.3425
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOGAR"
+      },
+      geometry: {
+        coordinates: [
+          23.9211,
+          43.3889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOGOL"
+      },
+      geometry: {
+        coordinates: [
+          44.9992,
+          40.1319
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOKIN"
+      },
+      geometry: {
+        coordinates: [
+          39.2967,
+          43.1483
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOKPA"
+      },
+      geometry: {
+        coordinates: [
+          34.5947,
+          41.7461
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOKSU"
+      },
+      geometry: {
+        coordinates: [
+          41.8797,
+          39.4928
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOL"
+      },
+      geometry: {
+        coordinates: [
+          24.2206,
+          43.095
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOLDO"
+      },
+      geometry: {
+        coordinates: [
+          26.2494,
+          40.8822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GONGO"
+      },
+      geometry: {
+        coordinates: [
+          27.0325,
+          43.0981
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GONPU"
+      },
+      geometry: {
+        coordinates: [
+          41.9606,
+          41.3006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GONVA"
+      },
+      geometry: {
+        coordinates: [
+          48.6789,
+          36.0992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GORAK"
+      },
+      geometry: {
+        coordinates: [
+          45.0819,
+          43.4997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GORUN"
+      },
+      geometry: {
+        coordinates: [
+          26.7519,
+          46.2322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOSEX"
+      },
+      geometry: {
+        coordinates: [
+          25.1914,
+          35.7003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOSIS"
+      },
+      geometry: {
+        coordinates: [
+          44.9861,
+          39.9472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOSLO"
+      },
+      geometry: {
+        coordinates: [
+          28.4419,
+          43.5286
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOSTI"
+      },
+      geometry: {
+        coordinates: [
+          21.1083,
+          41.8117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOTIK"
+      },
+      geometry: {
+        coordinates: [
+          46.0403,
+          43.4897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOTUB"
+      },
+      geometry: {
+        coordinates: [
+          48.8572,
+          40.1872
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOVGU"
+      },
+      geometry: {
+        coordinates: [
+          28.4608,
+          41.6717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GOVOK"
+      },
+      geometry: {
+        coordinates: [
+          21.5758,
+          40.3633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GRM"
+      },
+      geometry: {
+        coordinates: [
+          43.8361,
+          40.7306
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GRM01"
+      },
+      geometry: {
+        coordinates: [
+          43.8875,
+          40.5722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GRN"
+      },
+      geometry: {
+        coordinates: [
+          25.7325,
+          43.1589
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GSB"
+      },
+      geometry: {
+        coordinates: [
+          41.6219,
+          42.5922
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GUBOR"
+      },
+      geometry: {
+        coordinates: [
+          40.7103,
+          43.8814
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GUBUL"
+      },
+      geometry: {
+        coordinates: [
+          27.3128,
+          40.7386
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GUDIS"
+      },
+      geometry: {
+        coordinates: [
+          27.7661,
+          34.5356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GUDOK"
+      },
+      geometry: {
+        coordinates: [
+          43.6986,
+          45.4831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GUDSU"
+      },
+      geometry: {
+        coordinates: [
+          28.5306,
+          40.7978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GULMO"
+      },
+      geometry: {
+        coordinates: [
+          36.7333,
+          42.0042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GULRA"
+      },
+      geometry: {
+        coordinates: [
+          38.2794,
+          40.3797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GUMRU"
+      },
+      geometry: {
+        coordinates: [
+          31.3494,
+          41.5489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GURBU"
+      },
+      geometry: {
+        coordinates: [
+          33.8328,
+          40.1683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GURSA"
+      },
+      geometry: {
+        coordinates: [
+          26.1211,
+          44.5072
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GUSLI"
+      },
+      geometry: {
+        coordinates: [
+          43.2839,
+          42.9183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "GZP"
+      },
+      geometry: {
+        coordinates: [
+          32.2972,
+          36.3042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HAKAN"
+      },
+      geometry: {
+        coordinates: [
+          32.2983,
+          41.7233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HALIL"
+      },
+      geometry: {
+        coordinates: [
+          32.3578,
+          39.3906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HANKO"
+      },
+      geometry: {
+        coordinates: [
+          30.2661,
+          39.4989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HAS"
+      },
+      geometry: {
+        coordinates: [
+          40.7544,
+          36.4828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HAVZA"
+      },
+      geometry: {
+        coordinates: [
+          35.9286,
+          41.0925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HAY"
+      },
+      geometry: {
+        coordinates: [
+          32.5094,
+          39.4364
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HAZAR"
+      },
+      geometry: {
+        coordinates: [
+          39.4322,
+          38.5325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HISAR"
+      },
+      geometry: {
+        coordinates: [
+          31.5411,
+          38.1156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HOCAM"
+      },
+      geometry: {
+        coordinates: [
+          40.82,
+          40.2458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HOS"
+      },
+      geometry: {
+        coordinates: [
+          26.1428,
+          38.3494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "HTY"
+      },
+      geometry: {
+        coordinates: [
+          36.29,
+          36.3628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBERI"
+      },
+      geometry: {
+        coordinates: [
+          41.7217,
+          42.1608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBINU"
+      },
+      geometry: {
+        coordinates: [
+          23.2789,
+          45.9181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBISI"
+      },
+      geometry: {
+        coordinates: [
+          21.6839,
+          42.9581
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBLAL"
+      },
+      geometry: {
+        coordinates: [
+          28.0011,
+          41.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBNAR"
+      },
+      geometry: {
+        coordinates: [
+          28.7286,
+          45.5322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBODU"
+      },
+      geometry: {
+        coordinates: [
+          27.0789,
+          41.5544
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBROK"
+      },
+      geometry: {
+        coordinates: [
+          32.255,
+          44.2067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IBURA"
+      },
+      geometry: {
+        coordinates: [
+          33.3736,
+          41.0175
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IDABO"
+      },
+      geometry: {
+        coordinates: [
+          21.0294,
+          43.9975
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IDAKU"
+      },
+      geometry: {
+        coordinates: [
+          32.6994,
+          34.0853
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IDARU"
+      },
+      geometry: {
+        coordinates: [
+          26.9817,
+          44.6403
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IDILO"
+      },
+      geometry: {
+        coordinates: [
+          25.4394,
+          40.7906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IDLER"
+      },
+      geometry: {
+        coordinates: [
+          40.1458,
+          42.4903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IDOMO"
+      },
+      geometry: {
+        coordinates: [
+          24.8139,
+          43.8044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IKARO"
+      },
+      geometry: {
+        coordinates: [
+          26.3311,
+          37.8664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ILHAN"
+      },
+      geometry: {
+        coordinates: [
+          33.7036,
+          40.4439
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ILM"
+      },
+      geometry: {
+        coordinates: [
+          46.4167,
+          33.5833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IMR"
+      },
+      geometry: {
+        coordinates: [
+          27.0072,
+          38.3172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IMRXA"
+      },
+      geometry: {
+        coordinates: [
+          27.1611,
+          38.2781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IMRXD"
+      },
+      geometry: {
+        coordinates: [
+          27.1525,
+          38.3064
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INA"
+      },
+      geometry: {
+        coordinates: [
+          28.7489,
+          41.2564
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INAXD"
+      },
+      geometry: {
+        coordinates: [
+          28.75,
+          41.2925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INB"
+      },
+      geometry: {
+        coordinates: [
+          33.7061,
+          41.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INBAK"
+      },
+      geometry: {
+        coordinates: [
+          34.3472,
+          44.3722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INBAT"
+      },
+      geometry: {
+        coordinates: [
+          42.7083,
+          39.7025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INBET"
+      },
+      geometry: {
+        coordinates: [
+          27.275,
+          40.1867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INBOL"
+      },
+      geometry: {
+        coordinates: [
+          23.8039,
+          43.4708
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INDUR"
+      },
+      geometry: {
+        coordinates: [
+          43.6647,
+          40.1156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INGAM"
+      },
+      geometry: {
+        coordinates: [
+          36.9986,
+          37.4433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INKOM"
+      },
+      geometry: {
+        coordinates: [
+          30.64,
+          43.2533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INLAP"
+      },
+      geometry: {
+        coordinates: [
+          43.7458,
+          37.6836
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INLEV"
+      },
+      geometry: {
+        coordinates: [
+          37.0881,
+          37.2594
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INPOR"
+      },
+      geometry: {
+        coordinates: [
+          34.1033,
+          36.675
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INRUV"
+      },
+      geometry: {
+        coordinates: [
+          29.5336,
+          40.7689
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INSAN"
+      },
+      geometry: {
+        coordinates: [
+          49.3178,
+          40.115
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INSEG"
+      },
+      geometry: {
+        coordinates: [
+          29.6364,
+          40.6614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INSER"
+      },
+      geometry: {
+        coordinates: [
+          38.9583,
+          46.1814
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INSTA"
+      },
+      geometry: {
+        coordinates: [
+          28.4833,
+          41.5667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INTAB"
+      },
+      geometry: {
+        coordinates: [
+          39.1019,
+          39.9406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "INTEV"
+      },
+      geometry: {
+        coordinates: [
+          47.1494,
+          40.8092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPDAL"
+      },
+      geometry: {
+        coordinates: [
+          38.0103,
+          40.8842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPLED"
+      },
+      geometry: {
+        coordinates: [
+          49.5,
+          43.3967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPMIL"
+      },
+      geometry: {
+        coordinates: [
+          26.9289,
+          41.8975
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPSAT"
+      },
+      geometry: {
+        coordinates: [
+          38.6058,
+          41.1053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPT"
+      },
+      geometry: {
+        coordinates: [
+          30.3447,
+          37.8422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPTAG"
+      },
+      geometry: {
+        coordinates: [
+          22.2453,
+          37.3028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPTXA"
+      },
+      geometry: {
+        coordinates: [
+          30.3558,
+          37.8475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IPTXD"
+      },
+      geometry: {
+        coordinates: [
+          30.3819,
+          37.865
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRA"
+      },
+      geometry: {
+        coordinates: [
+          25.1853,
+          35.3408
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRA05"
+      },
+      geometry: {
+        coordinates: [
+          25.9178,
+          35.3203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRA06"
+      },
+      geometry: {
+        coordinates: [
+          25.6786,
+          35.6464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRBAX"
+      },
+      geometry: {
+        coordinates: [
+          28.4203,
+          36.0869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRBEG"
+      },
+      geometry: {
+        coordinates: [
+          25.4281,
+          36.8103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRDUM"
+      },
+      geometry: {
+        coordinates: [
+          29.3894,
+          43.7233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRGAK"
+      },
+      geometry: {
+        coordinates: [
+          30.6178,
+          38.2806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRGID"
+      },
+      geometry: {
+        coordinates: [
+          39.9136,
+          43.7806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRKOT"
+      },
+      geometry: {
+        coordinates: [
+          23.9092,
+          42.485
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRLAN"
+      },
+      geometry: {
+        coordinates: [
+          45.4439,
+          39.5114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRLOX"
+      },
+      geometry: {
+        coordinates: [
+          24.1839,
+          45.6356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IRMAM"
+      },
+      geometry: {
+        coordinates: [
+          28.7231,
+          45.2253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IST"
+      },
+      geometry: {
+        coordinates: [
+          28.8106,
+          40.9614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ISTXA"
+      },
+      geometry: {
+        coordinates: [
+          28.8058,
+          40.9961
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ISTXD"
+      },
+      geometry: {
+        coordinates: [
+          28.8111,
+          40.9661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ITAKA"
+      },
+      geometry: {
+        coordinates: [
+          49.5,
+          43.8667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ITOVA"
+      },
+      geometry: {
+        coordinates: [
+          44.6914,
+          33.3308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IVANO"
+      },
+      geometry: {
+        coordinates: [
+          45.2097,
+          35.29
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IVELI"
+      },
+      geometry: {
+        coordinates: [
+          48.4978,
+          34.5831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IVETI"
+      },
+      geometry: {
+        coordinates: [
+          32.7047,
+          34.7419
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IVGOT"
+      },
+      geometry: {
+        coordinates: [
+          28.5364,
+          43.105
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IVGUS"
+      },
+      geometry: {
+        coordinates: [
+          27.5778,
+          40.5689
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IVNAP"
+      },
+      geometry: {
+        coordinates: [
+          31.2533,
+          41.0908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IXIMA"
+      },
+      geometry: {
+        coordinates: [
+          23.3569,
+          36.8131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IXODU"
+      },
+      geometry: {
+        coordinates: [
+          29.6875,
+          40.6808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IXONI"
+      },
+      geometry: {
+        coordinates: [
+          22.2322,
+          38.315
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IXUKO"
+      },
+      geometry: {
+        coordinates: [
+          26.7675,
+          42.6042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "IZMAL"
+      },
+      geometry: {
+        coordinates: [
+          27.5119,
+          40.1992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KABAN"
+      },
+      geometry: {
+        coordinates: [
+          42.6497,
+          37.2489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAD"
+      },
+      geometry: {
+        coordinates: [
+          35.4861,
+          33.8075
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAM"
+      },
+      geometry: {
+        coordinates: [
+          22.0239,
+          37.0789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KANAR"
+      },
+      geometry: {
+        coordinates: [
+          26.8917,
+          32.4575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KANGU"
+      },
+      geometry: {
+        coordinates: [
+          32.6289,
+          40.0119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAPES"
+      },
+      geometry: {
+        coordinates: [
+          45.3344,
+          37.4222
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAR"
+      },
+      geometry: {
+        coordinates: [
+          43.1042,
+          40.5567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KARAT"
+      },
+      geometry: {
+        coordinates: [
+          39.2703,
+          42.6814
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KARDE"
+      },
+      geometry: {
+        coordinates: [
+          37.0453,
+          41.9039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAREM"
+      },
+      geometry: {
+        coordinates: [
+          38.0567,
+          32.8528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KARGI"
+      },
+      geometry: {
+        coordinates: [
+          30.0544,
+          39.4292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAROL"
+      },
+      geometry: {
+        coordinates: [
+          32.4833,
+          32.8667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KATUT"
+      },
+      geometry: {
+        coordinates: [
+          45.5775,
+          32.6269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAVAK"
+      },
+      geometry: {
+        coordinates: [
+          28.7328,
+          37.3572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KAVOS"
+      },
+      geometry: {
+        coordinates: [
+          30,
+          33.7333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KEA"
+      },
+      geometry: {
+        coordinates: [
+          24.2986,
+          37.5572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KEKIK"
+      },
+      geometry: {
+        coordinates: [
+          28.3678,
+          37.0786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KEMER"
+      },
+      geometry: {
+        coordinates: [
+          34.7258,
+          37.6008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KENUX"
+      },
+      geometry: {
+        coordinates: [
+          26.7678,
+          46.2922
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KEPES"
+      },
+      geometry: {
+        coordinates: [
+          36.7075,
+          38.14
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KEPIR"
+      },
+      geometry: {
+        coordinates: [
+          24.6572,
+          38.1686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KEPOL"
+      },
+      geometry: {
+        coordinates: [
+          37.9883,
+          43.0331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KERMA"
+      },
+      geometry: {
+        coordinates: [
+          25.86,
+          38.3686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KESIR"
+      },
+      geometry: {
+        coordinates: [
+          41.4514,
+          39.3153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KETED"
+      },
+      geometry: {
+        coordinates: [
+          46.9644,
+          45.7436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KETEK"
+      },
+      geometry: {
+        coordinates: [
+          32.4783,
+          36.8878
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KFK"
+      },
+      geometry: {
+        coordinates: [
+          30.5467,
+          38.8039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KHD"
+      },
+      geometry: {
+        coordinates: [
+          38.4567,
+          37.7247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KHM"
+      },
+      geometry: {
+        coordinates: [
+          36.9528,
+          37.54
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KHY"
+      },
+      geometry: {
+        coordinates: [
+          44.9664,
+          38.4336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KILIS"
+      },
+      geometry: {
+        coordinates: [
+          37.4006,
+          36.7036
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KINIK"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          38.7322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KISEL"
+      },
+      geometry: {
+        coordinates: [
+          43.6717,
+          46.0031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KISLA"
+      },
+      geometry: {
+        coordinates: [
+          34.3333,
+          39.11
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KIT"
+      },
+      geometry: {
+        coordinates: [
+          23.0147,
+          36.2767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KIZIK"
+      },
+      geometry: {
+        coordinates: [
+          32.1494,
+          40.4183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KML"
+      },
+      geometry: {
+        coordinates: [
+          41.2053,
+          37.0167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KMS"
+      },
+      geometry: {
+        coordinates: [
+          47.1692,
+          34.3397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KND"
+      },
+      geometry: {
+        coordinates: [
+          39.17,
+          45.035
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOBER"
+      },
+      geometry: {
+        coordinates: [
+          34.1067,
+          34.7436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOBON"
+      },
+      geometry: {
+        coordinates: [
+          40.1983,
+          45.3497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KODER"
+      },
+      geometry: {
+        coordinates: [
+          37.6336,
+          32.55
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KODRU"
+      },
+      geometry: {
+        coordinates: [
+          28.1239,
+          46.1922
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOGAT"
+      },
+      geometry: {
+        coordinates: [
+          21.0556,
+          42.1125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOGOS"
+      },
+      geometry: {
+        coordinates: [
+          22.0014,
+          40.1211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOGUL"
+      },
+      geometry: {
+        coordinates: [
+          39.175,
+          43.6
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOLBA"
+      },
+      geometry: {
+        coordinates: [
+          42.5817,
+          45.9497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOMAN"
+      },
+      geometry: {
+        coordinates: [
+          26.2167,
+          43.9833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KON"
+      },
+      geometry: {
+        coordinates: [
+          32.5758,
+          38.0144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KONAK"
+      },
+      geometry: {
+        coordinates: [
+          31.4161,
+          36.8947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KONEN"
+      },
+      geometry: {
+        coordinates: [
+          27.2772,
+          39.8117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KONUK"
+      },
+      geometry: {
+        coordinates: [
+          39.4681,
+          39.5117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KONUL"
+      },
+      geometry: {
+        coordinates: [
+          48.8956,
+          41.3606
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KONXA"
+      },
+      geometry: {
+        coordinates: [
+          32.5692,
+          37.9939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOPAR"
+      },
+      geometry: {
+        coordinates: [
+          26.6886,
+          36.8303
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOR"
+      },
+      geometry: {
+        coordinates: [
+          22.9358,
+          37.9303
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOROS"
+      },
+      geometry: {
+        coordinates: [
+          24.9158,
+          39.0997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOS"
+      },
+      geometry: {
+        coordinates: [
+          27.0783,
+          36.7919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOS02"
+      },
+      geometry: {
+        coordinates: [
+          26.7217,
+          36.9717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOSAK"
+      },
+      geometry: {
+        coordinates: [
+          31.5333,
+          46.3167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOSEG"
+      },
+      geometry: {
+        coordinates: [
+          30.9067,
+          34.1433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOTAN"
+      },
+      geometry: {
+        coordinates: [
+          46.4567,
+          41.38
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOVEM"
+      },
+      geometry: {
+        coordinates: [
+          34.3331,
+          38.8769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOZ"
+      },
+      geometry: {
+        coordinates: [
+          21.8406,
+          40.285
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOZAN"
+      },
+      geometry: {
+        coordinates: [
+          37.1542,
+          36.9542
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KOZLU"
+      },
+      geometry: {
+        coordinates: [
+          30.0744,
+          37.4972
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KPC"
+      },
+      geometry: {
+        coordinates: [
+          27.1469,
+          35.4219
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KPL"
+      },
+      geometry: {
+        coordinates: [
+          24.6147,
+          40.9128
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KRASO"
+      },
+      geometry: {
+        coordinates: [
+          28.6556,
+          40.91
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KRATO"
+      },
+      geometry: {
+        coordinates: [
+          22.1817,
+          42.2183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KRD"
+      },
+      geometry: {
+        coordinates: [
+          48.2919,
+          33.4342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KRO"
+      },
+      geometry: {
+        coordinates: [
+          24.495,
+          37.9942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KSR"
+      },
+      geometry: {
+        coordinates: [
+          35.5217,
+          38.7756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KSRXA"
+      },
+      geometry: {
+        coordinates: [
+          35.4703,
+          38.795
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KSRXD"
+      },
+      geometry: {
+        coordinates: [
+          35.4903,
+          38.7806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KST"
+      },
+      geometry: {
+        coordinates: [
+          33.8,
+          41.3503
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KST01"
+      },
+      geometry: {
+        coordinates: [
+          33.8556,
+          41.3056
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KST02"
+      },
+      geometry: {
+        coordinates: [
+          33.8275,
+          41.2678
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KST03"
+      },
+      geometry: {
+        coordinates: [
+          33.6772,
+          41.275
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KSTXA"
+      },
+      geometry: {
+        coordinates: [
+          33.7972,
+          41.3244
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KSTXD"
+      },
+      geometry: {
+        coordinates: [
+          33.7942,
+          41.3042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KTH"
+      },
+      geometry: {
+        coordinates: [
+          30.1367,
+          39.1081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KTS"
+      },
+      geometry: {
+        coordinates: [
+          42.4847,
+          42.1758
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUBER"
+      },
+      geometry: {
+        coordinates: [
+          33.6106,
+          39.8322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUDAK"
+      },
+      geometry: {
+        coordinates: [
+          28.2767,
+          39.2989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUFAN"
+      },
+      geometry: {
+        coordinates: [
+          46.2856,
+          41.955
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUGOS"
+      },
+      geometry: {
+        coordinates: [
+          34.0878,
+          42.7806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUKLA"
+      },
+      geometry: {
+        coordinates: [
+          34.7467,
+          34.245
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KULAG"
+      },
+      geometry: {
+        coordinates: [
+          33.6194,
+          44.9672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KULAR"
+      },
+      geometry: {
+        coordinates: [
+          28.6328,
+          38.5822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KULED"
+      },
+      geometry: {
+        coordinates: [
+          40.565,
+          45.4497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KULEM"
+      },
+      geometry: {
+        coordinates: [
+          35.5183,
+          43.9333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KULOL"
+      },
+      geometry: {
+        coordinates: [
+          31.5936,
+          36.6831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KULOM"
+      },
+      geometry: {
+        coordinates: [
+          41.4317,
+          45.8164
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUMAB"
+      },
+      geometry: {
+        coordinates: [
+          46.6736,
+          45.7825
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUMAN"
+      },
+      geometry: {
+        coordinates: [
+          27.8328,
+          38.0317
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUMBI"
+      },
+      geometry: {
+        coordinates: [
+          28.75,
+          33.7139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUMLO"
+      },
+      geometry: {
+        coordinates: [
+          38.4689,
+          32.97
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUMRU"
+      },
+      geometry: {
+        coordinates: [
+          30.7328,
+          37.4156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUNIP"
+      },
+      geometry: {
+        coordinates: [
+          44.3553,
+          44.8664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUPAT"
+      },
+      geometry: {
+        coordinates: [
+          49.9631,
+          39.8081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUPIL"
+      },
+      geometry: {
+        coordinates: [
+          33.5483,
+          43.9128
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUPIS"
+      },
+      geometry: {
+        coordinates: [
+          25.8986,
+          36.2386
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUSAL"
+      },
+      geometry: {
+        coordinates: [
+          35.9717,
+          43.98
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUTAY"
+      },
+      geometry: {
+        coordinates: [
+          29.6219,
+          39.4617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUTON"
+      },
+      geometry: {
+        coordinates: [
+          38.315,
+          44.2697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KUXIL"
+      },
+      geometry: {
+        coordinates: [
+          29.005,
+          37.4808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "KZ"
+      },
+      geometry: {
+        coordinates: [
+          46.7139,
+          43.8347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAB"
+      },
+      geometry: {
+        coordinates: [
+          22.0203,
+          32.7781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LABNA"
+      },
+      geometry: {
+        coordinates: [
+          30.27,
+          32.3322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LABUG"
+      },
+      geometry: {
+        coordinates: [
+          47.4586,
+          45.3583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LABUX"
+      },
+      geometry: {
+        coordinates: [
+          25.8589,
+          35.5819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAGAS"
+      },
+      geometry: {
+        coordinates: [
+          44.2314,
+          41.5719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAGIR"
+      },
+      geometry: {
+        coordinates: [
+          32.315,
+          43.2933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAGLO"
+      },
+      geometry: {
+        coordinates: [
+          44.2492,
+          33.2608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAGOL"
+      },
+      geometry: {
+        coordinates: [
+          32.9717,
+          39.61
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAKAD"
+      },
+      geometry: {
+        coordinates: [
+          28.4956,
+          36.2339
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAKLI"
+      },
+      geometry: {
+        coordinates: [
+          45.9219,
+          37.625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAKTO"
+      },
+      geometry: {
+        coordinates: [
+          32.0833,
+          32.6333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LALDA"
+      },
+      geometry: {
+        coordinates: [
+          49.7517,
+          38.2683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAMET"
+      },
+      geometry: {
+        coordinates: [
+          39.0886,
+          43.3497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAMIT"
+      },
+      geometry: {
+        coordinates: [
+          23.3747,
+          45.1039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAMSA"
+      },
+      geometry: {
+        coordinates: [
+          29.9228,
+          37.1108
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAMUS"
+      },
+      geometry: {
+        coordinates: [
+          45.5233,
+          41.5444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LANVO"
+      },
+      geometry: {
+        coordinates: [
+          39.2919,
+          39.9436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAPKA"
+      },
+      geometry: {
+        coordinates: [
+          26.5092,
+          45.2928
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAPMI"
+      },
+      geometry: {
+        coordinates: [
+          38.1231,
+          43.3222
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAPSO"
+      },
+      geometry: {
+        coordinates: [
+          27.2722,
+          35.0517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAPTO"
+      },
+      geometry: {
+        coordinates: [
+          44.1886,
+          42.6314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LARAN"
+      },
+      geometry: {
+        coordinates: [
+          26.2794,
+          44.58
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LARAT"
+      },
+      geometry: {
+        coordinates: [
+          23.8711,
+          42.5017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LARIN"
+      },
+      geometry: {
+        coordinates: [
+          43.0186,
+          44.5997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LARKI"
+      },
+      geometry: {
+        coordinates: [
+          26.8383,
+          37.3989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAROM"
+      },
+      geometry: {
+        coordinates: [
+          31.4433,
+          44.31
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LASBU"
+      },
+      geometry: {
+        coordinates: [
+          24.0336,
+          41.0142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LASKA"
+      },
+      geometry: {
+        coordinates: [
+          49.5533,
+          42.385
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LASON"
+      },
+      geometry: {
+        coordinates: [
+          27.4528,
+          38.3847
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LASOR"
+      },
+      geometry: {
+        coordinates: [
+          34.9667,
+          44.0383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LASOS"
+      },
+      geometry: {
+        coordinates: [
+          33.3708,
+          34.7125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LATEB"
+      },
+      geometry: {
+        coordinates: [
+          36.4011,
+          34.0317
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LATGA"
+      },
+      geometry: {
+        coordinates: [
+          32.0922,
+          40.3314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LATMO"
+      },
+      geometry: {
+        coordinates: [
+          28.3933,
+          35.1386
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LATSU"
+      },
+      geometry: {
+        coordinates: [
+          41.4139,
+          39.4208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LAVTA"
+      },
+      geometry: {
+        coordinates: [
+          28.7033,
+          37.7217
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LBWN"
+      },
+      geometry: {
+        coordinates: [
+          27.8253,
+          43.2319
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LCA"
+      },
+      geometry: {
+        coordinates: [
+          33.6297,
+          34.8917
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LCA01"
+      },
+      geometry: {
+        coordinates: [
+          33.5492,
+          34.8308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LCAXD"
+      },
+      geometry: {
+        coordinates: [
+          33.62,
+          34.88
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEBOR"
+      },
+      geometry: {
+        coordinates: [
+          36.5831,
+          34.2656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LECKI"
+      },
+      geometry: {
+        coordinates: [
+          29.8736,
+          40.6281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEDRA"
+      },
+      geometry: {
+        coordinates: [
+          33.05,
+          33.2
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEGDO"
+      },
+      geometry: {
+        coordinates: [
+          41.1372,
+          40.835
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEGMU"
+      },
+      geometry: {
+        coordinates: [
+          31.5892,
+          41.9475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEGNA"
+      },
+      geometry: {
+        coordinates: [
+          41.505,
+          45.3214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEKBA"
+      },
+      geometry: {
+        coordinates: [
+          48.7383,
+          41.5267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEKMI"
+      },
+      geometry: {
+        coordinates: [
+          27.295,
+          40.4769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEKPI"
+      },
+      geometry: {
+        coordinates: [
+          39.4783,
+          44.5247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEKPO"
+      },
+      geometry: {
+        coordinates: [
+          23.1619,
+          40.1128
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEKRO"
+      },
+      geometry: {
+        coordinates: [
+          40.9714,
+          37.2772
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LELOT"
+      },
+      geometry: {
+        coordinates: [
+          45.2153,
+          43.5997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LELTI"
+      },
+      geometry: {
+        coordinates: [
+          23.4256,
+          44.2944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEMDA"
+      },
+      geometry: {
+        coordinates: [
+          30.6569,
+          37.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEMPA"
+      },
+      geometry: {
+        coordinates: [
+          28.4353,
+          44.7269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEMTO"
+      },
+      geometry: {
+        coordinates: [
+          33.5417,
+          45.4906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LENIR"
+      },
+      geometry: {
+        coordinates: [
+          40.015,
+          45.4331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LENKA"
+      },
+      geometry: {
+        coordinates: [
+          35.7883,
+          45.3633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LESGI"
+      },
+      geometry: {
+        coordinates: [
+          49.3431,
+          40.885
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LESRI"
+      },
+      geometry: {
+        coordinates: [
+          41.2303,
+          37.0722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LETBU"
+      },
+      geometry: {
+        coordinates: [
+          32.0692,
+          41.1325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LETNI"
+      },
+      geometry: {
+        coordinates: [
+          22.6058,
+          42.0969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LETSO"
+      },
+      geometry: {
+        coordinates: [
+          25.6583,
+          37.4575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEU"
+      },
+      geometry: {
+        coordinates: [
+          34.2589,
+          44.8356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEVTA"
+      },
+      geometry: {
+        coordinates: [
+          26.4097,
+          44.5894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LEYLA"
+      },
+      geometry: {
+        coordinates: [
+          47.9803,
+          41.1092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LGP"
+      },
+      geometry: {
+        coordinates: [
+          25.125,
+          37.0186
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LHA"
+      },
+      geometry: {
+        coordinates: [
+          35.0303,
+          32.8069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LIAKI"
+      },
+      geometry: {
+        coordinates: [
+          27.1847,
+          35.1289
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LIDMU"
+      },
+      geometry: {
+        coordinates: [
+          29.7044,
+          40.7347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LIMAS"
+      },
+      geometry: {
+        coordinates: [
+          37.82,
+          44.2081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LIMTI"
+      },
+      geometry: {
+        coordinates: [
+          47.3967,
+          40.74
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LINGI"
+      },
+      geometry: {
+        coordinates: [
+          24.5456,
+          34.5119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LINRO"
+      },
+      geometry: {
+        coordinates: [
+          27.6994,
+          35.9656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LIPMA"
+      },
+      geometry: {
+        coordinates: [
+          38.5792,
+          37.6525
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LITVA"
+      },
+      geometry: {
+        coordinates: [
+          35.0558,
+          32.4131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LIVDO"
+      },
+      geometry: {
+        coordinates: [
+          42.4139,
+          38.2614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LMO"
+      },
+      geometry: {
+        coordinates: [
+          25.2372,
+          39.9194
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOBIN"
+      },
+      geometry: {
+        coordinates: [
+          43.1072,
+          42.1817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOBKI"
+      },
+      geometry: {
+        coordinates: [
+          28.9158,
+          45.1781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LODBI"
+      },
+      geometry: {
+        coordinates: [
+          37.6233,
+          43.5114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LODNA"
+      },
+      geometry: {
+        coordinates: [
+          43.2469,
+          42.995
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOKNA"
+      },
+      geometry: {
+        coordinates: [
+          27.5983,
+          36.1794
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOMOS"
+      },
+      geometry: {
+        coordinates: [
+          23.25,
+          43.8333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LONOR"
+      },
+      geometry: {
+        coordinates: [
+          45.0828,
+          32.6442
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LONTA"
+      },
+      geometry: {
+        coordinates: [
+          21.3972,
+          42.1594
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOPOS"
+      },
+      geometry: {
+        coordinates: [
+          22.5003,
+          40.2908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOPTI"
+      },
+      geometry: {
+        coordinates: [
+          24.4342,
+          41.1953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LORKO"
+      },
+      geometry: {
+        coordinates: [
+          29.765,
+          36.8069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOTAX"
+      },
+      geometry: {
+        coordinates: [
+          36.54,
+          33.9833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOVEK"
+      },
+      geometry: {
+        coordinates: [
+          44.6669,
+          32.3689
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LOVID"
+      },
+      geometry: {
+        coordinates: [
+          47.4781,
+          35.1278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LRC"
+      },
+      geometry: {
+        coordinates: [
+          23.9436,
+          44.3214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LSA"
+      },
+      geometry: {
+        coordinates: [
+          22.4625,
+          39.645
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LSV"
+      },
+      geometry: {
+        coordinates: [
+          26.4253,
+          39.2314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTA"
+      },
+      geometry: {
+        coordinates: [
+          35.5675,
+          40.8028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAB"
+      },
+      geometry: {
+        coordinates: [
+          32.7408,
+          39.9353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAC"
+      },
+      geometry: {
+        coordinates: [
+          32.995,
+          40.1281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAD"
+      },
+      geometry: {
+        coordinates: [
+          32.685,
+          39.9522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTADT"
+      },
+      geometry: {
+        coordinates: [
+          32.6847,
+          39.9519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAE"
+      },
+      geometry: {
+        coordinates: [
+          32.5656,
+          40.0789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAF"
+      },
+      geometry: {
+        coordinates: [
+          35.2803,
+          36.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAG"
+      },
+      geometry: {
+        coordinates: [
+          35.4331,
+          36.9989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAH"
+      },
+      geometry: {
+        coordinates: [
+          30.6031,
+          38.7258
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAI"
+      },
+      geometry: {
+        coordinates: [
+          30.7928,
+          36.9003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAJ"
+      },
+      geometry: {
+        coordinates: [
+          37.4789,
+          36.9478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAL"
+      },
+      geometry: {
+        coordinates: [
+          33.7961,
+          41.3169
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAN"
+      },
+      geometry: {
+        coordinates: [
+          32.5625,
+          37.9806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAO"
+      },
+      geometry: {
+        coordinates: [
+          38.2519,
+          38.3522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAP"
+      },
+      geometry: {
+        coordinates: [
+          35.5222,
+          40.8294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAR"
+      },
+      geometry: {
+        coordinates: [
+          36.9025,
+          39.8142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAS"
+      },
+      geometry: {
+        coordinates: [
+          32.0897,
+          41.5069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAT"
+      },
+      geometry: {
+        coordinates: [
+          38.0831,
+          38.4322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAU"
+      },
+      geometry: {
+        coordinates: [
+          35.4953,
+          38.7703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAW"
+      },
+      geometry: {
+        coordinates: [
+          36.3736,
+          40.3117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAXA"
+      },
+      geometry: {
+        coordinates: [
+          35.5672,
+          40.8025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAXD"
+      },
+      geometry: {
+        coordinates: [
+          35.5186,
+          40.8175
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAY"
+      },
+      geometry: {
+        coordinates: [
+          29.705,
+          37.7878
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTAZ"
+      },
+      geometry: {
+        coordinates: [
+          34.5267,
+          38.7753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBA"
+      },
+      geometry: {
+        coordinates: [
+          28.8142,
+          40.9761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBD"
+      },
+      geometry: {
+        coordinates: [
+          27.8881,
+          37.8153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBF"
+      },
+      geometry: {
+        coordinates: [
+          27.9278,
+          39.6192
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBFT"
+      },
+      geometry: {
+        coordinates: [
+          27.9242,
+          39.62
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBG"
+      },
+      geometry: {
+        coordinates: [
+          27.9725,
+          40.3214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBGT"
+      },
+      geometry: {
+        coordinates: [
+          27.9747,
+          40.3197
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBH"
+      },
+      geometry: {
+        coordinates: [
+          26.4278,
+          40.1383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBI"
+      },
+      geometry: {
+        coordinates: [
+          30.5828,
+          39.7822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBJ"
+      },
+      geometry: {
+        coordinates: [
+          27.155,
+          38.2892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBK"
+      },
+      geometry: {
+        coordinates: [
+          27.1597,
+          38.32
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBL"
+      },
+      geometry: {
+        coordinates: [
+          27.01,
+          38.5267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBN"
+      },
+      geometry: {
+        coordinates: [
+          30.0169,
+          39.4267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBO"
+      },
+      geometry: {
+        coordinates: [
+          29.4717,
+          38.6814
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBP"
+      },
+      geometry: {
+        coordinates: [
+          29.3761,
+          40.6883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBQ"
+      },
+      geometry: {
+        coordinates: [
+          30.0833,
+          40.735
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBR"
+      },
+      geometry: {
+        coordinates: [
+          29.5619,
+          40.2558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBS"
+      },
+      geometry: {
+        coordinates: [
+          28.7914,
+          36.7125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBT"
+      },
+      geometry: {
+        coordinates: [
+          27.8344,
+          38.8094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBU"
+      },
+      geometry: {
+        coordinates: [
+          27.9064,
+          41.1294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBV"
+      },
+      geometry: {
+        coordinates: [
+          27.6697,
+          37.1403
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBW"
+      },
+      geometry: {
+        coordinates: [
+          28.55,
+          41.1069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBX"
+      },
+      geometry: {
+        coordinates: [
+          29.2161,
+          40.9906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBY"
+      },
+      geometry: {
+        coordinates: [
+          30.5206,
+          39.8125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTBZ"
+      },
+      geometry: {
+        coordinates: [
+          30.1303,
+          39.1114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCA"
+      },
+      geometry: {
+        coordinates: [
+          39.2814,
+          38.5978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCB"
+      },
+      geometry: {
+        coordinates: [
+          38.0819,
+          40.9672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCC"
+      },
+      geometry: {
+        coordinates: [
+          40.2011,
+          37.8925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCD"
+      },
+      geometry: {
+        coordinates: [
+          39.5206,
+          39.7131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCE"
+      },
+      geometry: {
+        coordinates: [
+          41.1706,
+          39.9558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCF"
+      },
+      geometry: {
+        coordinates: [
+          43.0989,
+          40.5586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCG"
+      },
+      geometry: {
+        coordinates: [
+          39.7853,
+          40.9958
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCI"
+      },
+      geometry: {
+        coordinates: [
+          43.3322,
+          38.4681
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCJ"
+      },
+      geometry: {
+        coordinates: [
+          41.1164,
+          37.9322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCK"
+      },
+      geometry: {
+        coordinates: [
+          41.6689,
+          38.7447
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCL"
+      },
+      geometry: {
+        coordinates: [
+          41.8392,
+          37.9781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCM"
+      },
+      geometry: {
+        coordinates: [
+          35.0664,
+          42.0158
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCN"
+      },
+      geometry: {
+        coordinates: [
+          36.9519,
+          37.5383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCO"
+      },
+      geometry: {
+        coordinates: [
+          43.0286,
+          39.6475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCP"
+      },
+      geometry: {
+        coordinates: [
+          38.4692,
+          37.7322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCR"
+      },
+      geometry: {
+        coordinates: [
+          40.6406,
+          37.2328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCS"
+      },
+      geometry: {
+        coordinates: [
+          38.9083,
+          37.4567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCT"
+      },
+      geometry: {
+        coordinates: [
+          43.8783,
+          39.9756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCU"
+      },
+      geometry: {
+        coordinates: [
+          40.5925,
+          38.8611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCV"
+      },
+      geometry: {
+        coordinates: [
+          42.06,
+          37.3639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTCW"
+      },
+      geometry: {
+        coordinates: [
+          44.2536,
+          37.5431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTD00"
+      },
+      geometry: {
+        coordinates: [
+          38.3736,
+          38.4722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTDA"
+      },
+      geometry: {
+        coordinates: [
+          36.2986,
+          36.3722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFA"
+      },
+      geometry: {
+        coordinates: [
+          26.9772,
+          38.5175
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFB"
+      },
+      geometry: {
+        coordinates: [
+          27.3303,
+          37.9506
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFD"
+      },
+      geometry: {
+        coordinates: [
+          27.0283,
+          39.5544
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFDT"
+      },
+      geometry: {
+        coordinates: [
+          27.0172,
+          39.5639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFE"
+      },
+      geometry: {
+        coordinates: [
+          27.6814,
+          37.2472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFG"
+      },
+      geometry: {
+        coordinates: [
+          32.3014,
+          36.2994
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFH"
+      },
+      geometry: {
+        coordinates: [
+          36.5486,
+          41.2656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFJ"
+      },
+      geometry: {
+        coordinates: [
+          29.3092,
+          40.8983
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFK"
+      },
+      geometry: {
+        coordinates: [
+          25.8817,
+          40.2
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTFM"
+      },
+      geometry: {
+        coordinates: [
+          28.7519,
+          41.2753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTHA"
+      },
+      geometry: {
+        coordinates: [
+          32.8433,
+          39.8033
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LTHB"
+      },
+      geometry: {
+        coordinates: [
+          40.2953,
+          37.9381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUBAM"
+      },
+      geometry: {
+        coordinates: [
+          36.5333,
+          35.6667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUBES"
+      },
+      geometry: {
+        coordinates: [
+          32.7433,
+          34.92
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUGEB"
+      },
+      geometry: {
+        coordinates: [
+          28.5011,
+          43.7356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUKOV"
+      },
+      geometry: {
+        coordinates: [
+          23.8061,
+          43.2847
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUMEX"
+      },
+      geometry: {
+        coordinates: [
+          42.4692,
+          40.6525
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUMOM"
+      },
+      geometry: {
+        coordinates: [
+          44.8233,
+          37.27
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUNAT"
+      },
+      geometry: {
+        coordinates: [
+          33.52,
+          44.2933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUPUK"
+      },
+      geometry: {
+        coordinates: [
+          29.6128,
+          44.4128
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LURAS"
+      },
+      geometry: {
+        coordinates: [
+          37.785,
+          43.4781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LURIS"
+      },
+      geometry: {
+        coordinates: [
+          45.7686,
+          42.4236
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LURUS"
+      },
+      geometry: {
+        coordinates: [
+          26.5169,
+          36.8892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUSAL"
+      },
+      geometry: {
+        coordinates: [
+          47.95,
+          40.5833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUTAM"
+      },
+      geometry: {
+        coordinates: [
+          38.5231,
+          37.325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUTFU"
+      },
+      geometry: {
+        coordinates: [
+          28.1833,
+          39.9394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUTIN"
+      },
+      geometry: {
+        coordinates: [
+          45.0367,
+          46.03
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LUUPU"
+      },
+      geometry: {
+        coordinates: [
+          32.2383,
+          41.9094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "LWSK"
+      },
+      geometry: {
+        coordinates: [
+          21.6214,
+          41.9617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MABEK"
+      },
+      geometry: {
+        coordinates: [
+          44.455,
+          43.4344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MADEX"
+      },
+      geometry: {
+        coordinates: [
+          25.3983,
+          36.6531
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAGIS"
+      },
+      geometry: {
+        coordinates: [
+          30,
+          34.5833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAGRI"
+      },
+      geometry: {
+        coordinates: [
+          46.3833,
+          38.9022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAKED"
+      },
+      geometry: {
+        coordinates: [
+          22.5167,
+          41.1292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAKOL"
+      },
+      geometry: {
+        coordinates: [
+          29.1428,
+          42.1706
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MANAV"
+      },
+      geometry: {
+        coordinates: [
+          31.3578,
+          36.6989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MANAZ"
+      },
+      geometry: {
+        coordinates: [
+          34.4114,
+          36.9147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MANOK"
+      },
+      geometry: {
+        coordinates: [
+          24.0394,
+          36.405
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAPUT"
+      },
+      geometry: {
+        coordinates: [
+          34.3967,
+          43.5667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MARAT"
+      },
+      geometry: {
+        coordinates: [
+          43.6203,
+          43.8464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MARIK"
+      },
+      geometry: {
+        coordinates: [
+          26.0883,
+          38.6
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MARIS"
+      },
+      geometry: {
+        coordinates: [
+          28.2828,
+          36.8989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MARMA"
+      },
+      geometry: {
+        coordinates: [
+          27.6489,
+          40.5272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAROS"
+      },
+      geometry: {
+        coordinates: [
+          30.8833,
+          34.6167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MARTI"
+      },
+      geometry: {
+        coordinates: [
+          35.1828,
+          39.4017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MASES"
+      },
+      geometry: {
+        coordinates: [
+          26.9783,
+          35.8239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MATAL"
+      },
+      geometry: {
+        coordinates: [
+          45.5022,
+          40.7686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MATEL"
+      },
+      geometry: {
+        coordinates: [
+          28.7919,
+          43.0592
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAVES"
+      },
+      geometry: {
+        coordinates: [
+          39.2275,
+          37.5628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAVIT"
+      },
+      geometry: {
+        coordinates: [
+          21.3083,
+          45.24
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAXAK"
+      },
+      geometry: {
+        coordinates: [
+          44.6778,
+          40.3611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MAXOV"
+      },
+      geometry: {
+        coordinates: [
+          27.8386,
+          43.6092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MEDEM"
+      },
+      geometry: {
+        coordinates: [
+          27.9717,
+          42.395
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MEGES"
+      },
+      geometry: {
+        coordinates: [
+          44.1453,
+          43.6314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MEGID"
+      },
+      geometry: {
+        coordinates: [
+          35.2483,
+          32.5867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MELLI"
+      },
+      geometry: {
+        coordinates: [
+          32.5814,
+          40.3125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MERAM"
+      },
+      geometry: {
+        coordinates: [
+          33.2869,
+          36.0364
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MERVA"
+      },
+      geometry: {
+        coordinates: [
+          34.5439,
+          32.7817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MES"
+      },
+      geometry: {
+        coordinates: [
+          25.9058,
+          38.2517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "METRU"
+      },
+      geometry: {
+        coordinates: [
+          25.15,
+          34
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MICPO"
+      },
+      geometry: {
+        coordinates: [
+          23.5647,
+          41.2331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MIL"
+      },
+      geometry: {
+        coordinates: [
+          24.5194,
+          36.7475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MILAS"
+      },
+      geometry: {
+        coordinates: [
+          27.6419,
+          37.1678
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MILBA"
+      },
+      geometry: {
+        coordinates: [
+          36.4794,
+          36.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MIMTO"
+      },
+      geometry: {
+        coordinates: [
+          33.0467,
+          41.8469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MINSU"
+      },
+      geometry: {
+        coordinates: [
+          28.0561,
+          39.0844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MISRO"
+      },
+      geometry: {
+        coordinates: [
+          29.8011,
+          39.9528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MIVAK"
+      },
+      geometry: {
+        coordinates: [
+          49.89,
+          35.9875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MIVDI"
+      },
+      geometry: {
+        coordinates: [
+          27.7414,
+          40.7956
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MIVKO"
+      },
+      geometry: {
+        coordinates: [
+          48.6183,
+          40.0433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MIVSA"
+      },
+      geometry: {
+        coordinates: [
+          21.4731,
+          45.9056
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MKL"
+      },
+      geometry: {
+        coordinates: [
+          47.6456,
+          42.8211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MKN"
+      },
+      geometry: {
+        coordinates: [
+          25.3444,
+          37.4403
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOBIT"
+      },
+      geometry: {
+        coordinates: [
+          38.735,
+          43.9397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOBLU"
+      },
+      geometry: {
+        coordinates: [
+          29.4472,
+          44.1961
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOBRA"
+      },
+      geometry: {
+        coordinates: [
+          24.8194,
+          45.8644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MODAD"
+      },
+      geometry: {
+        coordinates: [
+          38.6939,
+          32.5944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MODAU"
+      },
+      geometry: {
+        coordinates: [
+          31.8858,
+          42.0092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MODIK"
+      },
+      geometry: {
+        coordinates: [
+          39.0167,
+          33.4683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOKIS"
+      },
+      geometry: {
+        coordinates: [
+          26.7744,
+          35.2839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOLIK"
+      },
+      geometry: {
+        coordinates: [
+          39.4483,
+          44.3664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MONUV"
+      },
+      geometry: {
+        coordinates: [
+          23.5003,
+          36.1203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOPIN"
+      },
+      geometry: {
+        coordinates: [
+          29.7106,
+          41.4647
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOREK"
+      },
+      geometry: {
+        coordinates: [
+          23.3192,
+          42.2919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOTEG"
+      },
+      geometry: {
+        coordinates: [
+          48.45,
+          41.6767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MOVUL"
+      },
+      geometry: {
+        coordinates: [
+          39.2319,
+          38.1528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MRD"
+      },
+      geometry: {
+        coordinates: [
+          40.6386,
+          37.2278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MURPU"
+      },
+      geometry: {
+        coordinates: [
+          48.0553,
+          37.5119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MUS"
+      },
+      geometry: {
+        coordinates: [
+          41.6608,
+          38.7494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MUT"
+      },
+      geometry: {
+        coordinates: [
+          33.2917,
+          36.8628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "MUTAG"
+      },
+      geometry: {
+        coordinates: [
+          43.6428,
+          34.5008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NADEK"
+      },
+      geometry: {
+        coordinates: [
+          37.2414,
+          32.4578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAHUM"
+      },
+      geometry: {
+        coordinates: [
+          28.1639,
+          40.8372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NALOB"
+      },
+      geometry: {
+        coordinates: [
+          37.6106,
+          43.9472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAMAN"
+      },
+      geometry: {
+        coordinates: [
+          30.9994,
+          40.9989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAMDI"
+      },
+      geometry: {
+        coordinates: [
+          44.6925,
+          34.5075
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAMEN"
+      },
+      geometry: {
+        coordinates: [
+          43.6417,
+          43.5133
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAPET"
+      },
+      geometry: {
+        coordinates: [
+          23.0056,
+          42.2883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAPIP"
+      },
+      geometry: {
+        coordinates: [
+          31.7389,
+          41.8067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAREN"
+      },
+      geometry: {
+        coordinates: [
+          40.825,
+          38.6306
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NARLI"
+      },
+      geometry: {
+        coordinates: [
+          43.2497,
+          37.8156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NASAR"
+      },
+      geometry: {
+        coordinates: [
+          49.9433,
+          39.65
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NASEM"
+      },
+      geometry: {
+        coordinates: [
+          29.7158,
+          42.5917
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NASIL"
+      },
+      geometry: {
+        coordinates: [
+          49.85,
+          39.0167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NASIM"
+      },
+      geometry: {
+        coordinates: [
+          32.3333,
+          40.5722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NASKO"
+      },
+      geometry: {
+        coordinates: [
+          22.0978,
+          41.7669
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NASTA"
+      },
+      geometry: {
+        coordinates: [
+          45.2153,
+          43.9997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NATSO"
+      },
+      geometry: {
+        coordinates: [
+          48.7686,
+          40.1308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAVKO"
+      },
+      geometry: {
+        coordinates: [
+          30.8197,
+          36.1844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAVOD"
+      },
+      geometry: {
+        coordinates: [
+          24.5597,
+          43.7558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAVOK"
+      },
+      geometry: {
+        coordinates: [
+          28.2394,
+          35.7375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAVUS"
+      },
+      geometry: {
+        coordinates: [
+          25.2853,
+          35.6992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAX"
+      },
+      geometry: {
+        coordinates: [
+          45.4408,
+          39.2017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NAXAS"
+      },
+      geometry: {
+        coordinates: [
+          26.7489,
+          36.3575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEDEK"
+      },
+      geometry: {
+        coordinates: [
+          41.5928,
+          42.0022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEDSI"
+      },
+      geometry: {
+        coordinates: [
+          28.5564,
+          43.3336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEGAN"
+      },
+      geometry: {
+        coordinates: [
+          45.01,
+          39.755
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEGBU"
+      },
+      geometry: {
+        coordinates: [
+          32.3717,
+          40.0142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEGEM"
+      },
+      geometry: {
+        coordinates: [
+          29.8703,
+          42.4617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEGOL"
+      },
+      geometry: {
+        coordinates: [
+          41.0792,
+          39.4764
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEGOT"
+      },
+      geometry: {
+        coordinates: [
+          22.3922,
+          41.32
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEKAT"
+      },
+      geometry: {
+        coordinates: [
+          36.3536,
+          37.7436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEKES"
+      },
+      geometry: {
+        coordinates: [
+          33.2847,
+          36.1536
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEKUL"
+      },
+      geometry: {
+        coordinates: [
+          22.5867,
+          45.5167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NELNI"
+      },
+      geometry: {
+        coordinates: [
+          30.5022,
+          41.6175
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NELOM"
+      },
+      geometry: {
+        coordinates: [
+          35.4386,
+          46.0917
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NELPO"
+      },
+      geometry: {
+        coordinates: [
+          37.6758,
+          40.47
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEMES"
+      },
+      geometry: {
+        coordinates: [
+          22.5808,
+          37.7064
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEMIS"
+      },
+      geometry: {
+        coordinates: [
+          25.7878,
+          38.3731
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEMRO"
+      },
+      geometry: {
+        coordinates: [
+          33.2028,
+          40.9083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NENDO"
+      },
+      geometry: {
+        coordinates: [
+          34.2461,
+          41.3253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NENKO"
+      },
+      geometry: {
+        coordinates: [
+          27.9717,
+          43.6931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEPNO"
+      },
+      geometry: {
+        coordinates: [
+          28.2778,
+          37.1514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEPOS"
+      },
+      geometry: {
+        coordinates: [
+          21.4375,
+          44.0061
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEPOT"
+      },
+      geometry: {
+        coordinates: [
+          23.0881,
+          45.9603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NERDI"
+      },
+      geometry: {
+        coordinates: [
+          23.7031,
+          45.3128
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEROB"
+      },
+      geometry: {
+        coordinates: [
+          34.1903,
+          45.6992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NESAD"
+      },
+      geometry: {
+        coordinates: [
+          48.2819,
+          42.0997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NESAR"
+      },
+      geometry: {
+        coordinates: [
+          28.1417,
+          42.8097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NESET"
+      },
+      geometry: {
+        coordinates: [
+          29.1197,
+          38.6314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NESIL"
+      },
+      geometry: {
+        coordinates: [
+          29.7231,
+          37.3431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NESTU"
+      },
+      geometry: {
+        coordinates: [
+          40.3494,
+          40.5936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NETGO"
+      },
+      geometry: {
+        coordinates: [
+          33.2331,
+          39.7686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NETIS"
+      },
+      geometry: {
+        coordinates: [
+          24.9636,
+          36.7028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NETON"
+      },
+      geometry: {
+        coordinates: [
+          48.195,
+          39.7617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NETPU"
+      },
+      geometry: {
+        coordinates: [
+          40.4189,
+          40.9228
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NETUL"
+      },
+      geometry: {
+        coordinates: [
+          26.9786,
+          44.6953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEVAL"
+      },
+      geometry: {
+        coordinates: [
+          25.1086,
+          40.8156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEVGI"
+      },
+      geometry: {
+        coordinates: [
+          27.5842,
+          39.8353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEVIK"
+      },
+      geometry: {
+        coordinates: [
+          21.9611,
+          35.1333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEVKA"
+      },
+      geometry: {
+        coordinates: [
+          32.4764,
+          44.1575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEVRA"
+      },
+      geometry: {
+        coordinates: [
+          24.5603,
+          38.1683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NEXAM"
+      },
+      geometry: {
+        coordinates: [
+          28.6353,
+          37.5003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIBOX"
+      },
+      geometry: {
+        coordinates: [
+          26.9397,
+          35.3439
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIDLI"
+      },
+      geometry: {
+        coordinates: [
+          43.0042,
+          42.0744
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIGAB"
+      },
+      geometry: {
+        coordinates: [
+          26.4933,
+          44.5433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIGEV"
+      },
+      geometry: {
+        coordinates: [
+          24.7539,
+          43.9781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIKAS"
+      },
+      geometry: {
+        coordinates: [
+          35.7167,
+          35.1933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIKTI"
+      },
+      geometry: {
+        coordinates: [
+          24.1217,
+          41.5464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NILAS"
+      },
+      geometry: {
+        coordinates: [
+          28.4417,
+          36.1308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NILER"
+      },
+      geometry: {
+        coordinates: [
+          27.8697,
+          39.0839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NILRU"
+      },
+      geometry: {
+        coordinates: [
+          27.6375,
+          40.4081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NILVA"
+      },
+      geometry: {
+        coordinates: [
+          25.6828,
+          39.3239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIMSA"
+      },
+      geometry: {
+        coordinates: [
+          42.7036,
+          43.4833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NINVA"
+      },
+      geometry: {
+        coordinates: [
+          43.2167,
+          37.35
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIPAM"
+      },
+      geometry: {
+        coordinates: [
+          43.3325,
+          44.5431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIPIS"
+      },
+      geometry: {
+        coordinates: [
+          27.5075,
+          35.0467
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIRGA"
+      },
+      geometry: {
+        coordinates: [
+          43.4153,
+          45.0847
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIS"
+      },
+      geometry: {
+        coordinates: [
+          21.8269,
+          43.3464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NISAP"
+      },
+      geometry: {
+        coordinates: [
+          36.6414,
+          36.7844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NISOS"
+      },
+      geometry: {
+        coordinates: [
+          26.4189,
+          37.9192
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NISUT"
+      },
+      geometry: {
+        coordinates: [
+          33.6936,
+          44.3017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NISVA"
+      },
+      geometry: {
+        coordinates: [
+          22.7975,
+          42.9728
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NITOK"
+      },
+      geometry: {
+        coordinates: [
+          32.9083,
+          46.125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIVAX"
+      },
+      geometry: {
+        coordinates: [
+          39.6342,
+          41.4892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIVLA"
+      },
+      geometry: {
+        coordinates: [
+          42.7961,
+          40.4622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NIZIP"
+      },
+      geometry: {
+        coordinates: [
+          37.7667,
+          36.9847
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOBLO"
+      },
+      geometry: {
+        coordinates: [
+          39.845,
+          45.4819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOBVA"
+      },
+      geometry: {
+        coordinates: [
+          49.7811,
+          41.1078
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NODKO"
+      },
+      geometry: {
+        coordinates: [
+          28.2686,
+          38.2197
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOLDO"
+      },
+      geometry: {
+        coordinates: [
+          45.3581,
+          32.8256
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOLGA"
+      },
+      geometry: {
+        coordinates: [
+          42.9789,
+          41.4281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOLTO"
+      },
+      geometry: {
+        coordinates: [
+          46.9397,
+          35.2431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOMPA"
+      },
+      geometry: {
+        coordinates: [
+          33.2378,
+          45.5956
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NONDU"
+      },
+      geometry: {
+        coordinates: [
+          26.675,
+          41.13
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NONOR"
+      },
+      geometry: {
+        coordinates: [
+          41.7972,
+          44.8508
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NORDI"
+      },
+      geometry: {
+        coordinates: [
+          33.0883,
+          34.7967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOSAK"
+      },
+      geometry: {
+        coordinates: [
+          42.7233,
+          45.4581
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOTSA"
+      },
+      geometry: {
+        coordinates: [
+          49.0542,
+          33.2958
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NOTVI"
+      },
+      geometry: {
+        coordinates: [
+          30.0661,
+          40.7278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUGBA"
+      },
+      geometry: {
+        coordinates: [
+          30.6742,
+          41.5911
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUGRI"
+      },
+      geometry: {
+        coordinates: [
+          37.165,
+          44.1214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NULGO"
+      },
+      geometry: {
+        coordinates: [
+          23.7172,
+          44.045
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NULRU"
+      },
+      geometry: {
+        coordinates: [
+          39.645,
+          38.9789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUMSO"
+      },
+      geometry: {
+        coordinates: [
+          30.3453,
+          40.9228
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUMTI"
+      },
+      geometry: {
+        coordinates: [
+          29.5242,
+          39.6411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUNRA"
+      },
+      geometry: {
+        coordinates: [
+          43.2764,
+          44.6778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUNTI"
+      },
+      geometry: {
+        coordinates: [
+          48.1686,
+          40.5894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUNTU"
+      },
+      geometry: {
+        coordinates: [
+          37.3597,
+          39.5797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NUPVU"
+      },
+      geometry: {
+        coordinates: [
+          27.3794,
+          43.2822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NURPO"
+      },
+      geometry: {
+        coordinates: [
+          29.3156,
+          44.4686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "NZ"
+      },
+      geometry: {
+        coordinates: [
+          39.6731,
+          45.2186
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBAGI"
+      },
+      geometry: {
+        coordinates: [
+          22.0958,
+          43.5603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBELA"
+      },
+      geometry: {
+        coordinates: [
+          25.8272,
+          44.5456
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBIXI"
+      },
+      geometry: {
+        coordinates: [
+          29.015,
+          40.7703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBLAK"
+      },
+      geometry: {
+        coordinates: [
+          22.3639,
+          43.4869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBORA"
+      },
+      geometry: {
+        coordinates: [
+          44.4656,
+          41.8333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBRUK"
+      },
+      geometry: {
+        coordinates: [
+          33.1189,
+          38.0239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBUGA"
+      },
+      geometry: {
+        coordinates: [
+          26.0942,
+          44.1089
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBUMA"
+      },
+      geometry: {
+        coordinates: [
+          37.8619,
+          43.9294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OBUPO"
+      },
+      geometry: {
+        coordinates: [
+          28.6869,
+          35.8853
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODALI"
+      },
+      geometry: {
+        coordinates: [
+          38.15,
+          40.3278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODERO"
+      },
+      geometry: {
+        coordinates: [
+          30.2644,
+          42.6106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODIKO"
+      },
+      geometry: {
+        coordinates: [
+          23.2419,
+          40.9714
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODILI"
+      },
+      geometry: {
+        coordinates: [
+          42.0944,
+          41.7214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODIRA"
+      },
+      geometry: {
+        coordinates: [
+          36.9147,
+          42.7089
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODMAX"
+      },
+      geometry: {
+        coordinates: [
+          31.4031,
+          42.1211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODNAK"
+      },
+      geometry: {
+        coordinates: [
+          35.7789,
+          45.7692
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODPOT"
+      },
+      geometry: {
+        coordinates: [
+          35.8661,
+          40.9903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODRIK"
+      },
+      geometry: {
+        coordinates: [
+          43.9486,
+          43.4331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODRUP"
+      },
+      geometry: {
+        coordinates: [
+          31.9161,
+          40.2667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODS"
+      },
+      geometry: {
+        coordinates: [
+          30.6708,
+          46.4303
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODS02"
+      },
+      geometry: {
+        coordinates: [
+          30.7064,
+          46.3392
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODS04"
+      },
+      geometry: {
+        coordinates: [
+          30.5514,
+          46.3528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ODSAM"
+      },
+      geometry: {
+        coordinates: [
+          37.7647,
+          40.6481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGAPA"
+      },
+      geometry: {
+        coordinates: [
+          38.0367,
+          43.7781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGATA"
+      },
+      geometry: {
+        coordinates: [
+          30.1306,
+          44.8125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGEVI"
+      },
+      geometry: {
+        coordinates: [
+          43.7869,
+          41.1347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGIBI"
+      },
+      geometry: {
+        coordinates: [
+          28.7119,
+          41.0281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGL01"
+      },
+      geometry: {
+        coordinates: [
+          30.52,
+          45.9922
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGLAR"
+      },
+      geometry: {
+        coordinates: [
+          30.53,
+          46.015
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGMAL"
+      },
+      geometry: {
+        coordinates: [
+          42.7803,
+          43.8869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGMOS"
+      },
+      geometry: {
+        coordinates: [
+          39.5019,
+          42.6314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGNEN"
+      },
+      geometry: {
+        coordinates: [
+          49.395,
+          40.5264
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OGOTA"
+      },
+      geometry: {
+        coordinates: [
+          23.3267,
+          43.2142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OITT"
+      },
+      geometry: {
+        coordinates: [
+          46.235,
+          38.1339
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKANA"
+      },
+      geometry: {
+        coordinates: [
+          22.4931,
+          42.8464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKBUL"
+      },
+      geometry: {
+        coordinates: [
+          48.9983,
+          40.28
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKDES"
+      },
+      geometry: {
+        coordinates: [
+          46.0272,
+          43.0561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKELI"
+      },
+      geometry: {
+        coordinates: [
+          33.0167,
+          38.7289
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKESA"
+      },
+      geometry: {
+        coordinates: [
+          27.3864,
+          37.6292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKITA"
+      },
+      geometry: {
+        coordinates: [
+          41.8592,
+          45.7
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKLAM"
+      },
+      geometry: {
+        coordinates: [
+          31.5828,
+          38.0908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKLOP"
+      },
+      geometry: {
+        coordinates: [
+          21.3317,
+          44.1833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKMOT"
+      },
+      geometry: {
+        coordinates: [
+          31.7908,
+          38.5106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKOBA"
+      },
+      geometry: {
+        coordinates: [
+          42.4986,
+          43.6667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKORO"
+      },
+      geometry: {
+        coordinates: [
+          26.3775,
+          37.2044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKPEL"
+      },
+      geometry: {
+        coordinates: [
+          30.5231,
+          37.2975
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKTAT"
+      },
+      geometry: {
+        coordinates: [
+          48.5533,
+          41.4233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKTIM"
+      },
+      geometry: {
+        coordinates: [
+          23.9244,
+          41.2331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKUDA"
+      },
+      geometry: {
+        coordinates: [
+          44.0364,
+          40.1469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OKUDU"
+      },
+      geometry: {
+        coordinates: [
+          39.0144,
+          38.5019
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLDOK"
+      },
+      geometry: {
+        coordinates: [
+          26.8839,
+          40.2478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLDUD"
+      },
+      geometry: {
+        coordinates: [
+          32.6119,
+          42.1661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLENA"
+      },
+      geometry: {
+        coordinates: [
+          36.6333,
+          44.35
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLIDA"
+      },
+      geometry: {
+        coordinates: [
+          24.8911,
+          38.4183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLMAT"
+      },
+      geometry: {
+        coordinates: [
+          49.2836,
+          42.5281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLMIP"
+      },
+      geometry: {
+        coordinates: [
+          22.37,
+          46.0453
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLNOR"
+      },
+      geometry: {
+        coordinates: [
+          26.3217,
+          44.3883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLOTA"
+      },
+      geometry: {
+        coordinates: [
+          21.6167,
+          42.23
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLPOT"
+      },
+      geometry: {
+        coordinates: [
+          36.3606,
+          39.8611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OLUPO"
+      },
+      geometry: {
+        coordinates: [
+          37.6619,
+          41.7086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OMENO"
+      },
+      geometry: {
+        coordinates: [
+          23.4814,
+          42.2969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OMIRO"
+      },
+      geometry: {
+        coordinates: [
+          23.6672,
+          38.75
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OPE"
+      },
+      geometry: {
+        coordinates: [
+          26.1319,
+          44.5594
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OPT"
+      },
+      geometry: {
+        coordinates: [
+          26.5603,
+          44.5925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OPW"
+      },
+      geometry: {
+        coordinates: [
+          25.9847,
+          44.5578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORHAN"
+      },
+      geometry: {
+        coordinates: [
+          39.5778,
+          39.9475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORMAN"
+      },
+      geometry: {
+        coordinates: [
+          33.3858,
+          41.2919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORMOS"
+      },
+      geometry: {
+        coordinates: [
+          26.5808,
+          37.8425
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORNOS"
+      },
+      geometry: {
+        coordinates: [
+          33.4767,
+          34.76
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORSUT"
+      },
+      geometry: {
+        coordinates: [
+          26.0758,
+          44.1761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORTIP"
+      },
+      geometry: {
+        coordinates: [
+          25.3331,
+          43.9778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORVET"
+      },
+      geometry: {
+        coordinates: [
+          25.6572,
+          44.4119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORVIS"
+      },
+      geometry: {
+        coordinates: [
+          28.1392,
+          35.5722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ORVOR"
+      },
+      geometry: {
+        coordinates: [
+          35.6903,
+          41.0225
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSDAN"
+      },
+      geometry: {
+        coordinates: [
+          30.6903,
+          38.8519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSDIP"
+      },
+      geometry: {
+        coordinates: [
+          34.7986,
+          42.2383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSDOR"
+      },
+      geometry: {
+        coordinates: [
+          30.05,
+          44.9764
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSDUT"
+      },
+      geometry: {
+        coordinates: [
+          37.5544,
+          41.19
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSGED"
+      },
+      geometry: {
+        coordinates: [
+          30.1069,
+          38.9094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSKAL"
+      },
+      geometry: {
+        coordinates: [
+          43.4653,
+          44.7497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSKOV"
+      },
+      geometry: {
+        coordinates: [
+          38.1575,
+          37.0711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSMEV"
+      },
+      geometry: {
+        coordinates: [
+          30.5717,
+          41.9978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSMOS"
+      },
+      geometry: {
+        coordinates: [
+          23.2625,
+          40.1478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSRIN"
+      },
+      geometry: {
+        coordinates: [
+          33.4747,
+          41.3044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSTAL"
+      },
+      geometry: {
+        coordinates: [
+          26.7728,
+          44.2778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSTEX"
+      },
+      geometry: {
+        coordinates: [
+          26.9561,
+          42.1594
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSTOV"
+      },
+      geometry: {
+        coordinates: [
+          23.8,
+          43.7833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSVEL"
+      },
+      geometry: {
+        coordinates: [
+          31.0186,
+          38.4819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OSVIX"
+      },
+      geometry: {
+        coordinates: [
+          21.2456,
+          44.3256
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTALO"
+      },
+      geometry: {
+        coordinates: [
+          44.3167,
+          35.2833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTESA"
+      },
+      geometry: {
+        coordinates: [
+          33.4347,
+          34.9286
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTIDO"
+      },
+      geometry: {
+        coordinates: [
+          44.3258,
+          36.8653
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTKEM"
+      },
+      geometry: {
+        coordinates: [
+          29.8708,
+          40.7258
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTKEP"
+      },
+      geometry: {
+        coordinates: [
+          42.66,
+          37.8592
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTKOK"
+      },
+      geometry: {
+        coordinates: [
+          24.0125,
+          41.9994
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTKOT"
+      },
+      geometry: {
+        coordinates: [
+          34.4328,
+          42.1114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTL"
+      },
+      geometry: {
+        coordinates: [
+          26.0006,
+          44.5703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTLUG"
+      },
+      geometry: {
+        coordinates: [
+          41.5122,
+          39.1536
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTPER"
+      },
+      geometry: {
+        coordinates: [
+          25.53,
+          43.0433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTPEV"
+      },
+      geometry: {
+        coordinates: [
+          27.3672,
+          37.3219
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTPOL"
+      },
+      geometry: {
+        coordinates: [
+          31.5103,
+          45.4564
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTPOM"
+      },
+      geometry: {
+        coordinates: [
+          30.6533,
+          39.5778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTR"
+      },
+      geometry: {
+        coordinates: [
+          26.1311,
+          44.5756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTREX"
+      },
+      geometry: {
+        coordinates: [
+          24.9389,
+          35.1544
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTROM"
+      },
+      geometry: {
+        coordinates: [
+          40.6592,
+          40.9444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTSAN"
+      },
+      geometry: {
+        coordinates: [
+          30.3314,
+          40.7106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTSIX"
+      },
+      geometry: {
+        coordinates: [
+          29.9561,
+          39.7617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OTSOV"
+      },
+      geometry: {
+        coordinates: [
+          37.4314,
+          39.8328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OVACI"
+      },
+      geometry: {
+        coordinates: [
+          29.1542,
+          39.7889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OVDOT"
+      },
+      geometry: {
+        coordinates: [
+          22.9769,
+          44.5389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OVGAN"
+      },
+      geometry: {
+        coordinates: [
+          29.7222,
+          40.7708
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OZBEY"
+      },
+      geometry: {
+        coordinates: [
+          39.1,
+          37.2419
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "OZYAK"
+      },
+      geometry: {
+        coordinates: [
+          29.1433,
+          37.125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAD"
+      },
+      geometry: {
+        coordinates: [
+          47.9683,
+          39.5744
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PADGU"
+      },
+      geometry: {
+        coordinates: [
+          22.6106,
+          44.7786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAIVA"
+      },
+      geometry: {
+        coordinates: [
+          29.5883,
+          41.2039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PALER"
+      },
+      geometry: {
+        coordinates: [
+          36.545,
+          45.1533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PALUT"
+      },
+      geometry: {
+        coordinates: [
+          39.5333,
+          38.6939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PANOX"
+      },
+      geometry: {
+        coordinates: [
+          25.7172,
+          38.3767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAPUS"
+      },
+      geometry: {
+        coordinates: [
+          45.4519,
+          32.8928
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PARAS"
+      },
+      geometry: {
+        coordinates: [
+          45.6928,
+          37.5258
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PARAT"
+      },
+      geometry: {
+        coordinates: [
+          41.715,
+          45.5331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAREX"
+      },
+      geometry: {
+        coordinates: [
+          46.865,
+          36.0908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAROT"
+      },
+      geometry: {
+        coordinates: [
+          49.9781,
+          36.1911
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PARSU"
+      },
+      geometry: {
+        coordinates: [
+          48.08,
+          39.63
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PASIP"
+      },
+      geometry: {
+        coordinates: [
+          38.9333,
+          33.1
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PATUM"
+      },
+      geometry: {
+        coordinates: [
+          37.3867,
+          46.0997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAVET"
+      },
+      geometry: {
+        coordinates: [
+          49.8836,
+          35.4442
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAVOD"
+      },
+      geometry: {
+        coordinates: [
+          45.3094,
+          37.0344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAXAT"
+      },
+      geometry: {
+        coordinates: [
+          46.0886,
+          33.3489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAXIS"
+      },
+      geometry: {
+        coordinates: [
+          27.3333,
+          33.9517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PAZAR"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          41.2989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PDV"
+      },
+      geometry: {
+        coordinates: [
+          24.8764,
+          42.0533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEDER"
+      },
+      geometry: {
+        coordinates: [
+          30.8647,
+          35.1781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PELAG"
+      },
+      geometry: {
+        coordinates: [
+          23.7586,
+          37.3208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PELAS"
+      },
+      geometry: {
+        coordinates: [
+          23.9917,
+          39.3
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PELES"
+      },
+      geometry: {
+        coordinates: [
+          27.0533,
+          46.2172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PELIL"
+      },
+      geometry: {
+        coordinates: [
+          30.2328,
+          37.8397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PELIR"
+      },
+      geometry: {
+        coordinates: [
+          42.4986,
+          44.7497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PELUR"
+      },
+      geometry: {
+        coordinates: [
+          25.4883,
+          45.2867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEMAN"
+      },
+      geometry: {
+        coordinates: [
+          45.6422,
+          40.3911
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEMOK"
+      },
+      geometry: {
+        coordinates: [
+          24.3483,
+          44.3647
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEMUX"
+      },
+      geometry: {
+        coordinates: [
+          28.7747,
+          40.9331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PENEV"
+      },
+      geometry: {
+        coordinates: [
+          23.8094,
+          43.0317
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PENOB"
+      },
+      geometry: {
+        coordinates: [
+          48.1019,
+          40.4619
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PENUK"
+      },
+      geometry: {
+        coordinates: [
+          48.8519,
+          42.7547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEP"
+      },
+      geometry: {
+        coordinates: [
+          21.4486,
+          41.3378
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEPAK"
+      },
+      geometry: {
+        coordinates: [
+          29.3217,
+          40.6961
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEPIR"
+      },
+      geometry: {
+        coordinates: [
+          34.7594,
+          32.3767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PERED"
+      },
+      geometry: {
+        coordinates: [
+          30.8631,
+          45.9278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEREN"
+      },
+      geometry: {
+        coordinates: [
+          23.9678,
+          40.5967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEREV"
+      },
+      geometry: {
+        coordinates: [
+          35.0972,
+          45.5464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PERIM"
+      },
+      geometry: {
+        coordinates: [
+          28.6383,
+          35.0169
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEROK"
+      },
+      geometry: {
+        coordinates: [
+          25.4517,
+          37.2044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PERUN"
+      },
+      geometry: {
+        coordinates: [
+          31.8383,
+          44.815
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PESED"
+      },
+      geometry: {
+        coordinates: [
+          31.7725,
+          43.9278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PESOX"
+      },
+      geometry: {
+        coordinates: [
+          30.0333,
+          39.04
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PETAR"
+      },
+      geometry: {
+        coordinates: [
+          32.0814,
+          40.1711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PETOS"
+      },
+      geometry: {
+        coordinates: [
+          25.4542,
+          44.4767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PETUM"
+      },
+      geometry: {
+        coordinates: [
+          42.615,
+          45.3997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEVAT"
+      },
+      geometry: {
+        coordinates: [
+          35.2175,
+          43.9019
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEVOP"
+      },
+      geometry: {
+        coordinates: [
+          38.7603,
+          40.1244
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEXAL"
+      },
+      geometry: {
+        coordinates: [
+          26.0914,
+          44.7167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEXAN"
+      },
+      geometry: {
+        coordinates: [
+          25.1797,
+          36.6803
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PEXES"
+      },
+      geometry: {
+        coordinates: [
+          43.345,
+          40.0014
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PHA"
+      },
+      geometry: {
+        coordinates: [
+          32.5058,
+          34.7117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIBOM"
+      },
+      geometry: {
+        coordinates: [
+          25.3078,
+          40.9042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIDET"
+      },
+      geometry: {
+        coordinates: [
+          34.7842,
+          32.5294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIDEV"
+      },
+      geometry: {
+        coordinates: [
+          31.5333,
+          37.0942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIDIT"
+      },
+      geometry: {
+        coordinates: [
+          34.2517,
+          43.7944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIDOR"
+      },
+      geometry: {
+        coordinates: [
+          23.6561,
+          42.5939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIKAD"
+      },
+      geometry: {
+        coordinates: [
+          22.6978,
+          38.0614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIKAN"
+      },
+      geometry: {
+        coordinates: [
+          49.5,
+          42.8833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIKOG"
+      },
+      geometry: {
+        coordinates: [
+          33.6247,
+          32.8253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIKOS"
+      },
+      geometry: {
+        coordinates: [
+          21.55,
+          39.9617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PILAT"
+      },
+      geometry: {
+        coordinates: [
+          28.0978,
+          44.8239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIMAV"
+      },
+      geometry: {
+        coordinates: [
+          29.9536,
+          40.4006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIPEN"
+      },
+      geometry: {
+        coordinates: [
+          26.1167,
+          38.0614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIPUR"
+      },
+      geometry: {
+        coordinates: [
+          33.2389,
+          41.3511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIRIL"
+      },
+      geometry: {
+        coordinates: [
+          38.5717,
+          43.3081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIROX"
+      },
+      geometry: {
+        coordinates: [
+          28.05,
+          36.4833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PISEM"
+      },
+      geometry: {
+        coordinates: [
+          35.6614,
+          45.2711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PITOP"
+      },
+      geometry: {
+        coordinates: [
+          39.7736,
+          43.0389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIVOS"
+      },
+      geometry: {
+        coordinates: [
+          25.7503,
+          38.3747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PIXAP"
+      },
+      geometry: {
+        coordinates: [
+          39.6922,
+          40.5017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PLH"
+      },
+      geometry: {
+        coordinates: [
+          23.6808,
+          35.2275
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "POGEN"
+      },
+      geometry: {
+        coordinates: [
+          36.6936,
+          37.5031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "POGOD"
+      },
+      geometry: {
+        coordinates: [
+          32.0967,
+          45.7433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "POGUL"
+      },
+      geometry: {
+        coordinates: [
+          44.2653,
+          44.0831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "POLAD"
+      },
+      geometry: {
+        coordinates: [
+          47.0117,
+          40.9792
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "POLUN"
+      },
+      geometry: {
+        coordinates: [
+          25.2233,
+          44.2375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PRI"
+      },
+      geometry: {
+        coordinates: [
+          21.0367,
+          42.5658
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PROZR"
+      },
+      geometry: {
+        coordinates: [
+          39.7103,
+          43.5581
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PRT10"
+      },
+      geometry: {
+        coordinates: [
+          21.0783,
+          42.41
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PRT15"
+      },
+      geometry: {
+        coordinates: [
+          21.1017,
+          42.3283
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PRT21"
+      },
+      geometry: {
+        coordinates: [
+          21.2233,
+          42.29
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PRT35"
+      },
+      geometry: {
+        coordinates: [
+          21.0694,
+          42.3717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PRT36"
+      },
+      geometry: {
+        coordinates: [
+          21.0361,
+          42.3664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PUSTO"
+      },
+      geometry: {
+        coordinates: [
+          42.75,
+          33.35
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "PUTSI"
+      },
+      geometry: {
+        coordinates: [
+          44.6167,
+          33.5333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RABDI"
+      },
+      geometry: {
+        coordinates: [
+          45.7419,
+          38.8011
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RABEM"
+      },
+      geometry: {
+        coordinates: [
+          45.4969,
+          37.8114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAFIF"
+      },
+      geometry: {
+        coordinates: [
+          38.3219,
+          33.2131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAGET"
+      },
+      geometry: {
+        coordinates: [
+          45.8967,
+          33.5133
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAHMA"
+      },
+      geometry: {
+        coordinates: [
+          42.5081,
+          40.3733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAKUR"
+      },
+      geometry: {
+        coordinates: [
+          31.9478,
+          42.7989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAMIX"
+      },
+      geometry: {
+        coordinates: [
+          27.3386,
+          46.2894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAPAV"
+      },
+      geometry: {
+        coordinates: [
+          26.2269,
+          44.3069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAPIV"
+      },
+      geometry: {
+        coordinates: [
+          34.9317,
+          32.5867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAPLU"
+      },
+      geometry: {
+        coordinates: [
+          41.7583,
+          33.3833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAPOS"
+      },
+      geometry: {
+        coordinates: [
+          25.1356,
+          37.1347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RARTA"
+      },
+      geometry: {
+        coordinates: [
+          49.9211,
+          36.8897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASAM"
+      },
+      geometry: {
+        coordinates: [
+          49.1942,
+          40.6125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASDA"
+      },
+      geometry: {
+        coordinates: [
+          30.95,
+          33.1
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASIL"
+      },
+      geometry: {
+        coordinates: [
+          31.4167,
+          45.41
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASLA"
+      },
+      geometry: {
+        coordinates: [
+          49.5692,
+          33.2006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASNO"
+      },
+      geometry: {
+        coordinates: [
+          21.4661,
+          34.3333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASOK"
+      },
+      geometry: {
+        coordinates: [
+          37.9939,
+          43.9197
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASUB"
+      },
+      geometry: {
+        coordinates: [
+          25.4181,
+          43.9789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RASVA"
+      },
+      geometry: {
+        coordinates: [
+          38.0078,
+          37.4981
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RATKI"
+      },
+      geometry: {
+        coordinates: [
+          44.3,
+          43.6667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RATNO"
+      },
+      geometry: {
+        coordinates: [
+          30.1964,
+          46.1733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RATSI"
+      },
+      geometry: {
+        coordinates: [
+          36.2203,
+          37.8372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RATVO"
+      },
+      geometry: {
+        coordinates: [
+          43.9344,
+          37.2406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RATVU"
+      },
+      geometry: {
+        coordinates: [
+          29.3783,
+          39.9067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAUMA"
+      },
+      geometry: {
+        coordinates: [
+          27.3092,
+          39.9839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAVAK"
+      },
+      geometry: {
+        coordinates: [
+          21.6269,
+          43.6875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAVGO"
+      },
+      geometry: {
+        coordinates: [
+          30.5008,
+          39.5469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAVIL"
+      },
+      geometry: {
+        coordinates: [
+          30.0019,
+          40.3361
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAVLI"
+      },
+      geometry: {
+        coordinates: [
+          41.3922,
+          39.4769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAXAD"
+      },
+      geometry: {
+        coordinates: [
+          22.2428,
+          42.3083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RAZAR"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          41.2986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RDIMA"
+      },
+      geometry: {
+        coordinates: [
+          36.5333,
+          33.0333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RDS"
+      },
+      geometry: {
+        coordinates: [
+          28.0822,
+          36.3397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RDSXA"
+      },
+      geometry: {
+        coordinates: [
+          28.0842,
+          36.4006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RDSXD"
+      },
+      geometry: {
+        coordinates: [
+          28.0631,
+          36.4008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REBGI"
+      },
+      geometry: {
+        coordinates: [
+          44.5775,
+          40.2433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REBKO"
+      },
+      geometry: {
+        coordinates: [
+          34.1619,
+          43.2431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REBLO"
+      },
+      geometry: {
+        coordinates: [
+          43.685,
+          40.84
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REBTA"
+      },
+      geometry: {
+        coordinates: [
+          33.1694,
+          37.6867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REDMA"
+      },
+      geometry: {
+        coordinates: [
+          37.08,
+          43.6231
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REDNO"
+      },
+      geometry: {
+        coordinates: [
+          31.0139,
+          38.9592
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REDRA"
+      },
+      geometry: {
+        coordinates: [
+          26.5244,
+          37.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REFUS"
+      },
+      geometry: {
+        coordinates: [
+          23.805,
+          41.2764
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REKVO"
+      },
+      geometry: {
+        coordinates: [
+          40.4983,
+          39.5214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RELTI"
+      },
+      geometry: {
+        coordinates: [
+          40.1319,
+          46.0869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RELTU"
+      },
+      geometry: {
+        coordinates: [
+          32.3233,
+          41.6442
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REMEK"
+      },
+      geometry: {
+        coordinates: [
+          42.3236,
+          45.4919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REMPO"
+      },
+      geometry: {
+        coordinates: [
+          36.4722,
+          37.66
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RENAT"
+      },
+      geometry: {
+        coordinates: [
+          36.5583,
+          44.0367
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RENBA"
+      },
+      geometry: {
+        coordinates: [
+          34.0233,
+          44.635
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RENGI"
+      },
+      geometry: {
+        coordinates: [
+          41.08,
+          38.4639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RERSA"
+      },
+      geometry: {
+        coordinates: [
+          21.0853,
+          36.0017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RERVA"
+      },
+      geometry: {
+        coordinates: [
+          33.8925,
+          42.3597
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RESAK"
+      },
+      geometry: {
+        coordinates: [
+          45.2644,
+          32.5514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RESLA"
+      },
+      geometry: {
+        coordinates: [
+          23.3128,
+          43.3283
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RESLI"
+      },
+      geometry: {
+        coordinates: [
+          30.1197,
+          38.2944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RESLO"
+      },
+      geometry: {
+        coordinates: [
+          42.625,
+          43.95
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RESTI"
+      },
+      geometry: {
+        coordinates: [
+          24.4397,
+          36.4678
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REVDA"
+      },
+      geometry: {
+        coordinates: [
+          29.1433,
+          43.7333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REXAL"
+      },
+      geometry: {
+        coordinates: [
+          33.895,
+          34.7233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "REXAN"
+      },
+      geometry: {
+        coordinates: [
+          46.6597,
+          35.9806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RF"
+      },
+      geometry: {
+        coordinates: [
+          39.9175,
+          45.2867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIDLA"
+      },
+      geometry: {
+        coordinates: [
+          37.365,
+          45.7497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIDPA"
+      },
+      geometry: {
+        coordinates: [
+          26.4872,
+          44.6219
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIGOX"
+      },
+      geometry: {
+        coordinates: [
+          47.9433,
+          35.105
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIGRO"
+      },
+      geometry: {
+        coordinates: [
+          25.8742,
+          37.59
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIKSO"
+      },
+      geometry: {
+        coordinates: [
+          26.4333,
+          38.8333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RILEX"
+      },
+      geometry: {
+        coordinates: [
+          26.7664,
+          41.9711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RILIN"
+      },
+      geometry: {
+        coordinates: [
+          22.6667,
+          37.965
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIMAX"
+      },
+      geometry: {
+        coordinates: [
+          22.7169,
+          38.1186
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIMBO"
+      },
+      geometry: {
+        coordinates: [
+          28.5522,
+          41.3808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RINAL"
+      },
+      geometry: {
+        coordinates: [
+          45.7369,
+          44.3881
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RINEK"
+      },
+      geometry: {
+        coordinates: [
+          39.8633,
+          45.8281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIPGA"
+      },
+      geometry: {
+        coordinates: [
+          27.9019,
+          45.1919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIPLI"
+      },
+      geometry: {
+        coordinates: [
+          25.3628,
+          37.2758
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIPNU"
+      },
+      geometry: {
+        coordinates: [
+          31.2103,
+          40.5253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RISKA"
+      },
+      geometry: {
+        coordinates: [
+          44.5819,
+          44.0664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RITAG"
+      },
+      geometry: {
+        coordinates: [
+          29.5578,
+          42.5858
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RITGU"
+      },
+      geometry: {
+        coordinates: [
+          27.8803,
+          40.7942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIVBU"
+      },
+      geometry: {
+        coordinates: [
+          29.3125,
+          37.3272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIVOS"
+      },
+      geometry: {
+        coordinates: [
+          27.6547,
+          44.6558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIXEN"
+      },
+      geometry: {
+        coordinates: [
+          28.7661,
+          42.0822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RIXUB"
+      },
+      geometry: {
+        coordinates: [
+          30.6689,
+          42.2872
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RNA"
+      },
+      geometry: {
+        coordinates: [
+          42.0614,
+          37.365
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROBUT"
+      },
+      geometry: {
+        coordinates: [
+          42.7033,
+          46.0064
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROCHE"
+      },
+      geometry: {
+        coordinates: [
+          28.9347,
+          40.5519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RODIP"
+      },
+      geometry: {
+        coordinates: [
+          24.7011,
+          41.4208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RODVU"
+      },
+      geometry: {
+        coordinates: [
+          33.9797,
+          45.0517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROKMO"
+      },
+      geometry: {
+        coordinates: [
+          45.3636,
+          45.2764
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROKVA"
+      },
+      geometry: {
+        coordinates: [
+          31.6572,
+          41.8292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROLIN"
+      },
+      geometry: {
+        coordinates: [
+          40.6564,
+          41.7992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROLVI"
+      },
+      geometry: {
+        coordinates: [
+          31.8114,
+          39.2178
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROMOK"
+      },
+      geometry: {
+        coordinates: [
+          31.7283,
+          43.4733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RONBU"
+      },
+      geometry: {
+        coordinates: [
+          26.4983,
+          44.0517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROP"
+      },
+      geometry: {
+        coordinates: [
+          35.5728,
+          32.9825
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROPTA"
+      },
+      geometry: {
+        coordinates: [
+          39.9283,
+          44.9122
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROPUT"
+      },
+      geometry: {
+        coordinates: [
+          32.5017,
+          43.8333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RORKI"
+      },
+      geometry: {
+        coordinates: [
+          29.1433,
+          43.0961
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RORMU"
+      },
+      geometry: {
+        coordinates: [
+          29.9269,
+          39.52
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROTKU"
+      },
+      geometry: {
+        coordinates: [
+          39.96,
+          38.7933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROVAM"
+      },
+      geometry: {
+        coordinates: [
+          23.8078,
+          43.1511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROVDO"
+      },
+      geometry: {
+        coordinates: [
+          25.44,
+          41.9958
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROVON"
+      },
+      geometry: {
+        coordinates: [
+          45.8894,
+          37.2669
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROXEP"
+      },
+      geometry: {
+        coordinates: [
+          27.4372,
+          37.3053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROXOL"
+      },
+      geometry: {
+        coordinates: [
+          27.5044,
+          35.7728
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ROXUK"
+      },
+      geometry: {
+        coordinates: [
+          29.7186,
+          39.8903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RST"
+      },
+      geometry: {
+        coordinates: [
+          49.6158,
+          37.3264
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUBIK"
+      },
+      geometry: {
+        coordinates: [
+          33.0817,
+          34.9033
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUDER"
+      },
+      geometry: {
+        coordinates: [
+          34.125,
+          34.9533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUGAS"
+      },
+      geometry: {
+        coordinates: [
+          22.7914,
+          41.3294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUGIK"
+      },
+      geometry: {
+        coordinates: [
+          42.4233,
+          44.8203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUKAP"
+      },
+      geometry: {
+        coordinates: [
+          31.9661,
+          37.8208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUMEN"
+      },
+      geometry: {
+        coordinates: [
+          24.3133,
+          42.305
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUNOL"
+      },
+      geometry: {
+        coordinates: [
+          29.9147,
+          38.4603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUPUM"
+      },
+      geometry: {
+        coordinates: [
+          27.3694,
+          36.1028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUSOS"
+      },
+      geometry: {
+        coordinates: [
+          24.3664,
+          36.2083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUSUS"
+      },
+      geometry: {
+        coordinates: [
+          33.5925,
+          44.7819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUTAR"
+      },
+      geometry: {
+        coordinates: [
+          28.0206,
+          42.8836
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUTEP"
+      },
+      geometry: {
+        coordinates: [
+          38.51,
+          43.5881
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUVOM"
+      },
+      geometry: {
+        coordinates: [
+          34.3933,
+          42.2936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "RUXEV"
+      },
+      geometry: {
+        coordinates: [
+          34.8622,
+          41.2636
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SAGIL"
+      },
+      geometry: {
+        coordinates: [
+          49.5667,
+          40.6333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SALAZ"
+      },
+      geometry: {
+        coordinates: [
+          33.2092,
+          39.9558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SALDA"
+      },
+      geometry: {
+        coordinates: [
+          30.0003,
+          37.5553
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SALGO"
+      },
+      geometry: {
+        coordinates: [
+          32.1994,
+          40.4739
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SALIM"
+      },
+      geometry: {
+        coordinates: [
+          36.3111,
+          35.4958
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SALUN"
+      },
+      geometry: {
+        coordinates: [
+          24.45,
+          34
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SAM"
+      },
+      geometry: {
+        coordinates: [
+          26.9144,
+          37.6914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SARIZ"
+      },
+      geometry: {
+        coordinates: [
+          35.3786,
+          39.0411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SARPI"
+      },
+      geometry: {
+        coordinates: [
+          41.4497,
+          41.5489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SAT02"
+      },
+      geometry: {
+        coordinates: [
+          23.6897,
+          37.7453
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SBH"
+      },
+      geometry: {
+        coordinates: [
+          29.325,
+          40.9042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SBHXD"
+      },
+      geometry: {
+        coordinates: [
+          29.2933,
+          40.8925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SEHER"
+      },
+      geometry: {
+        coordinates: [
+          38.5736,
+          40.5061
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SEHIR"
+      },
+      geometry: {
+        coordinates: [
+          32.2036,
+          37.6517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SELVI"
+      },
+      geometry: {
+        coordinates: [
+          34.4994,
+          37.8989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SEPTU"
+      },
+      geometry: {
+        coordinates: [
+          44.7333,
+          33.2167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SERCE"
+      },
+      geometry: {
+        coordinates: [
+          27.3092,
+          41.5772
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SEREN"
+      },
+      geometry: {
+        coordinates: [
+          32.8161,
+          40.2322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SETNA"
+      },
+      geometry: {
+        coordinates: [
+          45.9228,
+          37.9375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SEVAN"
+      },
+      geometry: {
+        coordinates: [
+          44.9547,
+          40.5342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SEVKU"
+      },
+      geometry: {
+        coordinates: [
+          43.2878,
+          36.0967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SG448"
+      },
+      geometry: {
+        coordinates: [
+          43.9097,
+          40.6278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SG449"
+      },
+      geometry: {
+        coordinates: [
+          43.8389,
+          40.5083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SG450"
+      },
+      geometry: {
+        coordinates: [
+          43.7439,
+          40.5472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SG453"
+      },
+      geometry: {
+        coordinates: [
+          43.8139,
+          40.6611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SG500"
+      },
+      geometry: {
+        coordinates: [
+          43.9806,
+          40.7111
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIB"
+      },
+      geometry: {
+        coordinates: [
+          24.1525,
+          45.785
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIBAN"
+      },
+      geometry: {
+        coordinates: [
+          38.965,
+          44.3331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIBVU"
+      },
+      geometry: {
+        coordinates: [
+          45.7825,
+          38.7456
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIDNA"
+      },
+      geometry: {
+        coordinates: [
+          41.6833,
+          36.5661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIGBI"
+      },
+      geometry: {
+        coordinates: [
+          42.3333,
+          33.0333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SILBO"
+      },
+      geometry: {
+        coordinates: [
+          43.4833,
+          32.9833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIN"
+      },
+      geometry: {
+        coordinates: [
+          35.0769,
+          42.0222
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SINKA"
+      },
+      geometry: {
+        coordinates: [
+          44.7981,
+          33.3603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SISIN"
+      },
+      geometry: {
+        coordinates: [
+          45.6869,
+          32.835
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SISPI"
+      },
+      geometry: {
+        coordinates: [
+          29.87,
+          39.9147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SISVO"
+      },
+      geometry: {
+        coordinates: [
+          27.7764,
+          37.8956
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIT"
+      },
+      geometry: {
+        coordinates: [
+          26.1892,
+          35.0683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SITRU"
+      },
+      geometry: {
+        coordinates: [
+          26.2994,
+          38.1072
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIV"
+      },
+      geometry: {
+        coordinates: [
+          36.8933,
+          39.7894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SIVKU"
+      },
+      geometry: {
+        coordinates: [
+          29.9794,
+          39.1356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SKJ"
+      },
+      geometry: {
+        coordinates: [
+          21.6306,
+          41.935
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SKJ07"
+      },
+      geometry: {
+        coordinates: [
+          21.7214,
+          41.6358
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SKJ08"
+      },
+      geometry: {
+        coordinates: [
+          21.7469,
+          41.6031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SKP"
+      },
+      geometry: {
+        coordinates: [
+          23.6158,
+          39.1806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SMF"
+      },
+      geometry: {
+        coordinates: [
+          33.9808,
+          45.0353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SMF01"
+      },
+      geometry: {
+        coordinates: [
+          34.0114,
+          45.1533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SMF02"
+      },
+      geometry: {
+        coordinates: [
+          34.1003,
+          45.1081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SMF03"
+      },
+      geometry: {
+        coordinates: [
+          33.9508,
+          44.9956
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SMF04"
+      },
+      geometry: {
+        coordinates: [
+          34.0325,
+          44.9808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SNI"
+      },
+      geometry: {
+        coordinates: [
+          25.4825,
+          36.395
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SNJ"
+      },
+      geometry: {
+        coordinates: [
+          47.0078,
+          35.2389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOBIL"
+      },
+      geometry: {
+        coordinates: [
+          45.1689,
+          34.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOBLO"
+      },
+      geometry: {
+        coordinates: [
+          36.3833,
+          43.25
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOBOS"
+      },
+      geometry: {
+        coordinates: [
+          33.945,
+          34.925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOBSA"
+      },
+      geometry: {
+        coordinates: [
+          25.0872,
+          46.0481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SODGO"
+      },
+      geometry: {
+        coordinates: [
+          22.8475,
+          44.8672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOF"
+      },
+      geometry: {
+        coordinates: [
+          23.4089,
+          42.6947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOGTA"
+      },
+      geometry: {
+        coordinates: [
+          34.7181,
+          45.6444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOGUM"
+      },
+      geometry: {
+        coordinates: [
+          43.915,
+          34.2033
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOKAL"
+      },
+      geometry: {
+        coordinates: [
+          27.6183,
+          32.6003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOKAN"
+      },
+      geometry: {
+        coordinates: [
+          38.3686,
+          33.1358
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOKRI"
+      },
+      geometry: {
+        coordinates: [
+          23.4719,
+          36.2578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOKRU"
+      },
+      geometry: {
+        coordinates: [
+          25.3303,
+          44.9928
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOLIN"
+      },
+      geometry: {
+        coordinates: [
+          34.1708,
+          32.4947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOLSA"
+      },
+      geometry: {
+        coordinates: [
+          35.7789,
+          38.1456
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOMBU"
+      },
+      geometry: {
+        coordinates: [
+          40.2769,
+          39.6003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOMGU"
+      },
+      geometry: {
+        coordinates: [
+          29.9556,
+          39.5533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOMOV"
+      },
+      geometry: {
+        coordinates: [
+          24.85,
+          43.7
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SONAD"
+      },
+      geometry: {
+        coordinates: [
+          39.6764,
+          40.4181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SONEN"
+      },
+      geometry: {
+        coordinates: [
+          28.2853,
+          37.1547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SONLU"
+      },
+      geometry: {
+        coordinates: [
+          28.7997,
+          39.0831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SONSU"
+      },
+      geometry: {
+        coordinates: [
+          38.3867,
+          37.88
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SONUP"
+      },
+      geometry: {
+        coordinates: [
+          28.5,
+          37.4897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOPIS"
+      },
+      geometry: {
+        coordinates: [
+          24.6208,
+          42.8494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOPKU"
+      },
+      geometry: {
+        coordinates: [
+          42.9406,
+          45.4644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOPOV"
+      },
+      geometry: {
+        coordinates: [
+          36.7992,
+          40.2003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SORAR"
+      },
+      geometry: {
+        coordinates: [
+          39.5125,
+          38.6242
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SORDU"
+      },
+      geometry: {
+        coordinates: [
+          25.4467,
+          44.0425
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOREG"
+      },
+      geometry: {
+        coordinates: [
+          43.9953,
+          45.9081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOREV"
+      },
+      geometry: {
+        coordinates: [
+          24.4244,
+          37.0969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOROK"
+      },
+      geometry: {
+        coordinates: [
+          32.71,
+          44.105
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOROL"
+      },
+      geometry: {
+        coordinates: [
+          43.1653,
+          43.7331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOSED"
+      },
+      geometry: {
+        coordinates: [
+          41.0042,
+          42.1097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOSEM"
+      },
+      geometry: {
+        coordinates: [
+          31.2183,
+          37.3783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOSIL"
+      },
+      geometry: {
+        coordinates: [
+          21.3078,
+          45.3514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOSUS"
+      },
+      geometry: {
+        coordinates: [
+          25.0733,
+          40.7442
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOTAM"
+      },
+      geometry: {
+        coordinates: [
+          32.9333,
+          44.5933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOTIV"
+      },
+      geometry: {
+        coordinates: [
+          28.4833,
+          36.55
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOTIX"
+      },
+      geometry: {
+        coordinates: [
+          26.9033,
+          35.8533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SOVAP"
+      },
+      geometry: {
+        coordinates: [
+          36.7961,
+          42.2497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SPA06"
+      },
+      geometry: {
+        coordinates: [
+          23.7828,
+          37.6428
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SPATZ"
+      },
+      geometry: {
+        coordinates: [
+          29.1469,
+          40.1511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SRT"
+      },
+      geometry: {
+        coordinates: [
+          41.8819,
+          37.9606
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "STJ"
+      },
+      geometry: {
+        coordinates: [
+          25.9769,
+          44.9183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUBUT"
+      },
+      geometry: {
+        coordinates: [
+          46.8219,
+          40.8992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUD"
+      },
+      geometry: {
+        coordinates: [
+          24.175,
+          35.5231
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUD05"
+      },
+      geometry: {
+        coordinates: [
+          23.6044,
+          35.7072
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUD06"
+      },
+      geometry: {
+        coordinates: [
+          24.535,
+          35.1908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUDES"
+      },
+      geometry: {
+        coordinates: [
+          26.8933,
+          39.7694
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUGAT"
+      },
+      geometry: {
+        coordinates: [
+          37.7514,
+          37.0508
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUGUL"
+      },
+      geometry: {
+        coordinates: [
+          32.9717,
+          43.1183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SULAF"
+      },
+      geometry: {
+        coordinates: [
+          38.1742,
+          33.455
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SULAK"
+      },
+      geometry: {
+        coordinates: [
+          36.2867,
+          37.8942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SULEL"
+      },
+      geometry: {
+        coordinates: [
+          49.5117,
+          40.1892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SULOD"
+      },
+      geometry: {
+        coordinates: [
+          42.6653,
+          44.5914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SULTA"
+      },
+      geometry: {
+        coordinates: [
+          29.7397,
+          40.0456
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUMAP"
+      },
+      geometry: {
+        coordinates: [
+          40.6067,
+          38.1167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUMOL"
+      },
+      geometry: {
+        coordinates: [
+          33.1811,
+          42.7989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUNAT"
+      },
+      geometry: {
+        coordinates: [
+          29.2497,
+          37.2519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUNUM"
+      },
+      geometry: {
+        coordinates: [
+          34.8575,
+          42.0119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUREL"
+      },
+      geometry: {
+        coordinates: [
+          40.8772,
+          40.8672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SURUC"
+      },
+      geometry: {
+        coordinates: [
+          38.54,
+          37.0633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUSUZ"
+      },
+      geometry: {
+        coordinates: [
+          41.6083,
+          39.6808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUTBU"
+      },
+      geometry: {
+        coordinates: [
+          48.7922,
+          36.5567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUTIS"
+      },
+      geometry: {
+        coordinates: [
+          24.7486,
+          40.7019
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SUVUP"
+      },
+      geometry: {
+        coordinates: [
+          26.8086,
+          40.1619
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "SWIDA"
+      },
+      geometry: {
+        coordinates: [
+          36.5667,
+          32.7167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "T1617"
+      },
+      geometry: {
+        coordinates: [
+          28.7067,
+          41.2986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "T3435"
+      },
+      geometry: {
+        coordinates: [
+          28.7072,
+          41.2647
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TA033"
+      },
+      geometry: {
+        coordinates: [
+          29.3478,
+          40.6308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TABAN"
+      },
+      geometry: {
+        coordinates: [
+          39.6017,
+          43.0783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TABAS"
+      },
+      geometry: {
+        coordinates: [
+          43.8317,
+          40.8353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TABIP"
+      },
+      geometry: {
+        coordinates: [
+          32.5547,
+          40.2733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TABUR"
+      },
+      geometry: {
+        coordinates: [
+          26.2778,
+          44.5911
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAGAR"
+      },
+      geometry: {
+        coordinates: [
+          43.0694,
+          42.2783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAGLA"
+      },
+      geometry: {
+        coordinates: [
+          43.8333,
+          32.3683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAGRU"
+      },
+      geometry: {
+        coordinates: [
+          44.1383,
+          34.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TALAM"
+      },
+      geometry: {
+        coordinates: [
+          30.4386,
+          44.0864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TALAS"
+      },
+      geometry: {
+        coordinates: [
+          21.9167,
+          41.0767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TALIL"
+      },
+      geometry: {
+        coordinates: [
+          39.9722,
+          39.1889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAMER"
+      },
+      geometry: {
+        coordinates: [
+          40.8164,
+          38.2406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAN"
+      },
+      geometry: {
+        coordinates: [
+          38.6433,
+          33.5078
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TANSA"
+      },
+      geometry: {
+        coordinates: [
+          26.8167,
+          34
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TARKA"
+      },
+      geometry: {
+        coordinates: [
+          31.1,
+          45.865
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TARSU"
+      },
+      geometry: {
+        coordinates: [
+          34.5206,
+          36.6256
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAVAS"
+      },
+      geometry: {
+        coordinates: [
+          29.2436,
+          37.5886
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAVNI"
+      },
+      geometry: {
+        coordinates: [
+          46.9419,
+          35.6353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAVRO"
+      },
+      geometry: {
+        coordinates: [
+          44.5025,
+          41.1914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAVRU"
+      },
+      geometry: {
+        coordinates: [
+          28.865,
+          45.975
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAVSA"
+      },
+      geometry: {
+        coordinates: [
+          44.2489,
+          42.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAVUS"
+      },
+      geometry: {
+        coordinates: [
+          41.7358,
+          39.8697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAYXA"
+      },
+      geometry: {
+        coordinates: [
+          29.7283,
+          37.7781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TAYXD"
+      },
+      geometry: {
+        coordinates: [
+          29.7072,
+          37.7797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBN"
+      },
+      geometry: {
+        coordinates: [
+          39.7956,
+          40.9953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBNXA"
+      },
+      geometry: {
+        coordinates: [
+          39.775,
+          40.9994
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBNXD"
+      },
+      geometry: {
+        coordinates: [
+          39.8042,
+          40.9903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBS"
+      },
+      geometry: {
+        coordinates: [
+          44.9742,
+          41.6475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBS01"
+      },
+      geometry: {
+        coordinates: [
+          44.9597,
+          41.5967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBS02"
+      },
+      geometry: {
+        coordinates: [
+          44.9133,
+          41.615
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBS03"
+      },
+      geometry: {
+        coordinates: [
+          45.02,
+          41.6158
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBZ"
+      },
+      geometry: {
+        coordinates: [
+          46.2131,
+          38.1481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBZXA"
+      },
+      geometry: {
+        coordinates: [
+          30.1589,
+          39.1106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TBZXD"
+      },
+      geometry: {
+        coordinates: [
+          30.1867,
+          39.1233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TEKDO"
+      },
+      geometry: {
+        coordinates: [
+          30.1569,
+          38.3383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TEKMI"
+      },
+      geometry: {
+        coordinates: [
+          38.3494,
+          37.9589
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TELRI"
+      },
+      geometry: {
+        coordinates: [
+          27.5553,
+          40.3031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TELVO"
+      },
+      geometry: {
+        coordinates: [
+          32.9217,
+          39.3711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TEMEL"
+      },
+      geometry: {
+        coordinates: [
+          39.1372,
+          41.0572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TEMGO"
+      },
+      geometry: {
+        coordinates: [
+          29.3464,
+          41.1664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TEPKI"
+      },
+      geometry: {
+        coordinates: [
+          32.9928,
+          41.4533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TERLO"
+      },
+      geometry: {
+        coordinates: [
+          43.5411,
+          44.1578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TERME"
+      },
+      geometry: {
+        coordinates: [
+          37.2247,
+          41.2144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TESMI"
+      },
+      geometry: {
+        coordinates: [
+          42.1125,
+          45.1092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TESTU"
+      },
+      geometry: {
+        coordinates: [
+          26.0697,
+          44.7517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TESVA"
+      },
+      geometry: {
+        coordinates: [
+          44.4964,
+          38.2858
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TETMA"
+      },
+      geometry: {
+        coordinates: [
+          46.1953,
+          45.7167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TETRO"
+      },
+      geometry: {
+        coordinates: [
+          42.8597,
+          41.6725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TETSA"
+      },
+      geometry: {
+        coordinates: [
+          28.7792,
+          41.7461
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TEVDA"
+      },
+      geometry: {
+        coordinates: [
+          35.0667,
+          38.3728
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TEVNI"
+      },
+      geometry: {
+        coordinates: [
+          30.3639,
+          41.5914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TF035"
+      },
+      geometry: {
+        coordinates: [
+          39.6017,
+          39.0097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TF036"
+      },
+      geometry: {
+        coordinates: [
+          39.7739,
+          39.2897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TFGXA"
+      },
+      geometry: {
+        coordinates: [
+          32.3508,
+          36.2906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TFGXD"
+      },
+      geometry: {
+        coordinates: [
+          32.3008,
+          36.2964
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TGG"
+      },
+      geometry: {
+        coordinates: [
+          23.5522,
+          38.3356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TI022"
+      },
+      geometry: {
+        coordinates: [
+          28.2889,
+          40.6628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIARE"
+      },
+      geometry: {
+        coordinates: [
+          32.9886,
+          39.9069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIBLO"
+      },
+      geometry: {
+        coordinates: [
+          43.8911,
+          40.3856
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIMOP"
+      },
+      geometry: {
+        coordinates: [
+          35.3611,
+          39.9919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIMUR"
+      },
+      geometry: {
+        coordinates: [
+          24.2392,
+          43.6889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TINAL"
+      },
+      geometry: {
+        coordinates: [
+          32.9367,
+          45.32
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIPAS"
+      },
+      geometry: {
+        coordinates: [
+          26.7633,
+          35.9078
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIRER"
+      },
+      geometry: {
+        coordinates: [
+          28.3842,
+          41.1364
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIRMA"
+      },
+      geometry: {
+        coordinates: [
+          35.765,
+          38.9422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIRMO"
+      },
+      geometry: {
+        coordinates: [
+          28.2661,
+          35.6339
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIROS"
+      },
+      geometry: {
+        coordinates: [
+          34.3167,
+          33.3
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIRVO"
+      },
+      geometry: {
+        coordinates: [
+          28.7364,
+          44.9925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TISOM"
+      },
+      geometry: {
+        coordinates: [
+          36.4917,
+          43.7417
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TISOT"
+      },
+      geometry: {
+        coordinates: [
+          44.8858,
+          41.2681
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TITAG"
+      },
+      geometry: {
+        coordinates: [
+          33.5,
+          45.7667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TITEK"
+      },
+      geometry: {
+        coordinates: [
+          23.5739,
+          44.4933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TITUS"
+      },
+      geometry: {
+        coordinates: [
+          21.3847,
+          36.3314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIVUG"
+      },
+      geometry: {
+        coordinates: [
+          33.0311,
+          41.7336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TIXIP"
+      },
+      geometry: {
+        coordinates: [
+          22.6467,
+          45.8375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TKT"
+      },
+      geometry: {
+        coordinates: [
+          36.3775,
+          40.315
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOBAL"
+      },
+      geometry: {
+        coordinates: [
+          32.1233,
+          34.925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TODRO"
+      },
+      geometry: {
+        coordinates: [
+          23.3625,
+          42.9203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TODSI"
+      },
+      geometry: {
+        coordinates: [
+          38.105,
+          43.41
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOKER"
+      },
+      geometry: {
+        coordinates: [
+          30.7722,
+          40.3133
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOLBA"
+      },
+      geometry: {
+        coordinates: [
+          34.4,
+          45.1
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOLRU"
+      },
+      geometry: {
+        coordinates: [
+          47.6525,
+          45.6481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOLUN"
+      },
+      geometry: {
+        coordinates: [
+          38.79,
+          41.34
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOMBI"
+      },
+      geometry: {
+        coordinates: [
+          30.825,
+          36.0411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOPLU"
+      },
+      geometry: {
+        coordinates: [
+          28.1731,
+          41.4786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOPUZ"
+      },
+      geometry: {
+        coordinates: [
+          30.7728,
+          36.7547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOSKA"
+      },
+      geometry: {
+        coordinates: [
+          30,
+          34.9667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOSVI"
+      },
+      geometry: {
+        coordinates: [
+          25.1614,
+          44.7539
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOTAM"
+      },
+      geometry: {
+        coordinates: [
+          44.6683,
+          35.2669
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOTBO"
+      },
+      geometry: {
+        coordinates: [
+          45.4828,
+          37.5819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOTKA"
+      },
+      geometry: {
+        coordinates: [
+          27.1167,
+          43.2056
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TOTMA"
+      },
+      geometry: {
+        coordinates: [
+          34.0739,
+          43.7739
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR03L"
+      },
+      geometry: {
+        coordinates: [
+          32.9836,
+          40.1178
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR03R"
+      },
+      geometry: {
+        coordinates: [
+          32.9831,
+          40.1142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR05"
+      },
+      geometry: {
+        coordinates: [
+          28.8114,
+          40.9664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR06"
+      },
+      geometry: {
+        coordinates: [
+          29.2933,
+          40.8928
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR21L"
+      },
+      geometry: {
+        coordinates: [
+          33.0092,
+          40.1414
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR21R"
+      },
+      geometry: {
+        coordinates: [
+          33.0072,
+          40.1425
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR23"
+      },
+      geometry: {
+        coordinates: [
+          28.8361,
+          40.9778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TR24"
+      },
+      geometry: {
+        coordinates: [
+          29.3253,
+          40.9044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TRL"
+      },
+      geometry: {
+        coordinates: [
+          22.3403,
+          37.4039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TSL"
+      },
+      geometry: {
+        coordinates: [
+          22.9911,
+          40.4569
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TSL01"
+      },
+      geometry: {
+        coordinates: [
+          22.9933,
+          40.4628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TSL05"
+      },
+      geometry: {
+        coordinates: [
+          22.8919,
+          40.6719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TSL10"
+      },
+      geometry: {
+        coordinates: [
+          22.5439,
+          40.42
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TSL11"
+      },
+      geometry: {
+        coordinates: [
+          22.585,
+          40.2956
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TSL12"
+      },
+      geometry: {
+        coordinates: [
+          22.5872,
+          40.6381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TSR"
+      },
+      geometry: {
+        coordinates: [
+          21.3053,
+          45.8178
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUBAR"
+      },
+      geometry: {
+        coordinates: [
+          45.4358,
+          37.505
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUDBU"
+      },
+      geometry: {
+        coordinates: [
+          27.7769,
+          41.9667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUDEK"
+      },
+      geometry: {
+        coordinates: [
+          39.4031,
+          42.1839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUDMU"
+      },
+      geometry: {
+        coordinates: [
+          38.125,
+          34.5167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUDNU"
+      },
+      geometry: {
+        coordinates: [
+          44.7217,
+          37.8561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUGEL"
+      },
+      geometry: {
+        coordinates: [
+          47.0789,
+          36.2056
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUGSO"
+      },
+      geometry: {
+        coordinates: [
+          27.5814,
+          42.9372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUKDO"
+      },
+      geometry: {
+        coordinates: [
+          47.7461,
+          38.7739
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUKLO"
+      },
+      geometry: {
+        coordinates: [
+          47.2975,
+          35.1706
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUKTU"
+      },
+      geometry: {
+        coordinates: [
+          32.7161,
+          36.3347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TULNU"
+      },
+      geometry: {
+        coordinates: [
+          27.0044,
+          46.2806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUMER"
+      },
+      geometry: {
+        coordinates: [
+          29.4703,
+          38.6656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUMKU"
+      },
+      geometry: {
+        coordinates: [
+          42.1061,
+          38.5514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUNCA"
+      },
+      geometry: {
+        coordinates: [
+          31.0311,
+          41.2328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUNLA"
+      },
+      geometry: {
+        coordinates: [
+          36.0333,
+          35.8833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUNOT"
+      },
+      geometry: {
+        coordinates: [
+          37.3983,
+          44.7164
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUNSA"
+      },
+      geometry: {
+        coordinates: [
+          32.7583,
+          43.9233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUNVO"
+      },
+      geometry: {
+        coordinates: [
+          25.3878,
+          43.1422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUREL"
+      },
+      geometry: {
+        coordinates: [
+          30.1694,
+          44.7122
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUREN"
+      },
+      geometry: {
+        coordinates: [
+          24.5386,
+          38.4292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TURIR"
+      },
+      geometry: {
+        coordinates: [
+          28.6561,
+          44.8328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TURKO"
+      },
+      geometry: {
+        coordinates: [
+          27.5867,
+          40.6494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TURNA"
+      },
+      geometry: {
+        coordinates: [
+          41.3578,
+          39.5586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUSOK"
+      },
+      geometry: {
+        coordinates: [
+          42.8986,
+          45.0331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUSYR"
+      },
+      geometry: {
+        coordinates: [
+          37.3831,
+          36.6489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUTAK"
+      },
+      geometry: {
+        coordinates: [
+          45.5461,
+          40.1342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUXAZ"
+      },
+      geometry: {
+        coordinates: [
+          44.7436,
+          39.7081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TUXEM"
+      },
+      geometry: {
+        coordinates: [
+          25.0817,
+          36.9203
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TZK"
+      },
+      geometry: {
+        coordinates: [
+          34.5428,
+          38.7667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TZKXA"
+      },
+      geometry: {
+        coordinates: [
+          34.5192,
+          38.7772
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "TZKXD"
+      },
+      geometry: {
+        coordinates: [
+          34.55,
+          38.765
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UBAKU"
+      },
+      geometry: {
+        coordinates: [
+          22.2131,
+          45.5117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UBARO"
+      },
+      geometry: {
+        coordinates: [
+          47.1006,
+          45.725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UBOGU"
+      },
+      geometry: {
+        coordinates: [
+          24.6683,
+          44.7631
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UDROS"
+      },
+      geometry: {
+        coordinates: [
+          30.5961,
+          42.7389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UDVAR"
+      },
+      geometry: {
+        coordinates: [
+          21.0406,
+          43.1158
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UDVET"
+      },
+      geometry: {
+        coordinates: [
+          35.5336,
+          38.315
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UDYZ"
+      },
+      geometry: {
+        coordinates: [
+          44.3958,
+          40.1472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UGADA"
+      },
+      geometry: {
+        coordinates: [
+          43.0319,
+          43.4664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UH"
+      },
+      geometry: {
+        coordinates: [
+          40.09,
+          45.8519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UKOO"
+      },
+      geometry: {
+        coordinates: [
+          30.6781,
+          46.4269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UKSIS"
+      },
+      geometry: {
+        coordinates: [
+          48.6672,
+          33.3664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULANA"
+      },
+      geometry: {
+        coordinates: [
+          43.7819,
+          43.3164
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULGAN"
+      },
+      geometry: {
+        coordinates: [
+          40.6925,
+          39.6417
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULGEK"
+      },
+      geometry: {
+        coordinates: [
+          30.9372,
+          45.7297
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULGUR"
+      },
+      geometry: {
+        coordinates: [
+          31.3269,
+          41.1333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULKAN"
+      },
+      geometry: {
+        coordinates: [
+          28.1258,
+          37.3025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULKEM"
+      },
+      geometry: {
+        coordinates: [
+          43.3647,
+          38.1106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULKUR"
+      },
+      geometry: {
+        coordinates: [
+          43.4003,
+          39.7889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULMAR"
+      },
+      geometry: {
+        coordinates: [
+          27.1869,
+          41.2111
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULMIN"
+      },
+      geometry: {
+        coordinates: [
+          23.3981,
+          45.8139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULMIP"
+      },
+      geometry: {
+        coordinates: [
+          30.6869,
+          41.6522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULNAS"
+      },
+      geometry: {
+        coordinates: [
+          41.5644,
+          43.9167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULRAS"
+      },
+      geometry: {
+        coordinates: [
+          34.1125,
+          38.9933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULREP"
+      },
+      geometry: {
+        coordinates: [
+          40.8878,
+          39.3817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULSAB"
+      },
+      geometry: {
+        coordinates: [
+          41.1314,
+          38.1425
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULTED"
+      },
+      geometry: {
+        coordinates: [
+          41.8261,
+          38.3506
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ULVEX"
+      },
+      geometry: {
+        coordinates: [
+          31.5308,
+          41.5828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UMDOT"
+      },
+      geometry: {
+        coordinates: [
+          33.2869,
+          36.3825
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UMESA"
+      },
+      geometry: {
+        coordinates: [
+          43.7186,
+          35.2947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UMH"
+      },
+      geometry: {
+        coordinates: [
+          45.0844,
+          37.6872
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UMLEN"
+      },
+      geometry: {
+        coordinates: [
+          40.2167,
+          38.6617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UMPIT"
+      },
+      geometry: {
+        coordinates: [
+          24.1742,
+          42.7797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UMRUN"
+      },
+      geometry: {
+        coordinates: [
+          31.8781,
+          40.1861
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNAMI"
+      },
+      geometry: {
+        coordinates: [
+          38.78,
+          43.2631
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNEPA"
+      },
+      geometry: {
+        coordinates: [
+          39.7583,
+          45.5081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNEPI"
+      },
+      geometry: {
+        coordinates: [
+          30.1978,
+          38.2494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNLIR"
+      },
+      geometry: {
+        coordinates: [
+          28.085,
+          41.7942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNOBA"
+      },
+      geometry: {
+        coordinates: [
+          34.3331,
+          38.6664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNSAV"
+      },
+      geometry: {
+        coordinates: [
+          28.7897,
+          41.4783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNSUL"
+      },
+      geometry: {
+        coordinates: [
+          31.3086,
+          41.7664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UNVUS"
+      },
+      geometry: {
+        coordinates: [
+          32.1414,
+          41.695
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UPAMA"
+      },
+      geometry: {
+        coordinates: [
+          25.4183,
+          43.6264
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UPKAG"
+      },
+      geometry: {
+        coordinates: [
+          34.1353,
+          41.4547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UPKUL"
+      },
+      geometry: {
+        coordinates: [
+          30.3175,
+          38.5317
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UREBO"
+      },
+      geometry: {
+        coordinates: [
+          37.1442,
+          38.7894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URELA"
+      },
+      geometry: {
+        coordinates: [
+          26.5611,
+          45.4967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URGUP"
+      },
+      geometry: {
+        coordinates: [
+          34.03,
+          38.5211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URITA"
+      },
+      geometry: {
+        coordinates: [
+          34.3967,
+          43.2867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URKK"
+      },
+      geometry: {
+        coordinates: [
+          39.17,
+          45.0347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URM"
+      },
+      geometry: {
+        coordinates: [
+          43.6011,
+          43.5458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URMM"
+      },
+      geometry: {
+        coordinates: [
+          43.0831,
+          44.2267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URNIL"
+      },
+      geometry: {
+        coordinates: [
+          26.5286,
+          37.685
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "URUDI"
+      },
+      geometry: {
+        coordinates: [
+          24.5225,
+          38.6103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "USALI"
+      },
+      geometry: {
+        coordinates: [
+          23.6456,
+          42.3019
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "USANU"
+      },
+      geometry: {
+        coordinates: [
+          36.0625,
+          40.9356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "USINI"
+      },
+      geometry: {
+        coordinates: [
+          27.1317,
+          36.6769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UTEKA"
+      },
+      geometry: {
+        coordinates: [
+          22.3922,
+          43.9122
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UTURI"
+      },
+      geometry: {
+        coordinates: [
+          37.9747,
+          39.8736
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UTUSO"
+      },
+      geometry: {
+        coordinates: [
+          31.7106,
+          36.4497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UVALU"
+      },
+      geometry: {
+        coordinates: [
+          25.4442,
+          44.7108
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UVTOL"
+      },
+      geometry: {
+        coordinates: [
+          28.3128,
+          37.7675
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UVUDA"
+      },
+      geometry: {
+        coordinates: [
+          27.8036,
+          42.2253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "UVULU"
+      },
+      geometry: {
+        coordinates: [
+          34.5364,
+          41.5703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VABUR"
+      },
+      geometry: {
+        coordinates: [
+          28.0597,
+          42.5031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VADEN"
+      },
+      geometry: {
+        coordinates: [
+          27.2161,
+          42.0656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VADUS"
+      },
+      geometry: {
+        coordinates: [
+          32.0581,
+          35.3053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAGEN"
+      },
+      geometry: {
+        coordinates: [
+          22.0778,
+          42.7247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAGSI"
+      },
+      geometry: {
+        coordinates: [
+          29.9472,
+          41.4608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAKIS"
+      },
+      geometry: {
+        coordinates: [
+          28.7247,
+          43.8522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAKTI"
+      },
+      geometry: {
+        coordinates: [
+          37.8894,
+          40.7683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAKUL"
+      },
+      geometry: {
+        coordinates: [
+          42.1417,
+          37.8942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAKUM"
+      },
+      geometry: {
+        coordinates: [
+          28.2581,
+          38.5022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAMKO"
+      },
+      geometry: {
+        coordinates: [
+          23.9942,
+          40.7647
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAMON"
+      },
+      geometry: {
+        coordinates: [
+          24.6797,
+          44.3994
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAN"
+      },
+      geometry: {
+        coordinates: [
+          43.325,
+          38.4661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VANES"
+      },
+      geometry: {
+        coordinates: [
+          27.7317,
+          36.385
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VANET"
+      },
+      geometry: {
+        coordinates: [
+          23.4103,
+          42.2947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VANIX"
+      },
+      geometry: {
+        coordinates: [
+          21.3908,
+          34.8275
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VANXA"
+      },
+      geometry: {
+        coordinates: [
+          43.3411,
+          38.4783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VANXD"
+      },
+      geometry: {
+        coordinates: [
+          43.3108,
+          38.4528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAPEK"
+      },
+      geometry: {
+        coordinates: [
+          31.6944,
+          37.3667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VARDI"
+      },
+      geometry: {
+        coordinates: [
+          21.9511,
+          38.6719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VARIX"
+      },
+      geometry: {
+        coordinates: [
+          25.0342,
+          37.3639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VARTO"
+      },
+      geometry: {
+        coordinates: [
+          41.545,
+          39.0661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VASIS"
+      },
+      geometry: {
+        coordinates: [
+          22.4081,
+          45.9533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VASTE"
+      },
+      geometry: {
+        coordinates: [
+          28.8911,
+          40.9614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAXEB"
+      },
+      geometry: {
+        coordinates: [
+          33.5786,
+          41.5969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAXEN"
+      },
+      geometry: {
+        coordinates: [
+          45.25,
+          33.3
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VAXOS"
+      },
+      geometry: {
+        coordinates: [
+          29.3344,
+          34.9931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEDIX"
+      },
+      geometry: {
+        coordinates: [
+          21.4403,
+          40.3481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEGES"
+      },
+      geometry: {
+        coordinates: [
+          25.6756,
+          35.2089
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VELBA"
+      },
+      geometry: {
+        coordinates: [
+          22.8833,
+          41.9667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VELIP"
+      },
+      geometry: {
+        coordinates: [
+          21.5333,
+          44.7717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VELOP"
+      },
+      geometry: {
+        coordinates: [
+          23.2867,
+          37.1492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VELOX"
+      },
+      geometry: {
+        coordinates: [
+          34.0833,
+          33.8167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEMAG"
+      },
+      geometry: {
+        coordinates: [
+          31.1358,
+          41.6789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEMEK"
+      },
+      geometry: {
+        coordinates: [
+          31.9222,
+          36.4722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEPUM"
+      },
+      geometry: {
+        coordinates: [
+          33.4172,
+          42.4206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VERCA"
+      },
+      geometry: {
+        coordinates: [
+          45.6572,
+          41.2081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VESAR"
+      },
+      geometry: {
+        coordinates: [
+          34.0167,
+          35.9167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VETEN"
+      },
+      geometry: {
+        coordinates: [
+          45.9561,
+          40.1342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEVEN"
+      },
+      geometry: {
+        coordinates: [
+          37.6383,
+          39.4528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEVIN"
+      },
+      geometry: {
+        coordinates: [
+          26.6519,
+          44.7131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEVUD"
+      },
+      geometry: {
+        coordinates: [
+          31.2222,
+          40.3808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEXOL"
+      },
+      geometry: {
+        coordinates: [
+          26.1994,
+          38.3489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VEZIN"
+      },
+      geometry: {
+        coordinates: [
+          32.7244,
+          40.055
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VIKBI"
+      },
+      geometry: {
+        coordinates: [
+          24.6558,
+          44.2586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VIRAN"
+      },
+      geometry: {
+        coordinates: [
+          41.7028,
+          40.1186
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VIVIA"
+      },
+      geometry: {
+        coordinates: [
+          23.4161,
+          39.9717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VLADA"
+      },
+      geometry: {
+        coordinates: [
+          49.3614,
+          40.5131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VUSEB"
+      },
+      geometry: {
+        coordinates: [
+          43.8,
+          36.2769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VUSOR"
+      },
+      geometry: {
+        coordinates: [
+          23.3547,
+          33
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "VUVAG"
+      },
+      geometry: {
+        coordinates: [
+          45.4906,
+          38.4247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "WAK"
+      },
+      geometry: {
+        coordinates: [
+          23.7044,
+          42.575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "WRN"
+      },
+      geometry: {
+        coordinates: [
+          27.8172,
+          43.2311
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XANEX"
+      },
+      geometry: {
+        coordinates: [
+          24.9803,
+          43.1272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XANIS"
+      },
+      geometry: {
+        coordinates: [
+          22.1858,
+          38.5722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XAVIS"
+      },
+      geometry: {
+        coordinates: [
+          25.5769,
+          35.6947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XAXAN"
+      },
+      geometry: {
+        coordinates: [
+          21.3269,
+          42.1367
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XERBO"
+      },
+      geometry: {
+        coordinates: [
+          49.0947,
+          40.0292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XERIS"
+      },
+      geometry: {
+        coordinates: [
+          24.1403,
+          41.1539
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XILTI"
+      },
+      geometry: {
+        coordinates: [
+          28.1372,
+          42.6431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XORKI"
+      },
+      geometry: {
+        coordinates: [
+          23.5092,
+          38.1697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "XT"
+      },
+      geometry: {
+        coordinates: [
+          39.5764,
+          44.9622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "Y1LSV"
+      },
+      geometry: {
+        coordinates: [
+          26.2267,
+          39.1686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "Y1SPA"
+      },
+      geometry: {
+        coordinates: [
+          24.0758,
+          38.0856
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "Y1TRL"
+      },
+      geometry: {
+        coordinates: [
+          21.6489,
+          38.0025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "Y3LCA"
+      },
+      geometry: {
+        coordinates: [
+          33.3672,
+          34.8311
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "Y5SM"
+      },
+      geometry: {
+        coordinates: [
+          38.8011,
+          44.7744
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "Y7ARA"
+      },
+      geometry: {
+        coordinates: [
+          21.3053,
+          38.3892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "Y7SPA"
+      },
+      geometry: {
+        coordinates: [
+          23.7339,
+          37.5697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAA"
+      },
+      geometry: {
+        coordinates: [
+          29.2075,
+          40.475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAG"
+      },
+      geometry: {
+        coordinates: [
+          39.0267,
+          44.1394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAHAV"
+      },
+      geometry: {
+        coordinates: [
+          31.0817,
+          41.84
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAI24"
+      },
+      geometry: {
+        coordinates: [
+          30.8175,
+          37.0811
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAI25"
+      },
+      geometry: {
+        coordinates: [
+          30.8561,
+          37.3628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAI26"
+      },
+      geometry: {
+        coordinates: [
+          31.0286,
+          37.6669
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAI27"
+      },
+      geometry: {
+        coordinates: [
+          31.2311,
+          37.0436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAI28"
+      },
+      geometry: {
+        coordinates: [
+          31.3517,
+          36.5544
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAMAN"
+      },
+      geometry: {
+        coordinates: [
+          31.4239,
+          40.2397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YASEN"
+      },
+      geometry: {
+        coordinates: [
+          29.5161,
+          41.1989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YASER"
+      },
+      geometry: {
+        coordinates: [
+          47.0822,
+          33.9806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAVRU"
+      },
+      geometry: {
+        coordinates: [
+          31.8328,
+          40.5822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAVUZ"
+      },
+      geometry: {
+        coordinates: [
+          42.4333,
+          40.0444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YAYLA"
+      },
+      geometry: {
+        coordinates: [
+          27.9953,
+          39.8656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG01"
+      },
+      geometry: {
+        coordinates: [
+          27.2172,
+          42.5614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG02"
+      },
+      geometry: {
+        coordinates: [
+          27.2633,
+          42.4986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG04"
+      },
+      geometry: {
+        coordinates: [
+          27.1378,
+          42.4031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG05"
+      },
+      geometry: {
+        coordinates: [
+          27.2186,
+          42.345
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG13"
+      },
+      geometry: {
+        coordinates: [
+          27.5514,
+          42.4783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG14"
+      },
+      geometry: {
+        coordinates: [
+          27.4881,
+          42.4303
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG17"
+      },
+      geometry: {
+        coordinates: [
+          27.2992,
+          42.2867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBG30"
+      },
+      geometry: {
+        coordinates: [
+          27.9283,
+          42.7611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBGS"
+      },
+      geometry: {
+        coordinates: [
+          27.5381,
+          42.5872
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBRAV"
+      },
+      geometry: {
+        coordinates: [
+          36.6531,
+          34.6933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBRY"
+      },
+      geometry: {
+        coordinates: [
+          29.5939,
+          40.2625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YBT3"
+      },
+      geometry: {
+        coordinates: [
+          43.6503,
+          42.0897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YCEDA"
+      },
+      geometry: {
+        coordinates: [
+          36.0011,
+          34.2869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YCRL"
+      },
+      geometry: {
+        coordinates: [
+          27.935,
+          41.1506
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YDEK1"
+      },
+      geometry: {
+        coordinates: [
+          34.3161,
+          32.3531
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YDIGR"
+      },
+      geometry: {
+        coordinates: [
+          38.3,
+          43.3681
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YDV"
+      },
+      geometry: {
+        coordinates: [
+          38.7039,
+          44.3106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YE440"
+      },
+      geometry: {
+        coordinates: [
+          44.4456,
+          40.0983
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YE470"
+      },
+      geometry: {
+        coordinates: [
+          44.6964,
+          40.3411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YER"
+      },
+      geometry: {
+        coordinates: [
+          44.4558,
+          40.1044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YF423"
+      },
+      geometry: {
+        coordinates: [
+          23.0708,
+          42.6331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YHAM"
+      },
+      geometry: {
+        coordinates: [
+          48.5506,
+          34.8669
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI512"
+      },
+      geometry: {
+        coordinates: [
+          30.3086,
+          37.1028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI513"
+      },
+      geometry: {
+        coordinates: [
+          30.5342,
+          37.5103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI514"
+      },
+      geometry: {
+        coordinates: [
+          30.5203,
+          37.2094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI515"
+      },
+      geometry: {
+        coordinates: [
+          30.5167,
+          37.0978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI516"
+      },
+      geometry: {
+        coordinates: [
+          30.6844,
+          37.0286
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI521"
+      },
+      geometry: {
+        coordinates: [
+          30.6392,
+          36.6936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI711"
+      },
+      geometry: {
+        coordinates: [
+          31.1919,
+          36.6294
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI713"
+      },
+      geometry: {
+        coordinates: [
+          31.2269,
+          36.8761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI715"
+      },
+      geometry: {
+        coordinates: [
+          31.0033,
+          37.0644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI716"
+      },
+      geometry: {
+        coordinates: [
+          30.9461,
+          36.9808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI717"
+      },
+      geometry: {
+        coordinates: [
+          30.9353,
+          36.9028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YI721"
+      },
+      geometry: {
+        coordinates: [
+          30.9033,
+          36.6703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKAD"
+      },
+      geometry: {
+        coordinates: [
+          35.4858,
+          33.8075
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKAM2"
+      },
+      geometry: {
+        coordinates: [
+          22.03,
+          36.7828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKAM3"
+      },
+      geometry: {
+        coordinates: [
+          21.8944,
+          37.3661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKAR"
+      },
+      geometry: {
+        coordinates: [
+          43.1039,
+          40.5567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKAS"
+      },
+      geometry: {
+        coordinates: [
+          21.2753,
+          40.4511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKERS"
+      },
+      geometry: {
+        coordinates: [
+          24.51,
+          38.9797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKTN1"
+      },
+      geometry: {
+        coordinates: [
+          37.2642,
+          34.2133
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YKV"
+      },
+      geometry: {
+        coordinates: [
+          44.2425,
+          37.5492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YLA1"
+      },
+      geometry: {
+        coordinates: [
+          39.3378,
+          43.9103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YLU3"
+      },
+      geometry: {
+        coordinates: [
+          41.6142,
+          41.6014
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YMNW"
+      },
+      geometry: {
+        coordinates: [
+          43.0536,
+          44.2397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YND1"
+      },
+      geometry: {
+        coordinates: [
+          40.2442,
+          45.7639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YORER"
+      },
+      geometry: {
+        coordinates: [
+          43.9486,
+          36.2272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YORI"
+      },
+      geometry: {
+        coordinates: [
+          38.0944,
+          40.9644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YORSU"
+      },
+      geometry: {
+        coordinates: [
+          45.3067,
+          35.5578
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YPR"
+      },
+      geometry: {
+        coordinates: [
+          41.4792,
+          44.1181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YSIN"
+      },
+      geometry: {
+        coordinates: [
+          22.3656,
+          41.9808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YSIT2"
+      },
+      geometry: {
+        coordinates: [
+          28.2028,
+          42.9278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YSOF"
+      },
+      geometry: {
+        coordinates: [
+          23.38,
+          42.8311
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YUCEL"
+      },
+      geometry: {
+        coordinates: [
+          33.5853,
+          39.5789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YUNUS"
+      },
+      geometry: {
+        coordinates: [
+          27.8833,
+          36.7097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YUP"
+      },
+      geometry: {
+        coordinates: [
+          47.0603,
+          45.9272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YWN24"
+      },
+      geometry: {
+        coordinates: [
+          27.555,
+          43.1717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YWN28"
+      },
+      geometry: {
+        coordinates: [
+          27.2964,
+          43.2778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YWN37"
+      },
+      geometry: {
+        coordinates: [
+          27.7978,
+          43.0664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YWN44"
+      },
+      geometry: {
+        coordinates: [
+          27.3678,
+          43.1039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YYE01"
+      },
+      geometry: {
+        coordinates: [
+          44.4147,
+          40.1164
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YYE02"
+      },
+      geometry: {
+        coordinates: [
+          44.4058,
+          40.0617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YZ400"
+      },
+      geometry: {
+        coordinates: [
+          44.125,
+          40.1389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YZ420"
+      },
+      geometry: {
+        coordinates: [
+          44.2208,
+          40.0556
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YZ421"
+      },
+      geometry: {
+        coordinates: [
+          44.1361,
+          40.0639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YZ455"
+      },
+      geometry: {
+        coordinates: [
+          44.3519,
+          40.1472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "YZ457"
+      },
+      geometry: {
+        coordinates: [
+          44.6567,
+          40.3681
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZAHAV"
+      },
+      geometry: {
+        coordinates: [
+          34.81,
+          32.8144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZAJ"
+      },
+      geometry: {
+        coordinates: [
+          48.3533,
+          36.7797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZELAF"
+      },
+      geometry: {
+        coordinates: [
+          37.9997,
+          32.9489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZELSU"
+      },
+      geometry: {
+        coordinates: [
+          43.7831,
+          38.2656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZUITA"
+      },
+      geometry: {
+        coordinates: [
+          39.6339,
+          38.3631
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZVR"
+      },
+      geometry: {
+        coordinates: [
+          44.3381,
+          40.1469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZVR01"
+      },
+      geometry: {
+        coordinates: [
+          44.3506,
+          40.1997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "beacon",
+        name: "ZVR02"
+      },
+      geometry: {
+        coordinates: [
+          44.3522,
+          40.0925
+        ],
+        type: "Point"
+      }
+    }
+  ]
+};
+
+// apps/simulator/src/geojsons/airports.json
+var airports_default = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "BKPR"
+      },
+      geometry: {
+        coordinates: [
+          21.0358,
+          42.5742
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "CYYZ"
+      },
+      geometry: {
+        coordinates: [
+          -79.6306,
+          43.6772
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "DFFD"
+      },
+      geometry: {
+        coordinates: [
+          -1.5119,
+          12.3536
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "DNAA"
+      },
+      geometry: {
+        coordinates: [
+          7.265,
+          9.005
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EBBR"
+      },
+      geometry: {
+        coordinates: [
+          4.4844,
+          50.9014
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EBCI"
+      },
+      geometry: {
+        coordinates: [
+          4.4528,
+          50.46
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EBLG"
+      },
+      geometry: {
+        coordinates: [
+          5.4428,
+          50.6364
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDB"
+      },
+      geometry: {
+        coordinates: [
+          13.5006,
+          52.3622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDF"
+      },
+      geometry: {
+        coordinates: [
+          8.5706,
+          50.0333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDH"
+      },
+      geometry: {
+        coordinates: [
+          9.9883,
+          53.6303
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDK"
+      },
+      geometry: {
+        coordinates: [
+          7.1428,
+          50.8658
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDL"
+      },
+      geometry: {
+        coordinates: [
+          6.7572,
+          51.2808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDM"
+      },
+      geometry: {
+        coordinates: [
+          11.7861,
+          48.3539
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDN"
+      },
+      geometry: {
+        coordinates: [
+          11.0781,
+          49.4986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDP"
+      },
+      geometry: {
+        coordinates: [
+          12.2364,
+          51.4239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDR"
+      },
+      geometry: {
+        coordinates: [
+          7.1094,
+          49.2144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDS"
+      },
+      geometry: {
+        coordinates: [
+          9.2219,
+          48.69
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDT"
+      },
+      geometry: {
+        coordinates: [
+          13.2878,
+          52.5597
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDDV"
+      },
+      geometry: {
+        coordinates: [
+          9.6836,
+          52.4603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDFH"
+      },
+      geometry: {
+        coordinates: [
+          7.2639,
+          49.9486
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDJA"
+      },
+      geometry: {
+        coordinates: [
+          10.2394,
+          47.9889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDLP"
+      },
+      geometry: {
+        coordinates: [
+          8.6164,
+          51.6142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EDSB"
+      },
+      geometry: {
+        coordinates: [
+          8.0806,
+          48.7794
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EFHK"
+      },
+      geometry: {
+        coordinates: [
+          24.9633,
+          60.3172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGBB"
+      },
+      geometry: {
+        coordinates: [
+          -1.7481,
+          52.4539
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGCC"
+      },
+      geometry: {
+        coordinates: [
+          -2.275,
+          53.3539
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGFF"
+      },
+      geometry: {
+        coordinates: [
+          -3.3433,
+          51.3967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGGD"
+      },
+      geometry: {
+        coordinates: [
+          -2.7192,
+          51.3828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGGP"
+      },
+      geometry: {
+        coordinates: [
+          -2.8497,
+          53.3336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGGW"
+      },
+      geometry: {
+        coordinates: [
+          -0.3683,
+          51.8747
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGHH"
+      },
+      geometry: {
+        coordinates: [
+          -1.8425,
+          50.78
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGKK"
+      },
+      geometry: {
+        coordinates: [
+          -0.1903,
+          51.1481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGLL"
+      },
+      geometry: {
+        coordinates: [
+          -0.4614,
+          51.4775
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGNM"
+      },
+      geometry: {
+        coordinates: [
+          -1.6608,
+          53.8661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGNT"
+      },
+      geometry: {
+        coordinates: [
+          -1.6897,
+          55.0381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGPF"
+      },
+      geometry: {
+        coordinates: [
+          -4.4331,
+          55.8719
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGPH"
+      },
+      geometry: {
+        coordinates: [
+          -3.3725,
+          55.95
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGSS"
+      },
+      geometry: {
+        coordinates: [
+          0.235,
+          51.885
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGTE"
+      },
+      geometry: {
+        coordinates: [
+          -3.4139,
+          50.7342
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EGVN"
+      },
+      geometry: {
+        coordinates: [
+          -1.5831,
+          51.75
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EHAM"
+      },
+      geometry: {
+        coordinates: [
+          4.7642,
+          52.3081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EHRD"
+      },
+      geometry: {
+        coordinates: [
+          4.4372,
+          51.9569
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EIDW"
+      },
+      geometry: {
+        coordinates: [
+          -6.27,
+          53.4214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EINN"
+      },
+      geometry: {
+        coordinates: [
+          -8.9247,
+          52.7019
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EKBI"
+      },
+      geometry: {
+        coordinates: [
+          9.1517,
+          55.7403
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EKCH"
+      },
+      geometry: {
+        coordinates: [
+          12.6561,
+          55.6181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EKYT"
+      },
+      geometry: {
+        coordinates: [
+          9.8492,
+          57.0928
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ELLX"
+      },
+      geometry: {
+        coordinates: [
+          6.2044,
+          49.6233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ENBR"
+      },
+      geometry: {
+        coordinates: [
+          5.2181,
+          60.2936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ENGM"
+      },
+      geometry: {
+        coordinates: [
+          11.0839,
+          60.2028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EPKK"
+      },
+      geometry: {
+        coordinates: [
+          19.7847,
+          50.0778
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EPKT"
+      },
+      geometry: {
+        coordinates: [
+          19.08,
+          50.4742
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EPWA"
+      },
+      geometry: {
+        coordinates: [
+          20.9672,
+          52.1658
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EPWR"
+      },
+      geometry: {
+        coordinates: [
+          16.8858,
+          51.1028
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ESGG"
+      },
+      geometry: {
+        coordinates: [
+          12.2911,
+          57.66
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ESSA"
+      },
+      geometry: {
+        coordinates: [
+          17.9186,
+          59.6519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EVRA"
+      },
+      geometry: {
+        coordinates: [
+          23.9711,
+          56.9236
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "EYVI"
+      },
+      geometry: {
+        coordinates: [
+          25.2878,
+          54.6369
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "FKKD"
+      },
+      geometry: {
+        coordinates: [
+          9.7083,
+          4.0117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "FMNN"
+      },
+      geometry: {
+        coordinates: [
+          48.3092,
+          -13.3181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "FZAA"
+      },
+      geometry: {
+        coordinates: [
+          15.445,
+          -4.385
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "GMMN"
+      },
+      geometry: {
+        coordinates: [
+          -7.5817,
+          33.3642
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "HAAB"
+      },
+      geometry: {
+        coordinates: [
+          38.8,
+          8.9833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "HECA"
+      },
+      geometry: {
+        coordinates: [
+          31.4139,
+          30.1114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "HEGN"
+      },
+      geometry: {
+        coordinates: [
+          33.8008,
+          27.1786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "HESH"
+      },
+      geometry: {
+        coordinates: [
+          34.3933,
+          27.9786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "HRYR"
+      },
+      geometry: {
+        coordinates: [
+          30.1333,
+          -1.9667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "KBGR"
+      },
+      geometry: {
+        coordinates: [
+          -68.8283,
+          44.8067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "KBOS"
+      },
+      geometry: {
+        coordinates: [
+          -71.0056,
+          42.3642
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "KEWR"
+      },
+      geometry: {
+        coordinates: [
+          -74.1683,
+          40.6967
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "KFLL"
+      },
+      geometry: {
+        coordinates: [
+          -80.15,
+          26.0667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "KIAD"
+      },
+      geometry: {
+        coordinates: [
+          -77.4567,
+          38.945
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "KJFK"
+      },
+      geometry: {
+        coordinates: [
+          -73.7783,
+          40.6403
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "KSFO"
+      },
+      geometry: {
+        coordinates: [
+          -122.3833,
+          37.6167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LATI"
+      },
+      geometry: {
+        coordinates: [
+          19.7206,
+          41.4147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LBBG"
+      },
+      geometry: {
+        coordinates: [
+          27.5153,
+          42.5703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LBSF"
+      },
+      geometry: {
+        coordinates: [
+          23.4083,
+          42.695
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LBWN"
+      },
+      geometry: {
+        coordinates: [
+          27.8253,
+          43.2319
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LCLK"
+      },
+      geometry: {
+        coordinates: [
+          33.6303,
+          34.8789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LCPH"
+      },
+      geometry: {
+        coordinates: [
+          32.485,
+          34.7183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LCRA"
+      },
+      geometry: {
+        coordinates: [
+          32.9908,
+          34.595
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LDZA"
+      },
+      geometry: {
+        coordinates: [
+          16.0689,
+          45.7431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LEBL"
+      },
+      geometry: {
+        coordinates: [
+          2.0783,
+          41.2969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LEMD"
+      },
+      geometry: {
+        coordinates: [
+          -3.5608,
+          40.4722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LEMG"
+      },
+      geometry: {
+        coordinates: [
+          -4.4992,
+          36.675
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LEPA"
+      },
+      geometry: {
+        coordinates: [
+          2.7389,
+          39.5517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFLL"
+      },
+      geometry: {
+        coordinates: [
+          5.0811,
+          45.7256
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFML"
+      },
+      geometry: {
+        coordinates: [
+          5.215,
+          43.4367
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFMN"
+      },
+      geometry: {
+        coordinates: [
+          7.215,
+          43.6653
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFPB"
+      },
+      geometry: {
+        coordinates: [
+          2.4414,
+          48.9694
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFPG"
+      },
+      geometry: {
+        coordinates: [
+          2.5478,
+          49.0097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFPO"
+      },
+      geometry: {
+        coordinates: [
+          2.3794,
+          48.7233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFSB"
+      },
+      geometry: {
+        coordinates: [
+          7.5292,
+          47.59
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LFTH"
+      },
+      geometry: {
+        coordinates: [
+          6.1461,
+          43.0972
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LGAV"
+      },
+      geometry: {
+        coordinates: [
+          23.9444,
+          37.9367
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LGMK"
+      },
+      geometry: {
+        coordinates: [
+          25.3472,
+          37.4372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LGRP"
+      },
+      geometry: {
+        coordinates: [
+          28.0861,
+          36.4053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LGTS"
+      },
+      geometry: {
+        coordinates: [
+          22.9708,
+          40.5197
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LHBP"
+      },
+      geometry: {
+        coordinates: [
+          19.2619,
+          47.4394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LICC"
+      },
+      geometry: {
+        coordinates: [
+          15.0639,
+          37.4667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIEO"
+      },
+      geometry: {
+        coordinates: [
+          9.5178,
+          40.8986
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIMC"
+      },
+      geometry: {
+        coordinates: [
+          8.7231,
+          45.63
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIME"
+      },
+      geometry: {
+        coordinates: [
+          9.7003,
+          45.6689
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIPE"
+      },
+      geometry: {
+        coordinates: [
+          11.2969,
+          44.5308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIPZ"
+      },
+      geometry: {
+        coordinates: [
+          12.3519,
+          45.5053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIRF"
+      },
+      geometry: {
+        coordinates: [
+          12.2389,
+          41.8003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIRN"
+      },
+      geometry: {
+        coordinates: [
+          14.2908,
+          40.8844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LIRP"
+      },
+      geometry: {
+        coordinates: [
+          10.3956,
+          43.6828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LJLJ"
+      },
+      geometry: {
+        coordinates: [
+          14.4561,
+          46.2244
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LKMT"
+      },
+      geometry: {
+        coordinates: [
+          18.1108,
+          49.6961
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LKPR"
+      },
+      geometry: {
+        coordinates: [
+          14.26,
+          50.1008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LKTB"
+      },
+      geometry: {
+        coordinates: [
+          16.6939,
+          49.1514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LLBG"
+      },
+      geometry: {
+        coordinates: [
+          34.8856,
+          32.0094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LOWI"
+      },
+      geometry: {
+        coordinates: [
+          11.3439,
+          47.2603
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LOWW"
+      },
+      geometry: {
+        coordinates: [
+          16.5697,
+          48.1103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LQSA"
+      },
+      geometry: {
+        coordinates: [
+          18.3317,
+          43.8244
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LQTZ"
+      },
+      geometry: {
+        coordinates: [
+          18.7247,
+          44.4586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LRIA"
+      },
+      geometry: {
+        coordinates: [
+          27.6208,
+          47.1803
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LROD"
+      },
+      geometry: {
+        coordinates: [
+          21.9025,
+          47.0253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LROP"
+      },
+      geometry: {
+        coordinates: [
+          26.085,
+          44.5711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LRTR"
+      },
+      geometry: {
+        coordinates: [
+          21.3378,
+          45.8097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LSGG"
+      },
+      geometry: {
+        coordinates: [
+          6.1094,
+          46.2383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LSZH"
+      },
+      geometry: {
+        coordinates: [
+          8.5481,
+          47.4581
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAC"
+      },
+      geometry: {
+        coordinates: [
+          32.995,
+          40.1281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAF"
+      },
+      geometry: {
+        coordinates: [
+          35.2803,
+          36.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAI"
+      },
+      geometry: {
+        coordinates: [
+          30.7928,
+          36.9003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAJ"
+      },
+      geometry: {
+        coordinates: [
+          37.4789,
+          36.9478
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAN"
+      },
+      geometry: {
+        coordinates: [
+          32.5625,
+          37.9806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAR"
+      },
+      geometry: {
+        coordinates: [
+          36.9025,
+          39.8142
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAT"
+      },
+      geometry: {
+        coordinates: [
+          38.0831,
+          38.4322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAU"
+      },
+      geometry: {
+        coordinates: [
+          35.4953,
+          38.7703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAY"
+      },
+      geometry: {
+        coordinates: [
+          29.705,
+          37.7878
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTAZ"
+      },
+      geometry: {
+        coordinates: [
+          34.5267,
+          38.7753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTBA"
+      },
+      geometry: {
+        coordinates: [
+          28.8142,
+          40.9761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTBJ"
+      },
+      geometry: {
+        coordinates: [
+          27.155,
+          38.2892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTBQ"
+      },
+      geometry: {
+        coordinates: [
+          30.0833,
+          40.735
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTBR"
+      },
+      geometry: {
+        coordinates: [
+          29.5619,
+          40.2558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTBS"
+      },
+      geometry: {
+        coordinates: [
+          28.7914,
+          36.7125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCA"
+      },
+      geometry: {
+        coordinates: [
+          39.2814,
+          38.5978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCB"
+      },
+      geometry: {
+        coordinates: [
+          38.0819,
+          40.9672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCC"
+      },
+      geometry: {
+        coordinates: [
+          40.2011,
+          37.8925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCE"
+      },
+      geometry: {
+        coordinates: [
+          41.1706,
+          39.9558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCF"
+      },
+      geometry: {
+        coordinates: [
+          43.0989,
+          40.5586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCG"
+      },
+      geometry: {
+        coordinates: [
+          39.7853,
+          40.9958
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCI"
+      },
+      geometry: {
+        coordinates: [
+          43.3322,
+          38.4681
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCJ"
+      },
+      geometry: {
+        coordinates: [
+          41.1164,
+          37.9322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCK"
+      },
+      geometry: {
+        coordinates: [
+          41.6689,
+          38.7447
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCN"
+      },
+      geometry: {
+        coordinates: [
+          36.9519,
+          37.5383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCO"
+      },
+      geometry: {
+        coordinates: [
+          43.0286,
+          39.6475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCR"
+      },
+      geometry: {
+        coordinates: [
+          40.6406,
+          37.2328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCS"
+      },
+      geometry: {
+        coordinates: [
+          38.9083,
+          37.4567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTCV"
+      },
+      geometry: {
+        coordinates: [
+          42.06,
+          37.3639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTDA"
+      },
+      geometry: {
+        coordinates: [
+          36.2986,
+          36.3722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTFC"
+      },
+      geometry: {
+        coordinates: [
+          30.3669,
+          37.8558
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTFE"
+      },
+      geometry: {
+        coordinates: [
+          27.6814,
+          37.2472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTFG"
+      },
+      geometry: {
+        coordinates: [
+          32.3014,
+          36.2994
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTFH"
+      },
+      geometry: {
+        coordinates: [
+          36.5486,
+          41.2656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTFJ"
+      },
+      geometry: {
+        coordinates: [
+          29.3092,
+          40.8983
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LTFM"
+      },
+      geometry: {
+        coordinates: [
+          28.7519,
+          41.2753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LUKK"
+      },
+      geometry: {
+        coordinates: [
+          28.9308,
+          46.9278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LYBE"
+      },
+      geometry: {
+        coordinates: [
+          20.3069,
+          44.8194
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LYPG"
+      },
+      geometry: {
+        coordinates: [
+          19.2519,
+          42.3594
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LYTV"
+      },
+      geometry: {
+        coordinates: [
+          18.7233,
+          42.4047
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LZIB"
+      },
+      geometry: {
+        coordinates: [
+          17.2128,
+          48.17
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "LZKZ"
+      },
+      geometry: {
+        coordinates: [
+          21.2411,
+          48.6631
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OAIX"
+      },
+      geometry: {
+        coordinates: [
+          69.265,
+          34.9461
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OBBI"
+      },
+      geometry: {
+        coordinates: [
+          50.6333,
+          26.3
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OEJN"
+      },
+      geometry: {
+        coordinates: [
+          39.1553,
+          21.6811
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OEMA"
+      },
+      geometry: {
+        coordinates: [
+          39.705,
+          24.5533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OERK"
+      },
+      geometry: {
+        coordinates: [
+          46.7,
+          24.9667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OIIE"
+      },
+      geometry: {
+        coordinates: [
+          51.1522,
+          35.4161
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OITT"
+      },
+      geometry: {
+        coordinates: [
+          46.235,
+          38.1339
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OJAI"
+      },
+      geometry: {
+        coordinates: [
+          35.9933,
+          31.7225
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OJAM"
+      },
+      geometry: {
+        coordinates: [
+          35.9917,
+          31.9728
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OKBK"
+      },
+      geometry: {
+        coordinates: [
+          47.9667,
+          29.2167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OLBA"
+      },
+      geometry: {
+        coordinates: [
+          35.49,
+          33.8192
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OMAA"
+      },
+      geometry: {
+        coordinates: [
+          54.65,
+          24.4333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OMDB"
+      },
+      geometry: {
+        coordinates: [
+          55.36,
+          25.2492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OMDW"
+      },
+      geometry: {
+        coordinates: [
+          55.1719,
+          24.8861
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OMFJ"
+      },
+      geometry: {
+        coordinates: [
+          56.3267,
+          25.11
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OMSJ"
+      },
+      geometry: {
+        coordinates: [
+          55.5167,
+          25.3333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OOMS"
+      },
+      geometry: {
+        coordinates: [
+          58.2667,
+          23.5833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ORBI"
+      },
+      geometry: {
+        coordinates: [
+          44.2344,
+          33.2625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ORER"
+      },
+      geometry: {
+        coordinates: [
+          43.9631,
+          36.2375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ORSU"
+      },
+      geometry: {
+        coordinates: [
+          45.3147,
+          35.5608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OTBD"
+      },
+      geometry: {
+        coordinates: [
+          51.5667,
+          25.2667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OTBH"
+      },
+      geometry: {
+        coordinates: [
+          51.3147,
+          25.1172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "OTHH"
+      },
+      geometry: {
+        coordinates: [
+          51.6083,
+          25.2744
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "RKSI"
+      },
+      geometry: {
+        coordinates: [
+          126.4392,
+          37.4625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UAAA"
+      },
+      geometry: {
+        coordinates: [
+          77.0406,
+          43.3519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UACC"
+      },
+      geometry: {
+        coordinates: [
+          71.4669,
+          51.0222
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UATG"
+      },
+      geometry: {
+        coordinates: [
+          51.8214,
+          47.1219
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UBBB"
+      },
+      geometry: {
+        coordinates: [
+          50.0514,
+          40.4697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UCFM"
+      },
+      geometry: {
+        coordinates: [
+          74.4775,
+          43.0614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UDYZ"
+      },
+      geometry: {
+        coordinates: [
+          44.3958,
+          40.1472
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UGKO"
+      },
+      geometry: {
+        coordinates: [
+          42.4828,
+          42.1769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UGSB"
+      },
+      geometry: {
+        coordinates: [
+          41.5994,
+          41.6103
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UGTB"
+      },
+      geometry: {
+        coordinates: [
+          44.9547,
+          41.6692
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UKBB"
+      },
+      geometry: {
+        coordinates: [
+          30.8933,
+          50.3447
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UKDE"
+      },
+      geometry: {
+        coordinates: [
+          35.315,
+          47.8672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UKHH"
+      },
+      geometry: {
+        coordinates: [
+          36.29,
+          49.9269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UKLL"
+      },
+      geometry: {
+        coordinates: [
+          23.9583,
+          49.8097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UKOO"
+      },
+      geometry: {
+        coordinates: [
+          30.6764,
+          46.4267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ULLI"
+      },
+      geometry: {
+        coordinates: [
+          30.2625,
+          59.8003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UMII"
+      },
+      geometry: {
+        coordinates: [
+          30.3497,
+          55.1264
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UMMS"
+      },
+      geometry: {
+        coordinates: [
+          28.0308,
+          53.8825
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UNTT"
+      },
+      geometry: {
+        coordinates: [
+          85.2106,
+          56.3831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UNWW"
+      },
+      geometry: {
+        coordinates: [
+          86.8783,
+          53.81
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "URKK"
+      },
+      geometry: {
+        coordinates: [
+          39.17,
+          45.0347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "URMM"
+      },
+      geometry: {
+        coordinates: [
+          43.0831,
+          44.2267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "URMT"
+      },
+      geometry: {
+        coordinates: [
+          42.1122,
+          45.1092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "URRP"
+      },
+      geometry: {
+        coordinates: [
+          39.9247,
+          47.4939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "URSS"
+      },
+      geometry: {
+        coordinates: [
+          39.9483,
+          43.445
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "USCC"
+      },
+      geometry: {
+        coordinates: [
+          61.505,
+          55.305
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "USSS"
+      },
+      geometry: {
+        coordinates: [
+          60.8031,
+          56.7431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UTAA"
+      },
+      geometry: {
+        coordinates: [
+          58.3633,
+          37.9917
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UTAK"
+      },
+      geometry: {
+        coordinates: [
+          53.0067,
+          40.0633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UTSA"
+      },
+      geometry: {
+        coordinates: [
+          65.1717,
+          40.1167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UTSS"
+      },
+      geometry: {
+        coordinates: [
+          66.9503,
+          39.6667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UTTT"
+      },
+      geometry: {
+        coordinates: [
+          69.2833,
+          41.2567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UUBW"
+      },
+      geometry: {
+        coordinates: [
+          38.1517,
+          55.5533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UUDD"
+      },
+      geometry: {
+        coordinates: [
+          37.9064,
+          55.4086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UUEE"
+      },
+      geometry: {
+        coordinates: [
+          37.4131,
+          55.9725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UUOB"
+      },
+      geometry: {
+        coordinates: [
+          36.59,
+          50.6439
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UUWW"
+      },
+      geometry: {
+        coordinates: [
+          37.2731,
+          55.5992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UWKD"
+      },
+      geometry: {
+        coordinates: [
+          49.2803,
+          55.6069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "UWUU"
+      },
+      geometry: {
+        coordinates: [
+          55.875,
+          54.5567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VABB"
+      },
+      geometry: {
+        coordinates: [
+          72.8333,
+          19.0908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VCBI"
+      },
+      geometry: {
+        coordinates: [
+          79.8842,
+          7.1692
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VGHS"
+      },
+      geometry: {
+        coordinates: [
+          90.4083,
+          23.835
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VIDP"
+      },
+      geometry: {
+        coordinates: [
+          77.1133,
+          28.5686
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VOBL"
+      },
+      geometry: {
+        coordinates: [
+          77.7061,
+          13.1978
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VOMM"
+      },
+      geometry: {
+        coordinates: [
+          80.1769,
+          12.9936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VTBS"
+      },
+      geometry: {
+        coordinates: [
+          100.7472,
+          13.6811
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VTSP"
+      },
+      geometry: {
+        coordinates: [
+          98.3167,
+          8.1133
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "VVTS"
+      },
+      geometry: {
+        coordinates: [
+          106.65,
+          10.8167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "WSSS"
+      },
+      geometry: {
+        coordinates: [
+          103.9892,
+          1.3592
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "YPPH"
+      },
+      geometry: {
+        coordinates: [
+          115.9667,
+          -31.94
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ZBAA"
+      },
+      geometry: {
+        coordinates: [
+          116.6,
+          40.0667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ZHHH"
+      },
+      geometry: {
+        coordinates: [
+          114.2067,
+          30.785
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ZUCK"
+      },
+      geometry: {
+        coordinates: [
+          106.64,
+          29.72
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airport",
+        name: "ZUUU"
+      },
+      geometry: {
+        coordinates: [
+          103.9483,
+          30.58
+        ],
+        type: "Point"
+      }
+    }
+  ]
+};
+
+// apps/simulator/src/geojsons/airwaypoints.json
+var airwaypoints_default = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UMRUN"
+      },
+      geometry: {
+        coordinates: [
+          31.8781,
+          40.1861
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ODRUP"
+      },
+      geometry: {
+        coordinates: [
+          31.9161,
+          40.2667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SURUC"
+      },
+      geometry: {
+        coordinates: [
+          38.54,
+          37.0633
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ORMAN"
+      },
+      geometry: {
+        coordinates: [
+          33.3858,
+          41.2919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GELBU"
+      },
+      geometry: {
+        coordinates: [
+          27.1408,
+          40.9353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UDROS"
+      },
+      geometry: {
+        coordinates: [
+          30.5961,
+          42.7389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ROLVI"
+      },
+      geometry: {
+        coordinates: [
+          31.8114,
+          39.2178
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SALDA"
+      },
+      geometry: {
+        coordinates: [
+          30.0003,
+          37.5553
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IPT"
+      },
+      geometry: {
+        coordinates: [
+          30.3447,
+          37.8422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SARPI"
+      },
+      geometry: {
+        coordinates: [
+          41.4497,
+          41.5489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SERCE"
+      },
+      geometry: {
+        coordinates: [
+          27.3092,
+          41.5772
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OSRIN"
+      },
+      geometry: {
+        coordinates: [
+          33.4747,
+          41.3044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SOTIV"
+      },
+      geometry: {
+        coordinates: [
+          28.4833,
+          36.55
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YAVRU"
+      },
+      geometry: {
+        coordinates: [
+          31.8328,
+          40.5822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARLAT"
+      },
+      geometry: {
+        coordinates: [
+          38.7019,
+          41.0969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ALMUS"
+      },
+      geometry: {
+        coordinates: [
+          36.6656,
+          40.7742
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INTAB"
+      },
+      geometry: {
+        coordinates: [
+          39.1019,
+          39.9406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TARSU"
+      },
+      geometry: {
+        coordinates: [
+          34.5206,
+          36.6256
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NULRU"
+      },
+      geometry: {
+        coordinates: [
+          39.645,
+          38.9789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KILIS"
+      },
+      geometry: {
+        coordinates: [
+          37.4006,
+          36.7036
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADNOS"
+      },
+      geometry: {
+        coordinates: [
+          40.8533,
+          39.3183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RELTU"
+      },
+      geometry: {
+        coordinates: [
+          32.3233,
+          41.6442
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PIMAV"
+      },
+      geometry: {
+        coordinates: [
+          29.9536,
+          40.4006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKPOS"
+      },
+      geometry: {
+        coordinates: [
+          43.3772,
+          40.6906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KETEK"
+      },
+      geometry: {
+        coordinates: [
+          32.4783,
+          36.8878
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UNSUL"
+      },
+      geometry: {
+        coordinates: [
+          31.3086,
+          41.7664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKMIN"
+      },
+      geometry: {
+        coordinates: [
+          40.8844,
+          38.2842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKMIM"
+      },
+      geometry: {
+        coordinates: [
+          30.4817,
+          38.2347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RIPNU"
+      },
+      geometry: {
+        coordinates: [
+          31.2103,
+          40.5253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NETPU"
+      },
+      geometry: {
+        coordinates: [
+          40.4189,
+          40.9228
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERMUP"
+      },
+      geometry: {
+        coordinates: [
+          31.0228,
+          42.0006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NENDO"
+      },
+      geometry: {
+        coordinates: [
+          34.2461,
+          41.3253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NUMTI"
+      },
+      geometry: {
+        coordinates: [
+          29.5242,
+          39.6411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKSUK"
+      },
+      geometry: {
+        coordinates: [
+          34.3372,
+          41.4025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERGIN"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          37.23
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SUSUZ"
+      },
+      geometry: {
+        coordinates: [
+          41.6083,
+          39.6808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NUMSO"
+      },
+      geometry: {
+        coordinates: [
+          30.3453,
+          40.9228
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MIMTO"
+      },
+      geometry: {
+        coordinates: [
+          33.0467,
+          41.8469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YAMAN"
+      },
+      geometry: {
+        coordinates: [
+          31.4239,
+          40.2397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OKUDU"
+      },
+      geometry: {
+        coordinates: [
+          39.0144,
+          38.5019
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EMLAD"
+      },
+      geometry: {
+        coordinates: [
+          37.6181,
+          41.1869
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ODPOT"
+      },
+      geometry: {
+        coordinates: [
+          35.8661,
+          40.9903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RUKAP"
+      },
+      geometry: {
+        coordinates: [
+          31.9661,
+          37.8208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TOMBI"
+      },
+      geometry: {
+        coordinates: [
+          30.825,
+          36.0411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AZBUL"
+      },
+      geometry: {
+        coordinates: [
+          33.3619,
+          39.3822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OTSIX"
+      },
+      geometry: {
+        coordinates: [
+          29.9561,
+          39.7617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TEVNI"
+      },
+      geometry: {
+        coordinates: [
+          30.3639,
+          41.5914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ALRAM"
+      },
+      geometry: {
+        coordinates: [
+          44.6267,
+          37.7083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NISAP"
+      },
+      geometry: {
+        coordinates: [
+          36.6414,
+          36.7844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERTAS"
+      },
+      geometry: {
+        coordinates: [
+          29.1467,
+          41.4614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MINSU"
+      },
+      geometry: {
+        coordinates: [
+          28.0561,
+          39.0844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUSYR"
+      },
+      geometry: {
+        coordinates: [
+          37.3831,
+          36.6489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DOKUB"
+      },
+      geometry: {
+        coordinates: [
+          29.8958,
+          38.8914
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERKOS"
+      },
+      geometry: {
+        coordinates: [
+          37.8839,
+          41.1644
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BDR"
+      },
+      geometry: {
+        coordinates: [
+          27.6814,
+          37.2469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATRIV"
+      },
+      geometry: {
+        coordinates: [
+          37.3186,
+          40.2125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LEGMU"
+      },
+      geometry: {
+        coordinates: [
+          31.5892,
+          41.9475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NUNTU"
+      },
+      geometry: {
+        coordinates: [
+          37.3597,
+          39.5797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TALIL"
+      },
+      geometry: {
+        coordinates: [
+          39.9722,
+          39.1889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELROP"
+      },
+      geometry: {
+        coordinates: [
+          32.6533,
+          36.5061
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "POGEN"
+      },
+      geometry: {
+        coordinates: [
+          36.6936,
+          37.5031
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKI"
+      },
+      geometry: {
+        coordinates: [
+          27.4261,
+          40.9511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GURBU"
+      },
+      geometry: {
+        coordinates: [
+          33.8328,
+          40.1683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MARTI"
+      },
+      geometry: {
+        coordinates: [
+          35.1828,
+          39.4017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BEPTO"
+      },
+      geometry: {
+        coordinates: [
+          32.0533,
+          36.2697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IST"
+      },
+      geometry: {
+        coordinates: [
+          28.8106,
+          40.9614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LATSU"
+      },
+      geometry: {
+        coordinates: [
+          41.4139,
+          39.4208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULGAN"
+      },
+      geometry: {
+        coordinates: [
+          40.6925,
+          39.6417
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASMAP"
+      },
+      geometry: {
+        coordinates: [
+          30.7114,
+          40.6314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ESOSU"
+      },
+      geometry: {
+        coordinates: [
+          33.5381,
+          41.6072
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ROKVA"
+      },
+      geometry: {
+        coordinates: [
+          31.6572,
+          41.8292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YAVUZ"
+      },
+      geometry: {
+        coordinates: [
+          42.4333,
+          40.0444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VEMEK"
+      },
+      geometry: {
+        coordinates: [
+          31.9222,
+          36.4722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AKSEK"
+      },
+      geometry: {
+        coordinates: [
+          28.2231,
+          36.9261
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADORU"
+      },
+      geometry: {
+        coordinates: [
+          26.5683,
+          41.8717
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ABVEX"
+      },
+      geometry: {
+        coordinates: [
+          40.6578,
+          40.8942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ESOTA"
+      },
+      geometry: {
+        coordinates: [
+          41.7725,
+          37.77
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADA"
+      },
+      geometry: {
+        coordinates: [
+          35.2103,
+          36.9406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DAMAT"
+      },
+      geometry: {
+        coordinates: [
+          40.6647,
+          39.9561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SISVO"
+      },
+      geometry: {
+        coordinates: [
+          27.7764,
+          37.8956
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASVOD"
+      },
+      geometry: {
+        coordinates: [
+          37.5728,
+          40.0822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BALUM"
+      },
+      geometry: {
+        coordinates: [
+          37.6667,
+          42.6833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OSDIP"
+      },
+      geometry: {
+        coordinates: [
+          34.7986,
+          42.2383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LORKO"
+      },
+      geometry: {
+        coordinates: [
+          29.765,
+          36.8069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VEVUD"
+      },
+      geometry: {
+        coordinates: [
+          31.2222,
+          40.3808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UMLEN"
+      },
+      geometry: {
+        coordinates: [
+          40.2167,
+          38.6617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EDISI"
+      },
+      geometry: {
+        coordinates: [
+          30.1464,
+          36.8492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BADEM"
+      },
+      geometry: {
+        coordinates: [
+          38.66,
+          37.6044
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ENFOR"
+      },
+      geometry: {
+        coordinates: [
+          36.2747,
+          39.8739
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SORAR"
+      },
+      geometry: {
+        coordinates: [
+          39.5125,
+          38.6242
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUMKU"
+      },
+      geometry: {
+        coordinates: [
+          42.1061,
+          38.5514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NEPNO"
+      },
+      geometry: {
+        coordinates: [
+          28.2778,
+          37.1514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AKEDO"
+      },
+      geometry: {
+        coordinates: [
+          35.4469,
+          40.9528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVKAM"
+      },
+      geometry: {
+        coordinates: [
+          35.4131,
+          42.1514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TAMER"
+      },
+      geometry: {
+        coordinates: [
+          40.8164,
+          38.2406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LUMOM"
+      },
+      geometry: {
+        coordinates: [
+          44.8233,
+          37.27
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LIVDO"
+      },
+      geometry: {
+        coordinates: [
+          42.4139,
+          38.2614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NESTU"
+      },
+      geometry: {
+        coordinates: [
+          40.3494,
+          40.5936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERGEP"
+      },
+      geometry: {
+        coordinates: [
+          33.9625,
+          37.4439
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INBAT"
+      },
+      geometry: {
+        coordinates: [
+          42.7083,
+          39.7025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TIMOP"
+      },
+      geometry: {
+        coordinates: [
+          35.3611,
+          39.9919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IVNAP"
+      },
+      geometry: {
+        coordinates: [
+          31.2533,
+          41.0908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KIZIK"
+      },
+      geometry: {
+        coordinates: [
+          32.1494,
+          40.4183
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELNEM"
+      },
+      geometry: {
+        coordinates: [
+          38.1981,
+          39.7567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKMEL"
+      },
+      geometry: {
+        coordinates: [
+          30.1828,
+          40.3767
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GIPDA"
+      },
+      geometry: {
+        coordinates: [
+          32.2047,
+          42.2469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKMEK"
+      },
+      geometry: {
+        coordinates: [
+          33.9433,
+          40.5036
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VAXEB"
+      },
+      geometry: {
+        coordinates: [
+          33.5786,
+          41.5969
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ESKIN"
+      },
+      geometry: {
+        coordinates: [
+          28.3981,
+          39.05
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAGLU"
+      },
+      geometry: {
+        coordinates: [
+          29.3253,
+          38.0711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VIRAN"
+      },
+      geometry: {
+        coordinates: [
+          41.7028,
+          40.1186
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NOLGA"
+      },
+      geometry: {
+        coordinates: [
+          42.9789,
+          41.4281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RAUMA"
+      },
+      geometry: {
+        coordinates: [
+          27.3092,
+          39.9839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SIN"
+      },
+      geometry: {
+        coordinates: [
+          35.0769,
+          42.0222
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVBOL"
+      },
+      geometry: {
+        coordinates: [
+          29.6383,
+          37.1711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TKT"
+      },
+      geometry: {
+        coordinates: [
+          36.3775,
+          40.315
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ALEDA"
+      },
+      geometry: {
+        coordinates: [
+          27.8394,
+          39.8608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SIV"
+      },
+      geometry: {
+        coordinates: [
+          36.8933,
+          39.7894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERVAK"
+      },
+      geometry: {
+        coordinates: [
+          36.7269,
+          40.5119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IPDAL"
+      },
+      geometry: {
+        coordinates: [
+          38.0103,
+          40.8842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IRGAK"
+      },
+      geometry: {
+        coordinates: [
+          30.6178,
+          38.2806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELTOX"
+      },
+      geometry: {
+        coordinates: [
+          43.3694,
+          40.0997
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELMAS"
+      },
+      geometry: {
+        coordinates: [
+          30.7083,
+          37.5833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAMUP"
+      },
+      geometry: {
+        coordinates: [
+          32.0172,
+          42.5875
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BELGI"
+      },
+      geometry: {
+        coordinates: [
+          25.8833,
+          40.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NEKAT"
+      },
+      geometry: {
+        coordinates: [
+          36.3536,
+          37.7436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HTY"
+      },
+      geometry: {
+        coordinates: [
+          36.29,
+          36.3628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RILEX"
+      },
+      geometry: {
+        coordinates: [
+          26.7664,
+          41.9711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BALSU"
+      },
+      geometry: {
+        coordinates: [
+          29.4236,
+          37.4583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARMAM"
+      },
+      geometry: {
+        coordinates: [
+          28.4714,
+          37.2394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADASU"
+      },
+      geometry: {
+        coordinates: [
+          31.3889,
+          36.7511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GAKSU"
+      },
+      geometry: {
+        coordinates: [
+          33.8142,
+          42.1892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVPIM"
+      },
+      geometry: {
+        coordinates: [
+          32.3664,
+          41.895
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GELIN"
+      },
+      geometry: {
+        coordinates: [
+          40.7858,
+          39.6981
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PALUT"
+      },
+      geometry: {
+        coordinates: [
+          39.5333,
+          38.6939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERVAG"
+      },
+      geometry: {
+        coordinates: [
+          30.1828,
+          39.0653
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NIVLA"
+      },
+      geometry: {
+        coordinates: [
+          42.7961,
+          40.4622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PELIL"
+      },
+      geometry: {
+        coordinates: [
+          30.2328,
+          37.8397
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVLAP"
+      },
+      geometry: {
+        coordinates: [
+          31.5858,
+          41.5375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SELVI"
+      },
+      geometry: {
+        coordinates: [
+          34.4994,
+          37.8989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BIG"
+      },
+      geometry: {
+        coordinates: [
+          27.3653,
+          40.2842
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUNLA"
+      },
+      geometry: {
+        coordinates: [
+          36.0333,
+          35.8833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GONPU"
+      },
+      geometry: {
+        coordinates: [
+          41.9606,
+          41.3006
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERMOD"
+      },
+      geometry: {
+        coordinates: [
+          35.28,
+          39.2233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UNVUS"
+      },
+      geometry: {
+        coordinates: [
+          32.1414,
+          41.695
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MOVUL"
+      },
+      geometry: {
+        coordinates: [
+          39.2319,
+          38.1528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BEYAZ"
+      },
+      geometry: {
+        coordinates: [
+          42.7881,
+          38.505
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULKEM"
+      },
+      geometry: {
+        coordinates: [
+          43.3647,
+          38.1106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AKCAK"
+      },
+      geometry: {
+        coordinates: [
+          30.7247,
+          41.4289
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AKIMO"
+      },
+      geometry: {
+        coordinates: [
+          29.4011,
+          37.2206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VEMAG"
+      },
+      geometry: {
+        coordinates: [
+          31.1358,
+          41.6789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CLD"
+      },
+      geometry: {
+        coordinates: [
+          27.8964,
+          37.8147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OZYAK"
+      },
+      geometry: {
+        coordinates: [
+          29.1433,
+          37.125
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATGOB"
+      },
+      geometry: {
+        coordinates: [
+          31.2508,
+          40.7253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DASIS"
+      },
+      geometry: {
+        coordinates: [
+          44.2083,
+          38.9097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LUTAM"
+      },
+      geometry: {
+        coordinates: [
+          38.5231,
+          37.325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VEPUM"
+      },
+      geometry: {
+        coordinates: [
+          33.4172,
+          42.4206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GELKI"
+      },
+      geometry: {
+        coordinates: [
+          31.6808,
+          36.5786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INBET"
+      },
+      geometry: {
+        coordinates: [
+          27.275,
+          40.1867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NEXAM"
+      },
+      geometry: {
+        coordinates: [
+          28.6353,
+          37.5003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RASVA"
+      },
+      geometry: {
+        coordinates: [
+          38.0078,
+          37.4981
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUDEK"
+      },
+      geometry: {
+        coordinates: [
+          39.4031,
+          42.1839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MAKOL"
+      },
+      geometry: {
+        coordinates: [
+          29.1428,
+          42.1706
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATSAL"
+      },
+      geometry: {
+        coordinates: [
+          28.7189,
+          37.5003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IPSAT"
+      },
+      geometry: {
+        coordinates: [
+          38.6058,
+          41.1053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERGAN"
+      },
+      geometry: {
+        coordinates: [
+          39.0272,
+          38.515
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "APTOX"
+      },
+      geometry: {
+        coordinates: [
+          32.5042,
+          41.5931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BOYAT"
+      },
+      geometry: {
+        coordinates: [
+          37.2433,
+          37.1208
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TOKER"
+      },
+      geometry: {
+        coordinates: [
+          30.7722,
+          40.3133
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARPAG"
+      },
+      geometry: {
+        coordinates: [
+          37.2744,
+          37.2625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATGIT"
+      },
+      geometry: {
+        coordinates: [
+          29.7492,
+          38.2014
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KEPES"
+      },
+      geometry: {
+        coordinates: [
+          36.7075,
+          38.14
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RATVU"
+      },
+      geometry: {
+        coordinates: [
+          29.3783,
+          39.9067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "FILIZ"
+      },
+      geometry: {
+        coordinates: [
+          39.4703,
+          38.8664
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TIRER"
+      },
+      geometry: {
+        coordinates: [
+          28.3842,
+          41.1364
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OTROM"
+      },
+      geometry: {
+        coordinates: [
+          40.6592,
+          40.9444
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MAVES"
+      },
+      geometry: {
+        coordinates: [
+          39.2275,
+          37.5628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUKTU"
+      },
+      geometry: {
+        coordinates: [
+          32.7161,
+          36.3347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKTOD"
+      },
+      geometry: {
+        coordinates: [
+          37.7067,
+          40.5919
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULTED"
+      },
+      geometry: {
+        coordinates: [
+          41.8261,
+          38.3506
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SONEN"
+      },
+      geometry: {
+        coordinates: [
+          28.2853,
+          37.1547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BKZ"
+      },
+      geometry: {
+        coordinates: [
+          29.1428,
+          41.1269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YASEN"
+      },
+      geometry: {
+        coordinates: [
+          29.5161,
+          41.1989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SOMBU"
+      },
+      geometry: {
+        coordinates: [
+          40.2769,
+          39.6003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RIVBU"
+      },
+      geometry: {
+        coordinates: [
+          29.3125,
+          37.3272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KULOL"
+      },
+      geometry: {
+        coordinates: [
+          31.5936,
+          36.6831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ROXUK"
+      },
+      geometry: {
+        coordinates: [
+          29.7186,
+          39.8903
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERH"
+      },
+      geometry: {
+        coordinates: [
+          38.1119,
+          38.4625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LEMDA"
+      },
+      geometry: {
+        coordinates: [
+          30.6569,
+          37.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERIDU"
+      },
+      geometry: {
+        coordinates: [
+          39.1697,
+          41.2153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERN"
+      },
+      geometry: {
+        coordinates: [
+          39.5292,
+          39.7083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASBEP"
+      },
+      geometry: {
+        coordinates: [
+          32.1236,
+          42.2628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CNK"
+      },
+      geometry: {
+        coordinates: [
+          26.4275,
+          40.1353
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VAKUM"
+      },
+      geometry: {
+        coordinates: [
+          28.2581,
+          38.5022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULVEX"
+      },
+      geometry: {
+        coordinates: [
+          31.5308,
+          41.5828
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NEKES"
+      },
+      geometry: {
+        coordinates: [
+          33.2847,
+          36.1536
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ALVAR"
+      },
+      geometry: {
+        coordinates: [
+          41.7431,
+          39.9958
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERZ"
+      },
+      geometry: {
+        coordinates: [
+          41.2069,
+          39.9567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BALON"
+      },
+      geometry: {
+        coordinates: [
+          39.6083,
+          40.0917
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VAKUL"
+      },
+      geometry: {
+        coordinates: [
+          42.1417,
+          37.8942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RUXEV"
+      },
+      geometry: {
+        coordinates: [
+          34.8622,
+          41.2636
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TETSA"
+      },
+      geometry: {
+        coordinates: [
+          28.7792,
+          41.7461
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KONAK"
+      },
+      geometry: {
+        coordinates: [
+          31.4161,
+          36.8947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HOCAM"
+      },
+      geometry: {
+        coordinates: [
+          40.82,
+          40.2458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GERZE"
+      },
+      geometry: {
+        coordinates: [
+          35.1661,
+          41.8322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RESLI"
+      },
+      geometry: {
+        coordinates: [
+          30.1197,
+          38.2944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERHAN"
+      },
+      geometry: {
+        coordinates: [
+          35.2289,
+          38.5239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TEPKI"
+      },
+      geometry: {
+        coordinates: [
+          32.9928,
+          41.4533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELVON"
+      },
+      geometry: {
+        coordinates: [
+          29.4389,
+          40.1931
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAYIR"
+      },
+      geometry: {
+        coordinates: [
+          41.4039,
+          38.5947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KESIR"
+      },
+      geometry: {
+        coordinates: [
+          41.4514,
+          39.3153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TEMEL"
+      },
+      geometry: {
+        coordinates: [
+          39.1372,
+          41.0572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ESR"
+      },
+      geometry: {
+        coordinates: [
+          30.5122,
+          39.8131
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ETAMP"
+      },
+      geometry: {
+        coordinates: [
+          29.7289,
+          39.5797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DERYA"
+      },
+      geometry: {
+        coordinates: [
+          30.8119,
+          36.4156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PIXAP"
+      },
+      geometry: {
+        coordinates: [
+          39.6922,
+          40.5017
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULSAB"
+      },
+      geometry: {
+        coordinates: [
+          41.1314,
+          38.1425
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BULUT"
+      },
+      geometry: {
+        coordinates: [
+          38.9022,
+          38.7561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BNG"
+      },
+      geometry: {
+        coordinates: [
+          40.6008,
+          38.8556
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GIRNO"
+      },
+      geometry: {
+        coordinates: [
+          33.2544,
+          41.0172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SUNUM"
+      },
+      geometry: {
+        coordinates: [
+          34.8575,
+          42.0119
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NAREN"
+      },
+      geometry: {
+        coordinates: [
+          40.825,
+          38.6306
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EMKUD"
+      },
+      geometry: {
+        coordinates: [
+          30.2775,
+          38.6053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RNA"
+      },
+      geometry: {
+        coordinates: [
+          42.0614,
+          37.365
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELGOV"
+      },
+      geometry: {
+        coordinates: [
+          28.0175,
+          40.5944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OKESA"
+      },
+      geometry: {
+        coordinates: [
+          27.3864,
+          37.6292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LAMSA"
+      },
+      geometry: {
+        coordinates: [
+          29.9228,
+          37.1108
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KUDAK"
+      },
+      geometry: {
+        coordinates: [
+          28.2767,
+          39.2989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BENEM"
+      },
+      geometry: {
+        coordinates: [
+          29.3167,
+          36.1833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "REKVO"
+      },
+      geometry: {
+        coordinates: [
+          40.4983,
+          39.5214
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SALGO"
+      },
+      geometry: {
+        coordinates: [
+          32.1994,
+          40.4739
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GOKPA"
+      },
+      geometry: {
+        coordinates: [
+          34.5947,
+          41.7461
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TERME"
+      },
+      geometry: {
+        coordinates: [
+          37.2247,
+          41.2144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KUXIL"
+      },
+      geometry: {
+        coordinates: [
+          29.005,
+          37.4808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NELNI"
+      },
+      geometry: {
+        coordinates: [
+          30.5022,
+          41.6175
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IBLAL"
+      },
+      geometry: {
+        coordinates: [
+          28.0011,
+          41.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OVACI"
+      },
+      geometry: {
+        coordinates: [
+          29.1542,
+          39.7889
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SUGAT"
+      },
+      geometry: {
+        coordinates: [
+          37.7514,
+          37.0508
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SONAD"
+      },
+      geometry: {
+        coordinates: [
+          39.6764,
+          40.4181
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AMANI"
+      },
+      geometry: {
+        coordinates: [
+          26.4994,
+          39.3322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IBURA"
+      },
+      geometry: {
+        coordinates: [
+          33.3736,
+          41.0175
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KUTAY"
+      },
+      geometry: {
+        coordinates: [
+          29.6219,
+          39.4617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PIROX"
+      },
+      geometry: {
+        coordinates: [
+          28.05,
+          36.4833
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ETESU"
+      },
+      geometry: {
+        coordinates: [
+          39.3544,
+          39.1381
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BANRO"
+      },
+      geometry: {
+        coordinates: [
+          27.9953,
+          36.4947
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LUTFU"
+      },
+      geometry: {
+        coordinates: [
+          28.1833,
+          39.9394
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATLOM"
+      },
+      geometry: {
+        coordinates: [
+          39.3486,
+          37.3856
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VAKTI"
+      },
+      geometry: {
+        coordinates: [
+          37.8894,
+          40.7683
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EMBAG"
+      },
+      geometry: {
+        coordinates: [
+          42.2086,
+          38.1267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "URGUP"
+      },
+      geometry: {
+        coordinates: [
+          34.03,
+          38.5211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUDBU"
+      },
+      geometry: {
+        coordinates: [
+          27.7769,
+          41.9667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ODSAM"
+      },
+      geometry: {
+        coordinates: [
+          37.7647,
+          40.6481
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CRD"
+      },
+      geometry: {
+        coordinates: [
+          29.7042,
+          37.7897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASTAL"
+      },
+      geometry: {
+        coordinates: [
+          33.1244,
+          40.7406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ZELSU"
+      },
+      geometry: {
+        coordinates: [
+          43.7831,
+          38.2656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DIGTI"
+      },
+      geometry: {
+        coordinates: [
+          26.3214,
+          41.1253
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VADEN"
+      },
+      geometry: {
+        coordinates: [
+          27.2161,
+          42.0656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RATSI"
+      },
+      geometry: {
+        coordinates: [
+          36.2203,
+          37.8372
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TOPLU"
+      },
+      geometry: {
+        coordinates: [
+          28.1731,
+          41.4786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CRL"
+      },
+      geometry: {
+        coordinates: [
+          27.9422,
+          41.1522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GZP"
+      },
+      geometry: {
+        coordinates: [
+          32.2972,
+          36.3042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KAR"
+      },
+      geometry: {
+        coordinates: [
+          43.1042,
+          40.5567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CRM"
+      },
+      geometry: {
+        coordinates: [
+          36.5489,
+          41.2656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LANVO"
+      },
+      geometry: {
+        coordinates: [
+          39.2919,
+          39.9436
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BEDOP"
+      },
+      geometry: {
+        coordinates: [
+          32.2325,
+          41.9269
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CENGO"
+      },
+      geometry: {
+        coordinates: [
+          28.0911,
+          37.0656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TAVAS"
+      },
+      geometry: {
+        coordinates: [
+          29.2436,
+          37.5886
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAPSI"
+      },
+      geometry: {
+        coordinates: [
+          27.9042,
+          38.0022
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ABKEV"
+      },
+      geometry: {
+        coordinates: [
+          32.0483,
+          42.5839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ROTKU"
+      },
+      geometry: {
+        coordinates: [
+          39.96,
+          38.7933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RIXEN"
+      },
+      geometry: {
+        coordinates: [
+          28.7661,
+          42.0822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ORHAN"
+      },
+      geometry: {
+        coordinates: [
+          39.5778,
+          39.9475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DEKEK"
+      },
+      geometry: {
+        coordinates: [
+          29.3231,
+          40.3344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SRT"
+      },
+      geometry: {
+        coordinates: [
+          41.8819,
+          37.9606
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATVEP"
+      },
+      geometry: {
+        coordinates: [
+          26.9536,
+          41.4622
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAKIR"
+      },
+      geometry: {
+        coordinates: [
+          33.3244,
+          39.4378
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KAVAK"
+      },
+      geometry: {
+        coordinates: [
+          28.7328,
+          37.3572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KONEN"
+      },
+      geometry: {
+        coordinates: [
+          27.2772,
+          39.8117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BIMVO"
+      },
+      geometry: {
+        coordinates: [
+          33.1319,
+          42.4561
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RATVO"
+      },
+      geometry: {
+        coordinates: [
+          43.9344,
+          37.2406
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UPKAG"
+      },
+      geometry: {
+        coordinates: [
+          34.1353,
+          41.4547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KUMRU"
+      },
+      geometry: {
+        coordinates: [
+          30.7328,
+          37.4156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SUMOL"
+      },
+      geometry: {
+        coordinates: [
+          33.1811,
+          42.7989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EMGIM"
+      },
+      geometry: {
+        coordinates: [
+          29.5422,
+          39.9094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OTSOV"
+      },
+      geometry: {
+        coordinates: [
+          37.4314,
+          39.8328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PETAR"
+      },
+      geometry: {
+        coordinates: [
+          32.0814,
+          40.1711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LESRI"
+      },
+      geometry: {
+        coordinates: [
+          41.2303,
+          37.0722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CTP"
+      },
+      geometry: {
+        coordinates: [
+          30.0714,
+          40.7375
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OSDUT"
+      },
+      geometry: {
+        coordinates: [
+          37.5544,
+          41.19
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GOKSU"
+      },
+      geometry: {
+        coordinates: [
+          41.8797,
+          39.4928
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "APSER"
+      },
+      geometry: {
+        coordinates: [
+          29.8483,
+          39.3672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BRY"
+      },
+      geometry: {
+        coordinates: [
+          29.5936,
+          40.2625
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELDEN"
+      },
+      geometry: {
+        coordinates: [
+          35.4292,
+          39.9097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HAKAN"
+      },
+      geometry: {
+        coordinates: [
+          32.2983,
+          41.7233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARTAT"
+      },
+      geometry: {
+        coordinates: [
+          29.6242,
+          42.3639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DELEL"
+      },
+      geometry: {
+        coordinates: [
+          40.8903,
+          40.965
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADUMU"
+      },
+      geometry: {
+        coordinates: [
+          33.0778,
+          42.0711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARTAR"
+      },
+      geometry: {
+        coordinates: [
+          38.8447,
+          37.0939
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TIVUG"
+      },
+      geometry: {
+        coordinates: [
+          33.0311,
+          41.7336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BALIM"
+      },
+      geometry: {
+        coordinates: [
+          41.1242,
+          38.4297
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TIRMA"
+      },
+      geometry: {
+        coordinates: [
+          35.765,
+          38.9422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GELSU"
+      },
+      geometry: {
+        coordinates: [
+          40.5569,
+          39.5583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVSEP"
+      },
+      geometry: {
+        coordinates: [
+          26.1881,
+          40.1567
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERMEM"
+      },
+      geometry: {
+        coordinates: [
+          36.9197,
+          37.8114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADVOK"
+      },
+      geometry: {
+        coordinates: [
+          36.5011,
+          39.5036
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERKAL"
+      },
+      geometry: {
+        coordinates: [
+          29.9797,
+          40.9867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DORUK"
+      },
+      geometry: {
+        coordinates: [
+          42.1853,
+          39.2792
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INLAP"
+      },
+      geometry: {
+        coordinates: [
+          43.7458,
+          37.6836
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "FATIH"
+      },
+      geometry: {
+        coordinates: [
+          28.7994,
+          41.2281
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GINLI"
+      },
+      geometry: {
+        coordinates: [
+          28.7744,
+          41.8711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAMLA"
+      },
+      geometry: {
+        coordinates: [
+          38.9028,
+          40.6403
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EBEDI"
+      },
+      geometry: {
+        coordinates: [
+          39.1236,
+          39.725
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UVTOL"
+      },
+      geometry: {
+        coordinates: [
+          28.3128,
+          37.7675
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATNOP"
+      },
+      geometry: {
+        coordinates: [
+          34.8583,
+          42.0522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OZBEY"
+      },
+      geometry: {
+        coordinates: [
+          39.1,
+          37.2419
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PEVOP"
+      },
+      geometry: {
+        coordinates: [
+          38.7603,
+          40.1244
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DUGLA"
+      },
+      geometry: {
+        coordinates: [
+          27.2244,
+          39.4989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MILBA"
+      },
+      geometry: {
+        coordinates: [
+          36.4794,
+          36.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NILER"
+      },
+      geometry: {
+        coordinates: [
+          27.8697,
+          39.0839
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YAA"
+      },
+      geometry: {
+        coordinates: [
+          29.2075,
+          40.475
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EZN"
+      },
+      geometry: {
+        coordinates: [
+          38.8869,
+          39.9369
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARI"
+      },
+      geometry: {
+        coordinates: [
+          43.0269,
+          39.6458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKSEN"
+      },
+      geometry: {
+        coordinates: [
+          30.6703,
+          37.8906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RENGI"
+      },
+      geometry: {
+        coordinates: [
+          41.08,
+          38.4639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ODIRA"
+      },
+      geometry: {
+        coordinates: [
+          36.9147,
+          42.7089
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MILAS"
+      },
+      geometry: {
+        coordinates: [
+          27.6419,
+          37.1678
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EZS"
+      },
+      geometry: {
+        coordinates: [
+          39.2239,
+          38.7081
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASNUT"
+      },
+      geometry: {
+        coordinates: [
+          27.0081,
+          40.2283
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OSGED"
+      },
+      geometry: {
+        coordinates: [
+          30.1069,
+          38.9094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ABKAL"
+      },
+      geometry: {
+        coordinates: [
+          41.5319,
+          38.0194
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ZUITA"
+      },
+      geometry: {
+        coordinates: [
+          39.6339,
+          38.3631
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BONAM"
+      },
+      geometry: {
+        coordinates: [
+          44.2997,
+          38.0489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DYB"
+      },
+      geometry: {
+        coordinates: [
+          40.2081,
+          37.8733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NASIM"
+      },
+      geometry: {
+        coordinates: [
+          32.3333,
+          40.5722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KFK"
+      },
+      geometry: {
+        coordinates: [
+          30.5467,
+          38.8039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATVAM"
+      },
+      geometry: {
+        coordinates: [
+          39.5831,
+          41.6433
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BERGO"
+      },
+      geometry: {
+        coordinates: [
+          27.1328,
+          38.9989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERPIM"
+      },
+      geometry: {
+        coordinates: [
+          42.7089,
+          38.1069
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULREP"
+      },
+      geometry: {
+        coordinates: [
+          40.8878,
+          39.3817
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DEMEB"
+      },
+      geometry: {
+        coordinates: [
+          39.2317,
+          37.5639
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NEMRO"
+      },
+      geometry: {
+        coordinates: [
+          33.2028,
+          40.9083
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UDVET"
+      },
+      geometry: {
+        coordinates: [
+          35.5336,
+          38.315
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BUK"
+      },
+      geometry: {
+        coordinates: [
+          33.105,
+          40.2419
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AKBUK"
+      },
+      geometry: {
+        coordinates: [
+          27.4606,
+          37.5
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ILHAN"
+      },
+      geometry: {
+        coordinates: [
+          33.7036,
+          40.4439
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UNSAV"
+      },
+      geometry: {
+        coordinates: [
+          28.7897,
+          41.4783
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NELPO"
+      },
+      geometry: {
+        coordinates: [
+          37.6758,
+          40.47
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OKLAM"
+      },
+      geometry: {
+        coordinates: [
+          31.5828,
+          38.0908
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KEMER"
+      },
+      geometry: {
+        coordinates: [
+          34.7258,
+          37.6008
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AGINA"
+      },
+      geometry: {
+        coordinates: [
+          44.0867,
+          39.3233
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ESEPO"
+      },
+      geometry: {
+        coordinates: [
+          39.5583,
+          39.8519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KOZAN"
+      },
+      geometry: {
+        coordinates: [
+          37.1542,
+          36.9542
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HAZAR"
+      },
+      geometry: {
+        coordinates: [
+          39.4322,
+          38.5325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VESAR"
+      },
+      geometry: {
+        coordinates: [
+          34.0167,
+          35.9167
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OLUPO"
+      },
+      geometry: {
+        coordinates: [
+          37.6619,
+          41.7086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SUREL"
+      },
+      geometry: {
+        coordinates: [
+          40.8772,
+          40.8672
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATPUM"
+      },
+      geometry: {
+        coordinates: [
+          40.3758,
+          41.1933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARMUD"
+      },
+      geometry: {
+        coordinates: [
+          33.4856,
+          39.2217
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BUMOM"
+      },
+      geometry: {
+        coordinates: [
+          33.2297,
+          38.0144
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HAVZA"
+      },
+      geometry: {
+        coordinates: [
+          35.9286,
+          41.0925
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NEGEM"
+      },
+      geometry: {
+        coordinates: [
+          29.8703,
+          42.4617
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKTES"
+      },
+      geometry: {
+        coordinates: [
+          40.2044,
+          40.9853
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKTEL"
+      },
+      geometry: {
+        coordinates: [
+          38.9978,
+          37.8267
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BUPUN"
+      },
+      geometry: {
+        coordinates: [
+          37.9056,
+          37.3944
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVSAS"
+      },
+      geometry: {
+        coordinates: [
+          40.1886,
+          39.3247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HAY"
+      },
+      geometry: {
+        coordinates: [
+          32.5094,
+          39.4364
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YUCEL"
+      },
+      geometry: {
+        coordinates: [
+          33.5853,
+          39.5789
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YAYLA"
+      },
+      geometry: {
+        coordinates: [
+          27.9953,
+          39.8656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TZK"
+      },
+      geometry: {
+        coordinates: [
+          34.5428,
+          38.7667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KHD"
+      },
+      geometry: {
+        coordinates: [
+          38.4567,
+          37.7247
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EDASU"
+      },
+      geometry: {
+        coordinates: [
+          42.7767,
+          40.6067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KUGOS"
+      },
+      geometry: {
+        coordinates: [
+          34.0878,
+          42.7806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UVULU"
+      },
+      geometry: {
+        coordinates: [
+          34.5364,
+          41.5703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HANKO"
+      },
+      geometry: {
+        coordinates: [
+          30.2661,
+          39.4989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KUBER"
+      },
+      geometry: {
+        coordinates: [
+          33.6106,
+          39.8322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NAPIP"
+      },
+      geometry: {
+        coordinates: [
+          31.7389,
+          41.8067
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADSEP"
+      },
+      geometry: {
+        coordinates: [
+          36.5481,
+          37.6858
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "REBLO"
+      },
+      geometry: {
+        coordinates: [
+          43.685,
+          40.84
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INLEV"
+      },
+      geometry: {
+        coordinates: [
+          37.0881,
+          37.2594
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UTURI"
+      },
+      geometry: {
+        coordinates: [
+          37.9747,
+          39.8736
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AKUTU"
+      },
+      geometry: {
+        coordinates: [
+          42.5886,
+          40.6347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SIVKU"
+      },
+      geometry: {
+        coordinates: [
+          29.9794,
+          39.1356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERGUN"
+      },
+      geometry: {
+        coordinates: [
+          34.7389,
+          40.7464
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ETISI"
+      },
+      geometry: {
+        coordinates: [
+          43.2956,
+          40.2003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARPUT"
+      },
+      geometry: {
+        coordinates: [
+          38.9419,
+          38.8422
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ESENK"
+      },
+      geometry: {
+        coordinates: [
+          42.9381,
+          38.7447
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LUUPU"
+      },
+      geometry: {
+        coordinates: [
+          32.2383,
+          41.9094
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UTUSO"
+      },
+      geometry: {
+        coordinates: [
+          31.7106,
+          36.4497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MANAZ"
+      },
+      geometry: {
+        coordinates: [
+          34.4114,
+          36.9147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SOMGU"
+      },
+      geometry: {
+        coordinates: [
+          29.9556,
+          39.5533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KISLA"
+      },
+      geometry: {
+        coordinates: [
+          34.3333,
+          39.11
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OLDUD"
+      },
+      geometry: {
+        coordinates: [
+          32.6119,
+          42.1661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VEVEN"
+      },
+      geometry: {
+        coordinates: [
+          37.6383,
+          39.4528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SULTA"
+      },
+      geometry: {
+        coordinates: [
+          29.7397,
+          40.0456
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OTKEP"
+      },
+      geometry: {
+        coordinates: [
+          42.66,
+          37.8592
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VAPEK"
+      },
+      geometry: {
+        coordinates: [
+          31.6944,
+          37.3667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BABSA"
+      },
+      geometry: {
+        coordinates: [
+          30.305,
+          38.0156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MARIS"
+      },
+      geometry: {
+        coordinates: [
+          28.2828,
+          36.8989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MANAV"
+      },
+      geometry: {
+        coordinates: [
+          31.3578,
+          36.6989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INDUR"
+      },
+      geometry: {
+        coordinates: [
+          43.6647,
+          40.1156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RORMU"
+      },
+      geometry: {
+        coordinates: [
+          29.9269,
+          39.52
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LEGDO"
+      },
+      geometry: {
+        coordinates: [
+          41.1372,
+          40.835
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATSUB"
+      },
+      geometry: {
+        coordinates: [
+          31.6239,
+          36.585
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GAP"
+      },
+      geometry: {
+        coordinates: [
+          38.9047,
+          37.4581
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EDASA"
+      },
+      geometry: {
+        coordinates: [
+          30.1244,
+          39.46
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "USANU"
+      },
+      geometry: {
+        coordinates: [
+          36.0625,
+          40.9356
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GAZ"
+      },
+      geometry: {
+        coordinates: [
+          37.4728,
+          36.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HALIL"
+      },
+      geometry: {
+        coordinates: [
+          32.3578,
+          39.3906
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "REDRA"
+      },
+      geometry: {
+        coordinates: [
+          26.5244,
+          37.9822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TEKDO"
+      },
+      geometry: {
+        coordinates: [
+          30.1569,
+          38.3383
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INPOR"
+      },
+      geometry: {
+        coordinates: [
+          34.1033,
+          36.675
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADRES"
+      },
+      geometry: {
+        coordinates: [
+          37.3336,
+          37.1714
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DETOS"
+      },
+      geometry: {
+        coordinates: [
+          36.6711,
+          41.7583
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SONLU"
+      },
+      geometry: {
+        coordinates: [
+          28.7997,
+          39.0831
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NAMAN"
+      },
+      geometry: {
+        coordinates: [
+          30.9994,
+          40.9989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASPUL"
+      },
+      geometry: {
+        coordinates: [
+          40.4128,
+          38.5517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LATGA"
+      },
+      geometry: {
+        coordinates: [
+          32.0922,
+          40.3314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASMOB"
+      },
+      geometry: {
+        coordinates: [
+          32.2328,
+          41.6694
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NARLI"
+      },
+      geometry: {
+        coordinates: [
+          43.2497,
+          37.8156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ADBEL"
+      },
+      geometry: {
+        coordinates: [
+          31.7464,
+          36.9053
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULRAS"
+      },
+      geometry: {
+        coordinates: [
+          34.1125,
+          38.9933
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ELGEX"
+      },
+      geometry: {
+        coordinates: [
+          38.1128,
+          37.1806
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PIPUR"
+      },
+      geometry: {
+        coordinates: [
+          33.2389,
+          41.3511
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKDAM"
+      },
+      geometry: {
+        coordinates: [
+          29.6172,
+          40.4347
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DIGIL"
+      },
+      geometry: {
+        coordinates: [
+          39.0772,
+          38.1953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KABAN"
+      },
+      geometry: {
+        coordinates: [
+          42.6497,
+          37.2489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BARPE"
+      },
+      geometry: {
+        coordinates: [
+          26.9781,
+          40.9261
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SUDES"
+      },
+      geometry: {
+        coordinates: [
+          26.8933,
+          39.7694
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVKOR"
+      },
+      geometry: {
+        coordinates: [
+          32,
+          36.4289
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MISRO"
+      },
+      geometry: {
+        coordinates: [
+          29.8011,
+          39.9528
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TESVA"
+      },
+      geometry: {
+        coordinates: [
+          44.4964,
+          38.2858
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SOPOV"
+      },
+      geometry: {
+        coordinates: [
+          36.7992,
+          40.2003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MODAU"
+      },
+      geometry: {
+        coordinates: [
+          31.8858,
+          42.0092
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RIKSO"
+      },
+      geometry: {
+        coordinates: [
+          26.4333,
+          38.8333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PAZAR"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          41.2989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VAN"
+      },
+      geometry: {
+        coordinates: [
+          43.325,
+          38.4661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KARDE"
+      },
+      geometry: {
+        coordinates: [
+          37.0453,
+          41.9039
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SOLSA"
+      },
+      geometry: {
+        coordinates: [
+          35.7789,
+          38.1456
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GOBIT"
+      },
+      geometry: {
+        coordinates: [
+          33.8869,
+          39.7761
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MARMA"
+      },
+      geometry: {
+        coordinates: [
+          27.6489,
+          40.5272
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DERIL"
+      },
+      geometry: {
+        coordinates: [
+          44.415,
+          37.7344
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NIZIP"
+      },
+      geometry: {
+        coordinates: [
+          37.7667,
+          36.9847
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULKAN"
+      },
+      geometry: {
+        coordinates: [
+          28.1258,
+          37.3025
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERCIS"
+      },
+      geometry: {
+        coordinates: [
+          34.9436,
+          38.2703
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GETKO"
+      },
+      geometry: {
+        coordinates: [
+          40.5383,
+          40.4547
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ABDIK"
+      },
+      geometry: {
+        coordinates: [
+          41.9553,
+          37.6883
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DONDU"
+      },
+      geometry: {
+        coordinates: [
+          37.0581,
+          37.5864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UNEPI"
+      },
+      geometry: {
+        coordinates: [
+          30.1978,
+          38.2494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EKNUD"
+      },
+      geometry: {
+        coordinates: [
+          30.8103,
+          38.1292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VARTO"
+      },
+      geometry: {
+        coordinates: [
+          41.545,
+          39.0661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "AYT"
+      },
+      geometry: {
+        coordinates: [
+          30.7944,
+          36.9206
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ATKAN"
+      },
+      geometry: {
+        coordinates: [
+          27.8494,
+          39.52
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NIVAX"
+      },
+      geometry: {
+        coordinates: [
+          39.6342,
+          41.4892
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BALAX"
+      },
+      geometry: {
+        coordinates: [
+          33.7808,
+          39.4575
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NEGOL"
+      },
+      geometry: {
+        coordinates: [
+          41.0792,
+          39.4764
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVGEG"
+      },
+      geometry: {
+        coordinates: [
+          31.1075,
+          42.4572
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ABISI"
+      },
+      geometry: {
+        coordinates: [
+          31.9525,
+          40.3628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GEM"
+      },
+      geometry: {
+        coordinates: [
+          36.0286,
+          39.1542
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TELVO"
+      },
+      geometry: {
+        coordinates: [
+          32.9217,
+          39.3711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ODERO"
+      },
+      geometry: {
+        coordinates: [
+          30.2644,
+          42.6106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SITRU"
+      },
+      geometry: {
+        coordinates: [
+          26.2994,
+          38.1072
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ODMAX"
+      },
+      geometry: {
+        coordinates: [
+          31.4031,
+          42.1211
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NODKO"
+      },
+      geometry: {
+        coordinates: [
+          28.2686,
+          38.2197
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KOZLU"
+      },
+      geometry: {
+        coordinates: [
+          30.0744,
+          37.4972
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DAMLA"
+      },
+      geometry: {
+        coordinates: [
+          31.0911,
+          37.3614
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "HISAR"
+      },
+      geometry: {
+        coordinates: [
+          31.5411,
+          38.1156
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RUVOM"
+      },
+      geometry: {
+        coordinates: [
+          34.3933,
+          42.2936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MERAM"
+      },
+      geometry: {
+        coordinates: [
+          33.2869,
+          36.0364
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RAKUR"
+      },
+      geometry: {
+        coordinates: [
+          31.9478,
+          42.7989
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OTSAN"
+      },
+      geometry: {
+        coordinates: [
+          30.3314,
+          40.7106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SONUP"
+      },
+      geometry: {
+        coordinates: [
+          28.5,
+          37.4897
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MRD"
+      },
+      geometry: {
+        coordinates: [
+          40.6386,
+          37.2278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UMDOT"
+      },
+      geometry: {
+        coordinates: [
+          33.2869,
+          36.3825
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NESET"
+      },
+      geometry: {
+        coordinates: [
+          29.1197,
+          38.6314
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UREBO"
+      },
+      geometry: {
+        coordinates: [
+          37.1442,
+          38.7894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OLPOT"
+      },
+      geometry: {
+        coordinates: [
+          36.3606,
+          39.8611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SARIZ"
+      },
+      geometry: {
+        coordinates: [
+          35.3786,
+          39.0411
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BELSU"
+      },
+      geometry: {
+        coordinates: [
+          34.2864,
+          39.1308
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BADOX"
+      },
+      geometry: {
+        coordinates: [
+          33.9753,
+          39.3319
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TOLUN"
+      },
+      geometry: {
+        coordinates: [
+          38.79,
+          41.34
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GULMO"
+      },
+      geometry: {
+        coordinates: [
+          36.7333,
+          42.0042
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KEKIK"
+      },
+      geometry: {
+        coordinates: [
+          28.3678,
+          37.0786
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVPUV"
+      },
+      geometry: {
+        coordinates: [
+          32.7594,
+          41.8003
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TAVUS"
+      },
+      geometry: {
+        coordinates: [
+          41.7358,
+          39.8697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OTLUG"
+      },
+      geometry: {
+        coordinates: [
+          41.5122,
+          39.1536
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BASMU"
+      },
+      geometry: {
+        coordinates: [
+          30.5425,
+          40.6667
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "REMPO"
+      },
+      geometry: {
+        coordinates: [
+          36.4722,
+          37.66
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUMER"
+      },
+      geometry: {
+        coordinates: [
+          29.4703,
+          38.6656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BABLI"
+      },
+      geometry: {
+        coordinates: [
+          36.8631,
+          36.9533
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARKIN"
+      },
+      geometry: {
+        coordinates: [
+          39.9167,
+          39.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RIMBO"
+      },
+      geometry: {
+        coordinates: [
+          28.5522,
+          41.3808
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RAVLI"
+      },
+      geometry: {
+        coordinates: [
+          41.3922,
+          39.4769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAVTI"
+      },
+      geometry: {
+        coordinates: [
+          40.2547,
+          40.6628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SEHIR"
+      },
+      geometry: {
+        coordinates: [
+          32.2036,
+          37.6517
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SULAK"
+      },
+      geometry: {
+        coordinates: [
+          36.2867,
+          37.8942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DAL"
+      },
+      geometry: {
+        coordinates: [
+          28.7822,
+          36.6894
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "UPKUL"
+      },
+      geometry: {
+        coordinates: [
+          30.3175,
+          38.5317
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASKER"
+      },
+      geometry: {
+        coordinates: [
+          38.7847,
+          38.2769
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TEVDA"
+      },
+      geometry: {
+        coordinates: [
+          35.0667,
+          38.3728
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DEVMU"
+      },
+      geometry: {
+        coordinates: [
+          32.4608,
+          41.8722
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YKV"
+      },
+      geometry: {
+        coordinates: [
+          44.2425,
+          37.5492
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DEREL"
+      },
+      geometry: {
+        coordinates: [
+          32.1933,
+          40.7139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ETVER"
+      },
+      geometry: {
+        coordinates: [
+          34.2272,
+          38.6158
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ORVOR"
+      },
+      geometry: {
+        coordinates: [
+          35.6903,
+          41.0225
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RAVGO"
+      },
+      geometry: {
+        coordinates: [
+          30.5008,
+          39.5469
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NONDU"
+      },
+      geometry: {
+        coordinates: [
+          26.675,
+          41.13
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OSKOV"
+      },
+      geometry: {
+        coordinates: [
+          38.1575,
+          37.0711
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LASON"
+      },
+      geometry: {
+        coordinates: [
+          27.4528,
+          38.3847
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVKIT"
+      },
+      geometry: {
+        coordinates: [
+          33.7544,
+          36.2611
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KINIK"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          38.7322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ASBOM"
+      },
+      geometry: {
+        coordinates: [
+          37.0414,
+          37.2589
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ULMAR"
+      },
+      geometry: {
+        coordinates: [
+          27.1869,
+          41.2111
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVNOT"
+      },
+      geometry: {
+        coordinates: [
+          29.9706,
+          40.7844
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAFRA"
+      },
+      geometry: {
+        coordinates: [
+          35.9664,
+          41.5086
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OSVEL"
+      },
+      geometry: {
+        coordinates: [
+          31.0186,
+          38.4819
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DEDIM"
+      },
+      geometry: {
+        coordinates: [
+          29.2686,
+          39.3972
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KULAR"
+      },
+      geometry: {
+        coordinates: [
+          28.6328,
+          38.5822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERSEN"
+      },
+      geometry: {
+        coordinates: [
+          30.6661,
+          40.8656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "FIRAT"
+      },
+      geometry: {
+        coordinates: [
+          37.6542,
+          37.1389
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SOVAP"
+      },
+      geometry: {
+        coordinates: [
+          36.7961,
+          42.2497
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GAYEM"
+      },
+      geometry: {
+        coordinates: [
+          29.63,
+          41.0458
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KARGI"
+      },
+      geometry: {
+        coordinates: [
+          30.0544,
+          39.4292
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TBN"
+      },
+      geometry: {
+        coordinates: [
+          39.7956,
+          40.9953
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TURNA"
+      },
+      geometry: {
+        coordinates: [
+          41.3578,
+          39.5586
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "FENER"
+      },
+      geometry: {
+        coordinates: [
+          28.3578,
+          41.2864
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERKUK"
+      },
+      geometry: {
+        coordinates: [
+          32.9431,
+          39.2153
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MUS"
+      },
+      geometry: {
+        coordinates: [
+          41.6608,
+          38.7494
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "MUT"
+      },
+      geometry: {
+        coordinates: [
+          33.2917,
+          36.8628
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "IMR"
+      },
+      geometry: {
+        coordinates: [
+          27.0072,
+          38.3172
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GUMRU"
+      },
+      geometry: {
+        coordinates: [
+          31.3494,
+          41.5489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NINVA"
+      },
+      geometry: {
+        coordinates: [
+          43.2167,
+          37.35
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ABSAX"
+      },
+      geometry: {
+        coordinates: [
+          32.5836,
+          42.3336
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "CAY"
+      },
+      geometry: {
+        coordinates: [
+          32.0444,
+          41.5139
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "INB"
+      },
+      geometry: {
+        coordinates: [
+          33.7061,
+          41.9514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BATNU"
+      },
+      geometry: {
+        coordinates: [
+          32.7239,
+          36.1608
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ROLIN"
+      },
+      geometry: {
+        coordinates: [
+          40.6564,
+          41.7992
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "REBTA"
+      },
+      geometry: {
+        coordinates: [
+          33.1694,
+          37.6867
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "APVAS"
+      },
+      geometry: {
+        coordinates: [
+          36.6683,
+          40.7642
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LETBU"
+      },
+      geometry: {
+        coordinates: [
+          32.0692,
+          41.1325
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LUMEX"
+      },
+      geometry: {
+        coordinates: [
+          42.4692,
+          40.6525
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SISPI"
+      },
+      geometry: {
+        coordinates: [
+          29.87,
+          39.9147
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BRONZ"
+      },
+      geometry: {
+        coordinates: [
+          30.3494,
+          37.2697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DESEM"
+      },
+      geometry: {
+        coordinates: [
+          30.0019,
+          38.1522
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KONUK"
+      },
+      geometry: {
+        coordinates: [
+          39.4681,
+          39.5117
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ALPAY"
+      },
+      geometry: {
+        coordinates: [
+          29.9994,
+          36.8322
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TUNCA"
+      },
+      geometry: {
+        coordinates: [
+          31.0311,
+          41.2328
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OBRUK"
+      },
+      geometry: {
+        coordinates: [
+          33.1189,
+          38.0239
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RERVA"
+      },
+      geometry: {
+        coordinates: [
+          33.8925,
+          42.3597
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DIGBO"
+      },
+      geometry: {
+        coordinates: [
+          28.4044,
+          41.4936
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SEHER"
+      },
+      geometry: {
+        coordinates: [
+          38.5736,
+          40.5061
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PIDEV"
+      },
+      geometry: {
+        coordinates: [
+          31.5333,
+          37.0942
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "TEKMI"
+      },
+      geometry: {
+        coordinates: [
+          38.3494,
+          37.9589
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KUMAN"
+      },
+      geometry: {
+        coordinates: [
+          27.8328,
+          38.0317
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ALTIN"
+      },
+      geometry: {
+        coordinates: [
+          29.4092,
+          36.7656
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BENTA"
+      },
+      geometry: {
+        coordinates: [
+          33.9558,
+          40.1514
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GKA"
+      },
+      geometry: {
+        coordinates: [
+          25.9236,
+          40.1797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "YUNUS"
+      },
+      geometry: {
+        coordinates: [
+          27.8833,
+          36.7097
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GULRA"
+      },
+      geometry: {
+        coordinates: [
+          38.2794,
+          40.3797
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ERTEK"
+      },
+      geometry: {
+        coordinates: [
+          39.2994,
+          38.9564
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "PESOX"
+      },
+      geometry: {
+        coordinates: [
+          30.0333,
+          39.04
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LEKRO"
+      },
+      geometry: {
+        coordinates: [
+          40.9714,
+          37.2772
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "GOLDO"
+      },
+      geometry: {
+        coordinates: [
+          26.2494,
+          40.8822
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SONSU"
+      },
+      geometry: {
+        coordinates: [
+          38.3867,
+          37.88
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "LAVTA"
+      },
+      geometry: {
+        coordinates: [
+          28.7033,
+          37.7217
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "SUNAT"
+      },
+      geometry: {
+        coordinates: [
+          29.2497,
+          37.2519
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BAG"
+      },
+      geometry: {
+        coordinates: [
+          32.8103,
+          40.0697
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RIXUB"
+      },
+      geometry: {
+        coordinates: [
+          30.6689,
+          42.2872
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OKMOT"
+      },
+      geometry: {
+        coordinates: [
+          31.7908,
+          38.5106
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "OTKOT"
+      },
+      geometry: {
+        coordinates: [
+          34.4328,
+          42.1114
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KSR"
+      },
+      geometry: {
+        coordinates: [
+          35.5217,
+          38.7756
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DEN"
+      },
+      geometry: {
+        coordinates: [
+          28.6028,
+          38.5781
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "EVLIG"
+      },
+      geometry: {
+        coordinates: [
+          31.4831,
+          40.4661
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NUGBA"
+      },
+      geometry: {
+        coordinates: [
+          30.6742,
+          41.5911
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KST"
+      },
+      geometry: {
+        coordinates: [
+          33.8,
+          41.3503
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ENESU"
+      },
+      geometry: {
+        coordinates: [
+          27.3306,
+          41.4753
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ARSUG"
+      },
+      geometry: {
+        coordinates: [
+          38.2722,
+          41.1331
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "RAHMA"
+      },
+      geometry: {
+        coordinates: [
+          42.5081,
+          40.3733
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "ODALI"
+      },
+      geometry: {
+        coordinates: [
+          38.15,
+          40.3278
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "DOREN"
+      },
+      geometry: {
+        coordinates: [
+          33.2833,
+          35.9333
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "BIRPU"
+      },
+      geometry: {
+        coordinates: [
+          29.1747,
+          36.3189
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "NESIL"
+      },
+      geometry: {
+        coordinates: [
+          29.7231,
+          37.3431
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "VEXOL"
+      },
+      geometry: {
+        coordinates: [
+          26.1994,
+          38.3489
+        ],
+        type: "Point"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airwaypoint",
+        name: "KTH"
+      },
+      geometry: {
+        coordinates: [
+          30.1367,
+          39.1081
+        ],
+        type: "Point"
+      }
+    }
+  ]
+};
+
+// apps/simulator/src/geojsons/airways.json
+var airways_default = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UA16"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.2161,
+            42.0656
+          ],
+          [
+            28.3578,
+            41.2864
+          ],
+          [
+            28.8106,
+            40.9614
+          ],
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            29.3231,
+            40.3344
+          ],
+          [
+            29.4389,
+            40.1931
+          ],
+          [
+            29.9556,
+            39.5533
+          ],
+          [
+            30.0544,
+            39.4292
+          ],
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            30.6178,
+            38.2806
+          ],
+          [
+            30.6569,
+            37.9822
+          ],
+          [
+            30.6703,
+            37.8906
+          ],
+          [
+            30.7083,
+            37.5833
+          ],
+          [
+            30.7328,
+            37.4156
+          ],
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            30.8119,
+            36.4156
+          ],
+          [
+            30.825,
+            36.0411
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UA17"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.7661,
+            42.0822
+          ],
+          [
+            30.9994,
+            40.9989
+          ],
+          [
+            31.8328,
+            40.5822
+          ],
+          [
+            32.1494,
+            40.4183
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            33.5853,
+            39.5789
+          ],
+          [
+            33.7808,
+            39.4575
+          ],
+          [
+            34.2864,
+            39.1308
+          ],
+          [
+            34.3333,
+            39.11
+          ],
+          [
+            35.2289,
+            38.5239
+          ],
+          [
+            35.7789,
+            38.1456
+          ],
+          [
+            36.2203,
+            37.8372
+          ],
+          [
+            36.4722,
+            37.66
+          ],
+          [
+            36.6936,
+            37.5031
+          ],
+          [
+            37.0414,
+            37.2589
+          ],
+          [
+            37.2433,
+            37.1208
+          ],
+          [
+            37.4728,
+            36.9514
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UA28"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.3858,
+            41.2919
+          ],
+          [
+            33.2544,
+            41.0172
+          ],
+          [
+            33.2028,
+            40.9083
+          ],
+          [
+            33.1244,
+            40.7406
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            32.9217,
+            39.3711
+          ],
+          [
+            32.9431,
+            39.2153
+          ],
+          [
+            33.1189,
+            38.0239
+          ],
+          [
+            33.2917,
+            36.8628
+          ],
+          [
+            33.2869,
+            36.3825
+          ],
+          [
+            33.2847,
+            36.1536
+          ],
+          [
+            33.2869,
+            36.0364
+          ],
+          [
+            33.2833,
+            35.9333
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UA285"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.2917,
+            36.8628
+          ],
+          [
+            33.9625,
+            37.4439
+          ],
+          [
+            34.4994,
+            37.8989
+          ],
+          [
+            34.9436,
+            38.2703
+          ],
+          [
+            35.0667,
+            38.3728
+          ],
+          [
+            35.2289,
+            38.5239
+          ],
+          [
+            35.765,
+            38.9422
+          ],
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            36.5011,
+            39.5036
+          ],
+          [
+            36.8933,
+            39.7894
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UA4"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.5683,
+            41.8717
+          ],
+          [
+            27.3092,
+            41.5772
+          ],
+          [
+            28.3842,
+            41.1364
+          ],
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            29.63,
+            41.0458
+          ],
+          [
+            29.9797,
+            40.9867
+          ],
+          [
+            30.3453,
+            40.9228
+          ],
+          [
+            30.6661,
+            40.8656
+          ],
+          [
+            31.8328,
+            40.5822
+          ],
+          [
+            32.1994,
+            40.4739
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            33.8328,
+            40.1683
+          ],
+          [
+            33.9558,
+            40.1514
+          ],
+          [
+            35.3611,
+            39.9919
+          ],
+          [
+            36.2747,
+            39.8739
+          ],
+          [
+            36.3606,
+            39.8611
+          ],
+          [
+            36.8933,
+            39.7894
+          ],
+          [
+            37.4314,
+            39.8328
+          ],
+          [
+            37.9747,
+            39.8736
+          ],
+          [
+            38.8869,
+            39.9369
+          ],
+          [
+            39.1019,
+            39.9406
+          ],
+          [
+            39.5778,
+            39.9475
+          ],
+          [
+            39.9167,
+            39.9514
+          ],
+          [
+            40.6647,
+            39.9561
+          ],
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.6083,
+            39.6808
+          ],
+          [
+            41.8797,
+            39.4928
+          ],
+          [
+            42.1853,
+            39.2792
+          ],
+          [
+            42.9381,
+            38.7447
+          ],
+          [
+            43.325,
+            38.4661
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UB111"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.4189,
+            40.9228
+          ],
+          [
+            40.8772,
+            40.8672
+          ],
+          [
+            42.5886,
+            40.6347
+          ],
+          [
+            42.7767,
+            40.6067
+          ],
+          [
+            43.1042,
+            40.5567
+          ],
+          [
+            43.3772,
+            40.6906
+          ],
+          [
+            43.685,
+            40.84
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UB36"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            36.7075,
+            38.14
+          ],
+          [
+            36.9197,
+            37.8114
+          ],
+          [
+            37.0581,
+            37.5864
+          ],
+          [
+            37.2744,
+            37.2625
+          ],
+          [
+            37.3336,
+            37.1714
+          ],
+          [
+            37.4728,
+            36.9514
+          ],
+          [
+            37.4006,
+            36.7036
+          ],
+          [
+            37.3831,
+            36.6489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UB374"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.7431,
+            39.9958
+          ],
+          [
+            42.4333,
+            40.0444
+          ],
+          [
+            43.3694,
+            40.0997
+          ],
+          [
+            43.6647,
+            40.1156
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UB545"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.1069,
+            38.9094
+          ],
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            31.0186,
+            38.4819
+          ],
+          [
+            31.5411,
+            38.1156
+          ],
+          [
+            31.5828,
+            38.0908
+          ],
+          [
+            32.2036,
+            37.6517
+          ],
+          [
+            33.2917,
+            36.8628
+          ],
+          [
+            33.7544,
+            36.2611
+          ],
+          [
+            34.0167,
+            35.9167
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG1"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.7661,
+            42.0822
+          ],
+          [
+            28.7792,
+            41.7461
+          ],
+          [
+            28.7897,
+            41.4783
+          ],
+          [
+            28.7994,
+            41.2281
+          ],
+          [
+            28.8106,
+            40.9614
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG12"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.2494,
+            40.8822
+          ],
+          [
+            26.9781,
+            40.9261
+          ],
+          [
+            27.1408,
+            40.9353
+          ],
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            29.2075,
+            40.475
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG123"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            29.1467,
+            41.4614
+          ],
+          [
+            29.1428,
+            42.1706
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG261"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            42.9789,
+            41.4281
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG67"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.3758,
+            41.1933
+          ],
+          [
+            41.4497,
+            41.5489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG8"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.4994,
+            39.3322
+          ],
+          [
+            26.8933,
+            39.7694
+          ],
+          [
+            27.3653,
+            40.2842
+          ],
+          [
+            28.0175,
+            40.5944
+          ],
+          [
+            28.8106,
+            40.9614
+          ],
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            29.6172,
+            40.4347
+          ],
+          [
+            29.9536,
+            40.4006
+          ],
+          [
+            30.1828,
+            40.3767
+          ],
+          [
+            30.7722,
+            40.3133
+          ],
+          [
+            31.8781,
+            40.1861
+          ],
+          [
+            32.0814,
+            40.1711
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            33.6106,
+            39.8322
+          ],
+          [
+            33.8869,
+            39.7761
+          ],
+          [
+            35.1828,
+            39.4017
+          ],
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            38.9022,
+            38.7561
+          ],
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            39.5125,
+            38.6242
+          ],
+          [
+            40.8164,
+            38.2406
+          ],
+          [
+            41.1314,
+            38.1425
+          ],
+          [
+            41.5319,
+            38.0194
+          ],
+          [
+            41.8819,
+            37.9606
+          ],
+          [
+            42.1417,
+            37.8942
+          ],
+          [
+            42.66,
+            37.8592
+          ],
+          [
+            43.2497,
+            37.8156
+          ],
+          [
+            44.415,
+            37.7344
+          ],
+          [
+            44.6267,
+            37.7083
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG80"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.5683,
+            41.8717
+          ],
+          [
+            26.9536,
+            41.4622
+          ],
+          [
+            27.1869,
+            41.2111
+          ],
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            27.3653,
+            40.2842
+          ],
+          [
+            27.3092,
+            39.9839
+          ],
+          [
+            27.2772,
+            39.8117
+          ],
+          [
+            27.2244,
+            39.4989
+          ],
+          [
+            27.1328,
+            38.9989
+          ],
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            27.3864,
+            37.6292
+          ],
+          [
+            27.4606,
+            37.5
+          ],
+          [
+            27.6419,
+            37.1678
+          ],
+          [
+            27.8833,
+            36.7097
+          ],
+          [
+            27.9953,
+            36.4947
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG802"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.1994,
+            38.3489
+          ],
+          [
+            27.0072,
+            38.3172
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG81"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            39.5333,
+            38.6939
+          ],
+          [
+            40.2167,
+            38.6617
+          ],
+          [
+            40.825,
+            38.6306
+          ],
+          [
+            41.4039,
+            38.5947
+          ],
+          [
+            42.7881,
+            38.505
+          ],
+          [
+            43.325,
+            38.4661
+          ],
+          [
+            43.7831,
+            38.2656
+          ],
+          [
+            44.2997,
+            38.0489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UG901"
+      },
+      geometry: {
+        coordinates: [
+          [
+            37.6667,
+            42.6833
+          ],
+          [
+            37.0453,
+            41.9039
+          ],
+          [
+            36.5489,
+            41.2656
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL124"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.7389,
+            40.7464
+          ],
+          [
+            37.5728,
+            40.0822
+          ],
+          [
+            39.4681,
+            39.5117
+          ],
+          [
+            40.1886,
+            39.3247
+          ],
+          [
+            43.325,
+            38.4661
+          ],
+          [
+            43.7831,
+            38.2656
+          ],
+          [
+            44.2997,
+            38.0489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL223"
+      },
+      geometry: {
+        coordinates: [
+          [
+            43.0269,
+            39.6458
+          ],
+          [
+            44.2083,
+            38.9097
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL333"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            30.7114,
+            40.6314
+          ],
+          [
+            31.2103,
+            40.5253
+          ],
+          [
+            31.4831,
+            40.4661
+          ],
+          [
+            31.9525,
+            40.3628
+          ],
+          [
+            32.0922,
+            40.3314
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            35.4292,
+            39.9097
+          ],
+          [
+            36.8933,
+            39.7894
+          ],
+          [
+            38.1981,
+            39.7567
+          ],
+          [
+            39.1236,
+            39.725
+          ],
+          [
+            39.5292,
+            39.7083
+          ],
+          [
+            40.5569,
+            39.5583
+          ],
+          [
+            41.0792,
+            39.4764
+          ],
+          [
+            41.4139,
+            39.4208
+          ],
+          [
+            42.1853,
+            39.2792
+          ],
+          [
+            44.2083,
+            38.9097
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL601"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.6242,
+            42.3639
+          ],
+          [
+            30.5022,
+            41.6175
+          ],
+          [
+            30.7247,
+            41.4289
+          ],
+          [
+            31.0311,
+            41.2328
+          ],
+          [
+            31.2533,
+            41.0908
+          ],
+          [
+            32.1994,
+            40.4739
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            33.3244,
+            39.4378
+          ],
+          [
+            33.3619,
+            39.3822
+          ],
+          [
+            33.4856,
+            39.2217
+          ],
+          [
+            34.03,
+            38.5211
+          ],
+          [
+            34.4994,
+            37.8989
+          ],
+          [
+            34.7258,
+            37.6008
+          ],
+          [
+            35.2103,
+            36.9406
+          ],
+          [
+            36.0333,
+            35.8833
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL602"
+      },
+      geometry: {
+        coordinates: [
+          [
+            37.4728,
+            36.9514
+          ],
+          [
+            37.0881,
+            37.2594
+          ],
+          [
+            36.5481,
+            37.6858
+          ],
+          [
+            36.2867,
+            37.8942
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            32.1933,
+            40.7139
+          ],
+          [
+            30.7247,
+            41.4289
+          ],
+          [
+            29.1428,
+            42.1706
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL605"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.7661,
+            42.0822
+          ],
+          [
+            30.9994,
+            40.9989
+          ],
+          [
+            31.8328,
+            40.5822
+          ],
+          [
+            32.1494,
+            40.4183
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            33.5853,
+            39.5789
+          ],
+          [
+            33.7808,
+            39.4575
+          ],
+          [
+            33.9753,
+            39.3319
+          ],
+          [
+            34.2864,
+            39.1308
+          ],
+          [
+            34.3333,
+            39.11
+          ],
+          [
+            35.2289,
+            38.5239
+          ],
+          [
+            35.7789,
+            38.1456
+          ],
+          [
+            36.2203,
+            37.8372
+          ],
+          [
+            36.3536,
+            37.7436
+          ],
+          [
+            36.4722,
+            37.66
+          ],
+          [
+            36.6936,
+            37.5031
+          ],
+          [
+            37.0414,
+            37.2589
+          ],
+          [
+            37.2433,
+            37.1208
+          ],
+          [
+            37.4728,
+            36.9514
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL606"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.5683,
+            41.8717
+          ],
+          [
+            26.9536,
+            41.4622
+          ],
+          [
+            27.1869,
+            41.2111
+          ],
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            29.1542,
+            39.7889
+          ],
+          [
+            29.6219,
+            39.4617
+          ],
+          [
+            30.1367,
+            39.1081
+          ],
+          [
+            30.5467,
+            38.8039
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL610"
+      },
+      geometry: {
+        coordinates: [
+          [
+            31.6944,
+            37.3667
+          ],
+          [
+            30.6703,
+            37.8906
+          ],
+          [
+            30.4817,
+            38.2347
+          ],
+          [
+            30.3175,
+            38.5317
+          ],
+          [
+            30.2775,
+            38.6053
+          ],
+          [
+            30.1069,
+            38.9094
+          ],
+          [
+            30.0333,
+            39.04
+          ],
+          [
+            29.9794,
+            39.1356
+          ],
+          [
+            29.8483,
+            39.3672
+          ],
+          [
+            29.7289,
+            39.5797
+          ],
+          [
+            29.5422,
+            39.9094
+          ],
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            28.8106,
+            40.9614
+          ],
+          [
+            28.3578,
+            41.2864
+          ],
+          [
+            27.2161,
+            42.0656
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL614"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.5683,
+            41.8717
+          ],
+          [
+            27.3306,
+            41.4753
+          ],
+          [
+            27.9422,
+            41.1522
+          ],
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            29.6172,
+            40.4347
+          ],
+          [
+            29.9536,
+            40.4006
+          ],
+          [
+            30.7722,
+            40.3133
+          ],
+          [
+            31.4239,
+            40.2397
+          ],
+          [
+            31.8781,
+            40.1861
+          ],
+          [
+            32.0814,
+            40.1711
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            33.6106,
+            39.8322
+          ],
+          [
+            33.8869,
+            39.7761
+          ],
+          [
+            35.1828,
+            39.4017
+          ],
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            38.9022,
+            38.7561
+          ],
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            39.5125,
+            38.6242
+          ],
+          [
+            40.8164,
+            38.2406
+          ],
+          [
+            41.1314,
+            38.1425
+          ],
+          [
+            41.5319,
+            38.0194
+          ],
+          [
+            41.8819,
+            37.9606
+          ],
+          [
+            42.1417,
+            37.8942
+          ],
+          [
+            42.66,
+            37.8592
+          ],
+          [
+            43.2497,
+            37.8156
+          ],
+          [
+            44.415,
+            37.7344
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL615"
+      },
+      geometry: {
+        coordinates: [
+          [
+            43.325,
+            38.4661
+          ],
+          [
+            42.9381,
+            38.7447
+          ],
+          [
+            42.1853,
+            39.2792
+          ],
+          [
+            41.8797,
+            39.4928
+          ],
+          [
+            41.6083,
+            39.6808
+          ],
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            40.6647,
+            39.9561
+          ],
+          [
+            39.9167,
+            39.9514
+          ],
+          [
+            39.5778,
+            39.9475
+          ],
+          [
+            39.1019,
+            39.9406
+          ],
+          [
+            38.8869,
+            39.9369
+          ],
+          [
+            37.9747,
+            39.8736
+          ],
+          [
+            37.4314,
+            39.8328
+          ],
+          [
+            36.8933,
+            39.7894
+          ],
+          [
+            36.3606,
+            39.8611
+          ],
+          [
+            36.2747,
+            39.8739
+          ],
+          [
+            35.3611,
+            39.9919
+          ],
+          [
+            33.9558,
+            40.1514
+          ],
+          [
+            33.8328,
+            40.1683
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            32.1994,
+            40.4739
+          ],
+          [
+            31.8328,
+            40.5822
+          ],
+          [
+            31.2508,
+            40.7253
+          ],
+          [
+            30.6661,
+            40.8656
+          ],
+          [
+            30.3453,
+            40.9228
+          ],
+          [
+            29.9797,
+            40.9867
+          ],
+          [
+            29.63,
+            41.0458
+          ],
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            28.4044,
+            41.4936
+          ],
+          [
+            27.2161,
+            42.0656
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL619"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.0167,
+            35.9167
+          ],
+          [
+            33.7544,
+            36.2611
+          ],
+          [
+            33.2917,
+            36.8628
+          ],
+          [
+            31.5828,
+            38.0908
+          ],
+          [
+            31.0186,
+            38.4819
+          ],
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            30.2661,
+            39.4989
+          ],
+          [
+            29.5161,
+            41.1989
+          ],
+          [
+            29.1428,
+            42.1706
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL620"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.7661,
+            42.0822
+          ],
+          [
+            28.7744,
+            41.8711
+          ],
+          [
+            28.7792,
+            41.7461
+          ],
+          [
+            28.7897,
+            41.4783
+          ],
+          [
+            28.7994,
+            41.2281
+          ],
+          [
+            28.8106,
+            40.9614
+          ],
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            29.3231,
+            40.3344
+          ],
+          [
+            29.4389,
+            40.1931
+          ],
+          [
+            29.9556,
+            39.5533
+          ],
+          [
+            30.0544,
+            39.4292
+          ],
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            31.0186,
+            38.4819
+          ],
+          [
+            31.5411,
+            38.1156
+          ],
+          [
+            31.5828,
+            38.0908
+          ],
+          [
+            33.2917,
+            36.8628
+          ],
+          [
+            33.7544,
+            36.2611
+          ],
+          [
+            34.0167,
+            35.9167
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL621"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.2917,
+            36.8628
+          ],
+          [
+            33.2297,
+            38.0144
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            32.0692,
+            41.1325
+          ],
+          [
+            31.5858,
+            41.5375
+          ],
+          [
+            31.5308,
+            41.5828
+          ],
+          [
+            31.3086,
+            41.7664
+          ],
+          [
+            31.0228,
+            42.0006
+          ],
+          [
+            30.6689,
+            42.2872
+          ],
+          [
+            30.2644,
+            42.6106
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL746"
+      },
+      geometry: {
+        coordinates: [
+          [
+            44.2083,
+            38.9097
+          ],
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            39.6764,
+            40.4181
+          ],
+          [
+            38.9028,
+            40.6403
+          ],
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            34.5947,
+            41.7461
+          ],
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.0778,
+            42.0711
+          ],
+          [
+            32.6119,
+            42.1661
+          ],
+          [
+            32.2047,
+            42.2469
+          ],
+          [
+            32.1236,
+            42.2628
+          ],
+          [
+            31.1075,
+            42.4572
+          ],
+          [
+            30.2644,
+            42.6106
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL851"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.0878,
+            42.7806
+          ],
+          [
+            37.0453,
+            41.9039
+          ],
+          [
+            37.6619,
+            41.7086
+          ],
+          [
+            38.79,
+            41.34
+          ],
+          [
+            39.1697,
+            41.2153
+          ],
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.2547,
+            40.6628
+          ],
+          [
+            40.3494,
+            40.5936
+          ],
+          [
+            40.5383,
+            40.4547
+          ],
+          [
+            40.82,
+            40.2458
+          ],
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.7358,
+            39.8697
+          ],
+          [
+            42.7083,
+            39.7025
+          ],
+          [
+            43.0269,
+            39.6458
+          ],
+          [
+            44.0867,
+            39.3233
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL852"
+      },
+      geometry: {
+        coordinates: [
+          [
+            44.4964,
+            38.2858
+          ],
+          [
+            42.9381,
+            38.7447
+          ],
+          [
+            41.4514,
+            39.3153
+          ],
+          [
+            40.5569,
+            39.5583
+          ],
+          [
+            39.5583,
+            39.8519
+          ],
+          [
+            39.2919,
+            39.9436
+          ],
+          [
+            38.7603,
+            40.1244
+          ],
+          [
+            38.15,
+            40.3278
+          ],
+          [
+            37.6758,
+            40.47
+          ],
+          [
+            36.6683,
+            40.7642
+          ],
+          [
+            36.0625,
+            40.9356
+          ],
+          [
+            35.8661,
+            40.9903
+          ],
+          [
+            34.8622,
+            41.2636
+          ],
+          [
+            34.3372,
+            41.4025
+          ],
+          [
+            34.1353,
+            41.4547
+          ],
+          [
+            33.5786,
+            41.5969
+          ],
+          [
+            33.5381,
+            41.6072
+          ],
+          [
+            33.0311,
+            41.7336
+          ],
+          [
+            32.7594,
+            41.8003
+          ],
+          [
+            32.4608,
+            41.8722
+          ],
+          [
+            32.3664,
+            41.895
+          ],
+          [
+            32.2325,
+            41.9269
+          ],
+          [
+            31.8858,
+            42.0092
+          ],
+          [
+            31.4031,
+            42.1211
+          ],
+          [
+            29.8703,
+            42.4617
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL854"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            27.6489,
+            40.5272
+          ],
+          [
+            27.9953,
+            39.8656
+          ],
+          [
+            28.2767,
+            39.2989
+          ],
+          [
+            28.3981,
+            39.05
+          ],
+          [
+            28.6328,
+            38.5822
+          ],
+          [
+            29.3253,
+            38.0711
+          ],
+          [
+            29.7042,
+            37.7897
+          ],
+          [
+            30.0003,
+            37.5553
+          ],
+          [
+            30.0744,
+            37.4972
+          ],
+          [
+            30.3494,
+            37.2697
+          ],
+          [
+            30.7944,
+            36.9206
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UL867"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.7664,
+            41.9711
+          ],
+          [
+            27.3306,
+            41.4753
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM10"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.4497,
+            41.5489
+          ],
+          [
+            39.5831,
+            41.6433
+          ],
+          [
+            37.6619,
+            41.7086
+          ],
+          [
+            34.5947,
+            41.7461
+          ],
+          [
+            33.0311,
+            41.7336
+          ],
+          [
+            32.2983,
+            41.7233
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM11"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            37.2247,
+            41.2144
+          ],
+          [
+            37.5544,
+            41.19
+          ],
+          [
+            37.6181,
+            41.1869
+          ],
+          [
+            37.8839,
+            41.1644
+          ],
+          [
+            38.2722,
+            41.1331
+          ],
+          [
+            38.6058,
+            41.1053
+          ],
+          [
+            38.7019,
+            41.0969
+          ],
+          [
+            39.1372,
+            41.0572
+          ],
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.2044,
+            40.9853
+          ],
+          [
+            40.8903,
+            40.965
+          ],
+          [
+            43.685,
+            40.84
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM603"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.2494,
+            40.8822
+          ],
+          [
+            26.9781,
+            40.9261
+          ],
+          [
+            27.1408,
+            40.9353
+          ],
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            28.8106,
+            40.9614
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM688"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.3372,
+            41.4025
+          ],
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            38.2794,
+            40.3797
+          ],
+          [
+            39.1019,
+            39.9406
+          ],
+          [
+            39.5292,
+            39.7083
+          ],
+          [
+            40.1886,
+            39.3247
+          ],
+          [
+            41.4039,
+            38.5947
+          ],
+          [
+            41.8261,
+            38.3506
+          ],
+          [
+            42.2086,
+            38.1267
+          ],
+          [
+            42.66,
+            37.8592
+          ],
+          [
+            43.9344,
+            37.2406
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM853"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            31.5828,
+            38.0908
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            33.3736,
+            41.0175
+          ],
+          [
+            33.4747,
+            41.3044
+          ],
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.8142,
+            42.1892
+          ],
+          [
+            34.0878,
+            42.7806
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM854"
+      },
+      geometry: {
+        coordinates: [
+          [
+            37.4728,
+            36.9514
+          ],
+          [
+            37.3336,
+            37.1714
+          ],
+          [
+            37.2744,
+            37.2625
+          ],
+          [
+            37.0581,
+            37.5864
+          ],
+          [
+            36.9197,
+            37.8114
+          ],
+          [
+            36.7075,
+            38.14
+          ],
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            35.4292,
+            39.9097
+          ],
+          [
+            35.3611,
+            39.9919
+          ],
+          [
+            34.7389,
+            40.7464
+          ],
+          [
+            34.2461,
+            41.3253
+          ],
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.1811,
+            42.7989
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM855"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.825,
+            36.0411
+          ],
+          [
+            30.8119,
+            36.4156
+          ],
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            30.7328,
+            37.4156
+          ],
+          [
+            30.7083,
+            37.5833
+          ],
+          [
+            30.6703,
+            37.8906
+          ],
+          [
+            30.6569,
+            37.9822
+          ],
+          [
+            30.6178,
+            38.2806
+          ],
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            30.1244,
+            39.46
+          ],
+          [
+            29.9561,
+            39.7617
+          ],
+          [
+            29.87,
+            39.9147
+          ],
+          [
+            29.1428,
+            41.1269
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM856"
+      },
+      geometry: {
+        coordinates: [
+          [
+            31.9478,
+            42.7989
+          ],
+          [
+            32.2983,
+            41.7233
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            32.9217,
+            39.3711
+          ],
+          [
+            32.9431,
+            39.2153
+          ],
+          [
+            33.1189,
+            38.0239
+          ],
+          [
+            33.1694,
+            37.6867
+          ],
+          [
+            33.2917,
+            36.8628
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM859"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.5961,
+            42.7389
+          ],
+          [
+            32.0172,
+            42.5875
+          ],
+          [
+            32.0483,
+            42.5839
+          ],
+          [
+            33.1319,
+            42.4561
+          ],
+          [
+            33.4172,
+            42.4206
+          ],
+          [
+            33.8925,
+            42.3597
+          ],
+          [
+            34.3933,
+            42.2936
+          ],
+          [
+            34.7986,
+            42.2383
+          ],
+          [
+            35.4131,
+            42.1514
+          ],
+          [
+            37.0453,
+            41.9039
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM860"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.0878,
+            42.7806
+          ],
+          [
+            35.0769,
+            42.0222
+          ],
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            38.15,
+            40.3278
+          ],
+          [
+            39.1236,
+            39.725
+          ],
+          [
+            39.4681,
+            39.5117
+          ],
+          [
+            39.9722,
+            39.1889
+          ],
+          [
+            40.825,
+            38.6306
+          ],
+          [
+            41.08,
+            38.4639
+          ],
+          [
+            41.8819,
+            37.9606
+          ],
+          [
+            43.2167,
+            37.35
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UM861"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.6414,
+            36.7844
+          ],
+          [
+            36.4794,
+            36.9514
+          ],
+          [
+            35.0667,
+            38.3728
+          ],
+          [
+            34.2864,
+            39.1308
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            31.9478,
+            42.7989
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN127"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.4333,
+            38.8333
+          ],
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            28.1258,
+            37.3025
+          ],
+          [
+            28.2853,
+            37.1547
+          ],
+          [
+            28.3678,
+            37.0786
+          ],
+          [
+            28.7822,
+            36.6894
+          ],
+          [
+            29.1747,
+            36.3189
+          ],
+          [
+            29.3167,
+            36.1833
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN128"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.4333,
+            38.8333
+          ],
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            27.3864,
+            37.6292
+          ],
+          [
+            27.4606,
+            37.5
+          ],
+          [
+            27.6419,
+            37.1678
+          ],
+          [
+            27.8833,
+            36.7097
+          ],
+          [
+            27.9953,
+            36.4947
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN129"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.2244,
+            39.4989
+          ],
+          [
+            28.05,
+            36.4833
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN131"
+      },
+      geometry: {
+        coordinates: [
+          [
+            25.8833,
+            40.5
+          ],
+          [
+            26.4275,
+            40.1353
+          ],
+          [
+            26.8933,
+            39.7694
+          ],
+          [
+            27.2244,
+            39.4989
+          ],
+          [
+            27.8697,
+            39.0839
+          ],
+          [
+            28.6328,
+            38.5822
+          ],
+          [
+            29.3253,
+            38.0711
+          ],
+          [
+            29.7042,
+            37.7897
+          ],
+          [
+            30.0003,
+            37.5553
+          ],
+          [
+            30.0744,
+            37.4972
+          ],
+          [
+            30.3494,
+            37.2697
+          ],
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            31.3578,
+            36.6989
+          ],
+          [
+            31.6808,
+            36.5786
+          ],
+          [
+            31.9222,
+            36.4722
+          ],
+          [
+            32.7239,
+            36.1608
+          ],
+          [
+            33.2833,
+            35.9333
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN135"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.0167,
+            35.9167
+          ],
+          [
+            33.2847,
+            36.1536
+          ],
+          [
+            32.7161,
+            36.3347
+          ],
+          [
+            31.5936,
+            36.6831
+          ],
+          [
+            31.3889,
+            36.7511
+          ],
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            29.9994,
+            37.23
+          ],
+          [
+            29.7231,
+            37.3431
+          ],
+          [
+            29.4236,
+            37.4583
+          ],
+          [
+            28.7033,
+            37.7217
+          ],
+          [
+            27.9042,
+            38.0022
+          ],
+          [
+            27.8328,
+            38.0317
+          ],
+          [
+            27.0072,
+            38.3172
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN136"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.4833,
+            36.55
+          ],
+          [
+            28.7822,
+            36.6894
+          ],
+          [
+            29.1433,
+            37.125
+          ],
+          [
+            29.2497,
+            37.2519
+          ],
+          [
+            29.3125,
+            37.3272
+          ],
+          [
+            29.4236,
+            37.4583
+          ],
+          [
+            29.7042,
+            37.7897
+          ],
+          [
+            30.0019,
+            38.1522
+          ],
+          [
+            30.1197,
+            38.2944
+          ],
+          [
+            30.1569,
+            38.3383
+          ],
+          [
+            30.3175,
+            38.5317
+          ],
+          [
+            30.5467,
+            38.8039
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN161"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.7431,
+            39.9958
+          ],
+          [
+            42.4333,
+            40.0444
+          ],
+          [
+            43.3694,
+            40.0997
+          ],
+          [
+            43.6647,
+            40.1156
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN37"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.3758,
+            41.1933
+          ],
+          [
+            41.4497,
+            41.5489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN604"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.4994,
+            39.3322
+          ],
+          [
+            26.8933,
+            39.7694
+          ],
+          [
+            27.275,
+            40.1867
+          ],
+          [
+            27.3653,
+            40.2842
+          ],
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            29.1467,
+            41.4614
+          ],
+          [
+            29.1428,
+            42.1706
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN61"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            41.9606,
+            41.3006
+          ],
+          [
+            42.9789,
+            41.4281
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN616"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.7661,
+            42.0822
+          ],
+          [
+            28.7744,
+            41.8711
+          ],
+          [
+            28.7792,
+            41.7461
+          ],
+          [
+            28.7897,
+            41.4783
+          ],
+          [
+            28.7994,
+            41.2281
+          ],
+          [
+            28.8106,
+            40.9614
+          ],
+          [
+            29.1542,
+            39.7889
+          ],
+          [
+            29.2686,
+            39.3972
+          ],
+          [
+            29.4703,
+            38.6656
+          ],
+          [
+            29.7042,
+            37.7897
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN617"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.1428,
+            42.1706
+          ],
+          [
+            29.1467,
+            41.4614
+          ],
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            29.7186,
+            39.8903
+          ],
+          [
+            29.9269,
+            39.52
+          ],
+          [
+            30.1828,
+            39.0653
+          ],
+          [
+            30.6178,
+            38.2806
+          ],
+          [
+            31.6944,
+            37.3667
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN618"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.7822,
+            36.6894
+          ],
+          [
+            28.2828,
+            36.8989
+          ],
+          [
+            28.2231,
+            36.9261
+          ],
+          [
+            27.6419,
+            37.1678
+          ],
+          [
+            27.4606,
+            37.5
+          ],
+          [
+            27.3864,
+            37.6292
+          ],
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            27.1328,
+            38.9989
+          ],
+          [
+            27.2244,
+            39.4989
+          ],
+          [
+            27.2772,
+            39.8117
+          ],
+          [
+            27.3092,
+            39.9839
+          ],
+          [
+            27.3653,
+            40.2842
+          ],
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            27.3092,
+            41.5772
+          ],
+          [
+            27.2161,
+            42.0656
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN644"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.3214,
+            41.1253
+          ],
+          [
+            26.675,
+            41.13
+          ],
+          [
+            28.3842,
+            41.1364
+          ],
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            30.6742,
+            41.5911
+          ],
+          [
+            31.1358,
+            41.6789
+          ],
+          [
+            31.7389,
+            41.8067
+          ],
+          [
+            32.2383,
+            41.9094
+          ],
+          [
+            33.0778,
+            42.0711
+          ],
+          [
+            33.8142,
+            42.1892
+          ],
+          [
+            34.4328,
+            42.1114
+          ],
+          [
+            34.8583,
+            42.0522
+          ],
+          [
+            35.0769,
+            42.0222
+          ],
+          [
+            37.0453,
+            41.9039
+          ],
+          [
+            40.6564,
+            41.7992
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UN743"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.5961,
+            42.7389
+          ],
+          [
+            32.5836,
+            42.3336
+          ],
+          [
+            33.8142,
+            42.1892
+          ],
+          [
+            34.3933,
+            42.2936
+          ],
+          [
+            36.9147,
+            42.7089
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UP146"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            42.4333,
+            40.0444
+          ],
+          [
+            43.0269,
+            39.6458
+          ],
+          [
+            44.0867,
+            39.3233
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UP29"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.1811,
+            42.7989
+          ],
+          [
+            33.1319,
+            42.4561
+          ],
+          [
+            33.0467,
+            41.8469
+          ],
+          [
+            32.9928,
+            41.4533
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            32.3578,
+            39.3906
+          ],
+          [
+            31.5411,
+            38.1156
+          ],
+          [
+            31.0911,
+            37.3614
+          ],
+          [
+            30.7944,
+            36.9206
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UP727"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.3578,
+            41.2864
+          ],
+          [
+            28.0011,
+            41.9822
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UP975"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.6242,
+            42.3639
+          ],
+          [
+            31.0228,
+            42.0006
+          ],
+          [
+            31.6572,
+            41.8292
+          ],
+          [
+            31.7389,
+            41.8067
+          ],
+          [
+            32.1414,
+            41.695
+          ],
+          [
+            32.2328,
+            41.6694
+          ],
+          [
+            32.3233,
+            41.6442
+          ],
+          [
+            32.5042,
+            41.5931
+          ],
+          [
+            32.9928,
+            41.4533
+          ],
+          [
+            33.2389,
+            41.3511
+          ],
+          [
+            33.3858,
+            41.2919
+          ],
+          [
+            34.7389,
+            40.7464
+          ],
+          [
+            36.8933,
+            39.7894
+          ],
+          [
+            37.3597,
+            39.5797
+          ],
+          [
+            37.6383,
+            39.4528
+          ],
+          [
+            38.9419,
+            38.8422
+          ],
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            40.2081,
+            37.8733
+          ],
+          [
+            40.9714,
+            37.2772
+          ],
+          [
+            41.2303,
+            37.0722
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UR114"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.4031,
+            42.1839
+          ],
+          [
+            39.5831,
+            41.6433
+          ],
+          [
+            39.6342,
+            41.4892
+          ],
+          [
+            39.7956,
+            40.9953
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UR20"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.2994,
+            38.1072
+          ],
+          [
+            27.0072,
+            38.3172
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UR21"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.8819,
+            37.9606
+          ],
+          [
+            42.6497,
+            37.2489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UR317"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.2044,
+            40.9853
+          ],
+          [
+            40.8903,
+            40.965
+          ],
+          [
+            43.685,
+            40.84
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UR32"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.5244,
+            37.9822
+          ],
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            27.4528,
+            38.3847
+          ],
+          [
+            28.2581,
+            38.5022
+          ],
+          [
+            28.6028,
+            38.5781
+          ],
+          [
+            29.1197,
+            38.6314
+          ],
+          [
+            29.4703,
+            38.6656
+          ],
+          [
+            29.9994,
+            38.7322
+          ],
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            32.3578,
+            39.3906
+          ],
+          [
+            32.5094,
+            39.4364
+          ],
+          [
+            32.8103,
+            40.0697
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UR55"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.6028,
+            38.5781
+          ],
+          [
+            29.3253,
+            38.0711
+          ],
+          [
+            29.7042,
+            37.7897
+          ],
+          [
+            30.0003,
+            37.5553
+          ],
+          [
+            30.0744,
+            37.4972
+          ],
+          [
+            30.3494,
+            37.2697
+          ],
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            31.4161,
+            36.8947
+          ],
+          [
+            31.7464,
+            36.9053
+          ],
+          [
+            32.4783,
+            36.8878
+          ],
+          [
+            33.2917,
+            36.8628
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UR660"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            44.2083,
+            38.9097
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT142"
+      },
+      geometry: {
+        coordinates: [
+          [
+            38.7847,
+            38.2769
+          ],
+          [
+            38.3867,
+            37.88
+          ],
+          [
+            37.9056,
+            37.3944
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT143"
+      },
+      geometry: {
+        coordinates: [
+          [
+            38.8447,
+            37.0939
+          ],
+          [
+            38.1575,
+            37.0711
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT165"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.4189,
+            40.9228
+          ],
+          [
+            40.6578,
+            40.8942
+          ],
+          [
+            40.8772,
+            40.8672
+          ],
+          [
+            41.1372,
+            40.835
+          ],
+          [
+            42.4692,
+            40.6525
+          ],
+          [
+            42.5886,
+            40.6347
+          ],
+          [
+            42.7767,
+            40.6067
+          ],
+          [
+            43.1042,
+            40.5567
+          ],
+          [
+            43.3772,
+            40.6906
+          ],
+          [
+            43.685,
+            40.84
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT166"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.5292,
+            39.7083
+          ],
+          [
+            39.5778,
+            39.9475
+          ],
+          [
+            39.6083,
+            40.0917
+          ],
+          [
+            39.6764,
+            40.4181
+          ],
+          [
+            39.6922,
+            40.5017
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT167"
+      },
+      geometry: {
+        coordinates: [
+          [
+            40.8903,
+            40.965
+          ],
+          [
+            40.6592,
+            40.9444
+          ],
+          [
+            40.4189,
+            40.9228
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT238"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.3864,
+            37.6292
+          ],
+          [
+            27.8964,
+            37.8147
+          ],
+          [
+            28.3128,
+            37.7675
+          ],
+          [
+            28.7033,
+            37.7217
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT241"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.4606,
+            37.5
+          ],
+          [
+            27.8964,
+            37.8147
+          ],
+          [
+            28.2686,
+            38.2197
+          ],
+          [
+            28.6028,
+            38.5781
+          ],
+          [
+            29.5242,
+            39.6411
+          ],
+          [
+            29.8011,
+            39.9528
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT243"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            36.2747,
+            39.8739
+          ],
+          [
+            36.3775,
+            40.315
+          ],
+          [
+            36.5489,
+            41.2656
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT244"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.9556,
+            39.5533
+          ],
+          [
+            30.1244,
+            39.46
+          ],
+          [
+            31.7908,
+            38.5106
+          ],
+          [
+            33.1694,
+            37.6867
+          ],
+          [
+            34.4114,
+            36.9147
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT253"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.08,
+            38.4639
+          ],
+          [
+            42.66,
+            37.8592
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT264"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.3578,
+            41.2864
+          ],
+          [
+            27.7769,
+            41.9667
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT268"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.1731,
+            41.4786
+          ],
+          [
+            27.7769,
+            41.9667
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT275"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.8,
+            41.3503
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT276"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.8,
+            41.3503
+          ],
+          [
+            33.4747,
+            41.3044
+          ],
+          [
+            33.3858,
+            41.2919
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT277"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            31.7106,
+            36.4497
+          ],
+          [
+            32.0533,
+            36.2697
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT283"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.3864,
+            37.6292
+          ],
+          [
+            28.7328,
+            37.3572
+          ],
+          [
+            29.4236,
+            37.4583
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT284"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.7544,
+            36.2611
+          ],
+          [
+            34.1033,
+            36.675
+          ],
+          [
+            35.5336,
+            38.315
+          ],
+          [
+            36.8933,
+            39.7894
+          ],
+          [
+            37.3186,
+            40.2125
+          ],
+          [
+            37.7067,
+            40.5919
+          ],
+          [
+            37.7647,
+            40.6481
+          ],
+          [
+            37.8894,
+            40.7683
+          ],
+          [
+            38.0103,
+            40.8842
+          ],
+          [
+            38.2722,
+            41.1331
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT30"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.7492,
+            38.2014
+          ],
+          [
+            29.9794,
+            39.1356
+          ],
+          [
+            30.0544,
+            39.4292
+          ],
+          [
+            29.9561,
+            39.7617
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT301"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.8261,
+            38.3506
+          ],
+          [
+            43.2497,
+            37.8156
+          ],
+          [
+            43.7458,
+            37.6836
+          ],
+          [
+            44.2425,
+            37.5492
+          ],
+          [
+            44.8233,
+            37.27
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT306"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.8819,
+            37.9606
+          ],
+          [
+            41.9553,
+            37.6883
+          ],
+          [
+            42.0614,
+            37.365
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT308"
+      },
+      geometry: {
+        coordinates: [
+          [
+            40.6008,
+            38.8556
+          ],
+          [
+            39.96,
+            38.7933
+          ],
+          [
+            39.2239,
+            38.7081
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT309"
+      },
+      geometry: {
+        coordinates: [
+          [
+            40.6008,
+            38.8556
+          ],
+          [
+            40.8533,
+            39.3183
+          ],
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.7028,
+            40.1186
+          ],
+          [
+            42.5081,
+            40.3733
+          ],
+          [
+            42.7961,
+            40.4622
+          ],
+          [
+            43.1042,
+            40.5567
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT310"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.0467,
+            41.8469
+          ],
+          [
+            32.2983,
+            41.7233
+          ],
+          [
+            31.3494,
+            41.5489
+          ],
+          [
+            30.7247,
+            41.4289
+          ],
+          [
+            29.9994,
+            41.2989
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT315"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.6742,
+            41.5911
+          ],
+          [
+            31.3494,
+            41.5489
+          ],
+          [
+            32.0444,
+            41.5139
+          ],
+          [
+            32.2983,
+            41.7233
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT32"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            32.0922,
+            40.3314
+          ],
+          [
+            31.9525,
+            40.3628
+          ],
+          [
+            31.4831,
+            40.4661
+          ],
+          [
+            31.2103,
+            40.5253
+          ],
+          [
+            30.7114,
+            40.6314
+          ],
+          [
+            30.5425,
+            40.6667
+          ],
+          [
+            30.3314,
+            40.7106
+          ],
+          [
+            29.9706,
+            40.7844
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT327"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.5522,
+            41.3808
+          ],
+          [
+            27.7769,
+            41.9667
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT331"
+      },
+      geometry: {
+        coordinates: [
+          [
+            42.4333,
+            40.0444
+          ],
+          [
+            43.2956,
+            40.2003
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT332"
+      },
+      geometry: {
+        coordinates: [
+          [
+            42.7881,
+            38.505
+          ],
+          [
+            42.7089,
+            38.1069
+          ],
+          [
+            42.66,
+            37.8592
+          ],
+          [
+            42.6497,
+            37.2489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT333"
+      },
+      geometry: {
+        coordinates: [
+          [
+            42.7881,
+            38.505
+          ],
+          [
+            42.4139,
+            38.2614
+          ],
+          [
+            42.2086,
+            38.1267
+          ],
+          [
+            41.8819,
+            37.9606
+          ],
+          [
+            41.7725,
+            37.77
+          ],
+          [
+            41.2303,
+            37.0722
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT334"
+      },
+      geometry: {
+        coordinates: [
+          [
+            42.6497,
+            37.2489
+          ],
+          [
+            41.7725,
+            37.77
+          ],
+          [
+            41.1314,
+            38.1425
+          ],
+          [
+            40.8844,
+            38.2842
+          ],
+          [
+            40.4128,
+            38.5517
+          ],
+          [
+            40.2167,
+            38.6617
+          ],
+          [
+            39.645,
+            38.9789
+          ],
+          [
+            39.3544,
+            39.1381
+          ],
+          [
+            38.1981,
+            39.7567
+          ],
+          [
+            37.9747,
+            39.8736
+          ],
+          [
+            37.5728,
+            40.0822
+          ],
+          [
+            36.7269,
+            40.5119
+          ],
+          [
+            35.6903,
+            41.0225
+          ],
+          [
+            34.5364,
+            41.5703
+          ],
+          [
+            33.7061,
+            41.9514
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT336"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            31.6239,
+            36.585
+          ],
+          [
+            32,
+            36.4289
+          ],
+          [
+            32.2972,
+            36.3042
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT337"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.6703,
+            37.8906
+          ],
+          [
+            30.8103,
+            38.1292
+          ],
+          [
+            31.0186,
+            38.4819
+          ],
+          [
+            30.5008,
+            39.5469
+          ],
+          [
+            29.5161,
+            41.1989
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT338"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.9269,
+            39.52
+          ],
+          [
+            30.1244,
+            39.46
+          ],
+          [
+            30.1569,
+            38.3383
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT339"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.2972,
+            36.3042
+          ],
+          [
+            32.6533,
+            36.5061
+          ],
+          [
+            33.2917,
+            36.8628
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT341"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.9797,
+            40.9867
+          ],
+          [
+            30.0714,
+            40.7375
+          ],
+          [
+            30.7114,
+            40.6314
+          ],
+          [
+            31.2222,
+            40.3808
+          ],
+          [
+            31.9161,
+            40.2667
+          ],
+          [
+            32.8103,
+            40.0697
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT342"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.9536,
+            40.4006
+          ],
+          [
+            30.0714,
+            40.7375
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT35"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.8106,
+            40.9614
+          ],
+          [
+            29.3783,
+            39.9067
+          ],
+          [
+            29.5242,
+            39.6411
+          ],
+          [
+            29.8958,
+            38.8914
+          ],
+          [
+            30.1569,
+            38.3383
+          ],
+          [
+            30.1978,
+            38.2494
+          ],
+          [
+            30.305,
+            38.0156
+          ],
+          [
+            30.7944,
+            36.9206
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT350"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.2244,
+            39.4989
+          ],
+          [
+            28.6353,
+            37.5003
+          ],
+          [
+            28.7328,
+            37.3572
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT36"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            40.4128,
+            38.5517
+          ],
+          [
+            41.08,
+            38.4639
+          ],
+          [
+            41.8261,
+            38.3506
+          ],
+          [
+            42.4139,
+            38.2614
+          ],
+          [
+            43.3647,
+            38.1106
+          ],
+          [
+            44.415,
+            37.7344
+          ],
+          [
+            44.6267,
+            37.7083
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT366"
+      },
+      geometry: {
+        coordinates: [
+          [
+            44.2997,
+            38.0489
+          ],
+          [
+            43.325,
+            38.4661
+          ],
+          [
+            41.3578,
+            39.5586
+          ],
+          [
+            40.6647,
+            39.9561
+          ],
+          [
+            39.6764,
+            40.4181
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT367"
+      },
+      geometry: {
+        coordinates: [
+          [
+            44.2997,
+            38.0489
+          ],
+          [
+            43.325,
+            38.4661
+          ],
+          [
+            41.5122,
+            39.1536
+          ],
+          [
+            40.8878,
+            39.3817
+          ],
+          [
+            40.4983,
+            39.5214
+          ],
+          [
+            40.2769,
+            39.6003
+          ],
+          [
+            39.5583,
+            39.8519
+          ],
+          [
+            39.2919,
+            39.9436
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT368"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            39.5333,
+            38.6939
+          ],
+          [
+            40.2167,
+            38.6617
+          ],
+          [
+            40.825,
+            38.6306
+          ],
+          [
+            41.4039,
+            38.5947
+          ],
+          [
+            42.1061,
+            38.5514
+          ],
+          [
+            42.7881,
+            38.505
+          ],
+          [
+            43.325,
+            38.4661
+          ],
+          [
+            43.7831,
+            38.2656
+          ],
+          [
+            44.2997,
+            38.0489
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT38"
+      },
+      geometry: {
+        coordinates: [
+          [
+            25.8833,
+            40.5
+          ],
+          [
+            27.2772,
+            39.8117
+          ],
+          [
+            27.8494,
+            39.52
+          ],
+          [
+            28.2767,
+            39.2989
+          ],
+          [
+            29.4703,
+            38.6656
+          ],
+          [
+            30.1197,
+            38.2944
+          ],
+          [
+            30.1978,
+            38.2494
+          ],
+          [
+            30.6569,
+            37.9822
+          ],
+          [
+            31.6944,
+            37.3667
+          ],
+          [
+            32.4783,
+            36.8878
+          ],
+          [
+            33.2869,
+            36.3825
+          ],
+          [
+            34.0167,
+            35.9167
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT39"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.6328,
+            38.5822
+          ],
+          [
+            29.7231,
+            37.3431
+          ],
+          [
+            29.9228,
+            37.1108
+          ],
+          [
+            30.1464,
+            36.8492
+          ],
+          [
+            30.825,
+            36.0411
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT40"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.675,
+            41.13
+          ],
+          [
+            27.1408,
+            40.9353
+          ],
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            28.1833,
+            39.9394
+          ],
+          [
+            28.7997,
+            39.0831
+          ],
+          [
+            29.1197,
+            38.6314
+          ],
+          [
+            29.7042,
+            37.7897
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT422"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.0444,
+            41.5139
+          ],
+          [
+            31.7389,
+            41.8067
+          ],
+          [
+            31.5892,
+            41.9475
+          ],
+          [
+            31.4031,
+            42.1211
+          ],
+          [
+            31.1075,
+            42.4572
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT44"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.6489,
+            40.5272
+          ],
+          [
+            27.8394,
+            39.8608
+          ],
+          [
+            28.0561,
+            39.0844
+          ],
+          [
+            28.6328,
+            38.5822
+          ],
+          [
+            28.7033,
+            37.7217
+          ],
+          [
+            28.7189,
+            37.5003
+          ],
+          [
+            28.7328,
+            37.3572
+          ],
+          [
+            28.7822,
+            36.6894
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT470"
+      },
+      geometry: {
+        coordinates: [
+          [
+            37.4728,
+            36.9514
+          ],
+          [
+            37.7667,
+            36.9847
+          ],
+          [
+            38.54,
+            37.0633
+          ],
+          [
+            38.8447,
+            37.0939
+          ],
+          [
+            39.1,
+            37.2419
+          ],
+          [
+            40.2081,
+            37.8733
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT471"
+      },
+      geometry: {
+        coordinates: [
+          [
+            40.6386,
+            37.2278
+          ],
+          [
+            38.8447,
+            37.0939
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT472"
+      },
+      geometry: {
+        coordinates: [
+          [
+            38.9047,
+            37.4581
+          ],
+          [
+            38.8447,
+            37.0939
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT489"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            27.7764,
+            37.8956
+          ],
+          [
+            28.5,
+            37.4897
+          ],
+          [
+            28.7328,
+            37.3572
+          ],
+          [
+            29.2497,
+            37.2519
+          ],
+          [
+            29.4011,
+            37.2206
+          ],
+          [
+            29.6383,
+            37.1711
+          ],
+          [
+            29.9228,
+            37.1108
+          ],
+          [
+            30.7944,
+            36.9206
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT495"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.7328,
+            37.3572
+          ],
+          [
+            28.4714,
+            37.2394
+          ],
+          [
+            28.2778,
+            37.1514
+          ],
+          [
+            28.0911,
+            37.0656
+          ],
+          [
+            27.6814,
+            37.2469
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT54"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            27.4528,
+            38.3847
+          ],
+          [
+            28.2581,
+            38.5022
+          ],
+          [
+            28.6328,
+            38.5822
+          ],
+          [
+            29.1197,
+            38.6314
+          ],
+          [
+            29.4703,
+            38.6656
+          ],
+          [
+            29.9994,
+            38.7322
+          ],
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            31.8114,
+            39.2178
+          ],
+          [
+            32.3578,
+            39.3906
+          ],
+          [
+            32.5094,
+            39.4364
+          ],
+          [
+            32.8103,
+            40.0697
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT58"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.7492,
+            38.2014
+          ],
+          [
+            30.2775,
+            38.6053
+          ],
+          [
+            30.5467,
+            38.8039
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT61"
+      },
+      geometry: {
+        coordinates: [
+          [
+            35.0769,
+            42.0222
+          ],
+          [
+            34.5364,
+            41.5703
+          ],
+          [
+            34.2461,
+            41.3253
+          ],
+          [
+            32.8103,
+            40.0697
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UT62"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.9217,
+            39.3711
+          ],
+          [
+            31.9661,
+            37.8208
+          ],
+          [
+            31.6944,
+            37.3667
+          ],
+          [
+            31.5333,
+            37.0942
+          ],
+          [
+            31.4161,
+            36.8947
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW100"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.1811,
+            42.7989
+          ],
+          [
+            33.7061,
+            41.9514
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW101"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.0878,
+            42.7806
+          ],
+          [
+            33.8142,
+            42.1892
+          ],
+          [
+            33.7061,
+            41.9514
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW102"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.2161,
+            42.0656
+          ],
+          [
+            27.3092,
+            41.5772
+          ],
+          [
+            27.4261,
+            40.9511
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW103"
+      },
+      geometry: {
+        coordinates: [
+          [
+            38.1119,
+            38.4625
+          ],
+          [
+            38.3494,
+            37.9589
+          ],
+          [
+            38.3867,
+            37.88
+          ],
+          [
+            38.4567,
+            37.7247
+          ],
+          [
+            38.66,
+            37.6044
+          ],
+          [
+            38.9047,
+            37.4581
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW104"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            39.4322,
+            38.5325
+          ],
+          [
+            39.6339,
+            38.3631
+          ],
+          [
+            40.2081,
+            37.8733
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW105"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.3619,
+            39.3822
+          ],
+          [
+            34.1125,
+            38.9933
+          ],
+          [
+            34.5428,
+            38.7667
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW106"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.03,
+            38.5211
+          ],
+          [
+            34.2272,
+            38.6158
+          ],
+          [
+            34.5428,
+            38.7667
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW107"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.3639,
+            41.5914
+          ],
+          [
+            31.3494,
+            41.5489
+          ],
+          [
+            31.5858,
+            41.5375
+          ],
+          [
+            32.0444,
+            41.5139
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW108"
+      },
+      geometry: {
+        coordinates: [
+          [
+            40.6386,
+            37.2278
+          ],
+          [
+            38.8447,
+            37.0939
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW110"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.6703,
+            37.8906
+          ],
+          [
+            30.3447,
+            37.8422
+          ],
+          [
+            30.2328,
+            37.8397
+          ],
+          [
+            29.7042,
+            37.7897
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW197"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.8819,
+            37.9606
+          ],
+          [
+            41.9553,
+            37.6883
+          ],
+          [
+            42.0614,
+            37.365
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW27"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.7028,
+            40.1186
+          ],
+          [
+            42.7961,
+            40.4622
+          ],
+          [
+            43.1042,
+            40.5567
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW308"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.8,
+            41.3503
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW309"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.8,
+            41.3503
+          ],
+          [
+            33.4747,
+            41.3044
+          ],
+          [
+            33.3858,
+            41.2919
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW310"
+      },
+      geometry: {
+        coordinates: [
+          [
+            40.6008,
+            38.8556
+          ],
+          [
+            39.96,
+            38.7933
+          ],
+          [
+            39.2239,
+            38.7081
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW311"
+      },
+      geometry: {
+        coordinates: [
+          [
+            40.6008,
+            38.8556
+          ],
+          [
+            40.8533,
+            39.3183
+          ],
+          [
+            41.2069,
+            39.9567
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW315"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.0444,
+            41.5139
+          ],
+          [
+            32.2983,
+            41.7233
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW701"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            40.7858,
+            39.6981
+          ],
+          [
+            40.6925,
+            39.6417
+          ],
+          [
+            40.5569,
+            39.5583
+          ],
+          [
+            40.1886,
+            39.3247
+          ],
+          [
+            39.9722,
+            39.1889
+          ],
+          [
+            39.645,
+            38.9789
+          ],
+          [
+            39.4703,
+            38.8664
+          ],
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            39.0272,
+            38.515
+          ],
+          [
+            39.0144,
+            38.5019
+          ],
+          [
+            38.7847,
+            38.2769
+          ],
+          [
+            38.0078,
+            37.4981
+          ],
+          [
+            37.6542,
+            37.1389
+          ],
+          [
+            37.4728,
+            36.9514
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW702"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            33.0467,
+            41.8469
+          ],
+          [
+            32.2983,
+            41.7233
+          ],
+          [
+            31.3494,
+            41.5489
+          ],
+          [
+            29.9994,
+            41.2989
+          ],
+          [
+            29.5161,
+            41.1989
+          ],
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            27.4261,
+            40.9511
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW703"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            34.2461,
+            41.3253
+          ],
+          [
+            34.7389,
+            40.7464
+          ],
+          [
+            35.3611,
+            39.9919
+          ],
+          [
+            35.4292,
+            39.9097
+          ],
+          [
+            36.0286,
+            39.1542
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW704"
+      },
+      geometry: {
+        coordinates: [
+          [
+            34.0878,
+            42.7806
+          ],
+          [
+            35.0769,
+            42.0222
+          ],
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            38.9028,
+            40.6403
+          ],
+          [
+            39.6764,
+            40.4181
+          ],
+          [
+            41.2069,
+            39.9567
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW705"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.5094,
+            39.4364
+          ],
+          [
+            33.3619,
+            39.3822
+          ],
+          [
+            33.9753,
+            39.3319
+          ],
+          [
+            35.28,
+            39.2233
+          ],
+          [
+            36.0286,
+            39.1542
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW706"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            38.9028,
+            40.6403
+          ],
+          [
+            38.5736,
+            40.5061
+          ],
+          [
+            38.2794,
+            40.3797
+          ],
+          [
+            38.15,
+            40.3278
+          ],
+          [
+            37.5728,
+            40.0822
+          ],
+          [
+            36.8933,
+            39.7894
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW71"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            33.105,
+            40.2419
+          ],
+          [
+            33.7036,
+            40.4439
+          ],
+          [
+            33.9433,
+            40.5036
+          ],
+          [
+            34.7389,
+            40.7464
+          ],
+          [
+            35.4469,
+            40.9528
+          ],
+          [
+            35.6903,
+            41.0225
+          ],
+          [
+            35.9286,
+            41.0925
+          ],
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            37.2247,
+            41.2144
+          ],
+          [
+            37.5544,
+            41.19
+          ],
+          [
+            37.6181,
+            41.1869
+          ],
+          [
+            37.8839,
+            41.1644
+          ],
+          [
+            38.2722,
+            41.1331
+          ],
+          [
+            38.6058,
+            41.1053
+          ],
+          [
+            38.7019,
+            41.0969
+          ],
+          [
+            39.1372,
+            41.0572
+          ],
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            40.2547,
+            40.6628
+          ],
+          [
+            40.82,
+            40.2458
+          ],
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.3578,
+            39.5586
+          ],
+          [
+            41.3922,
+            39.4769
+          ],
+          [
+            41.4139,
+            39.4208
+          ],
+          [
+            41.4514,
+            39.3153
+          ],
+          [
+            41.545,
+            39.0661
+          ],
+          [
+            41.6608,
+            38.7494
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW710"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.8933,
+            39.7894
+          ],
+          [
+            37.3597,
+            39.5797
+          ],
+          [
+            37.6383,
+            39.4528
+          ],
+          [
+            38.9419,
+            38.8422
+          ],
+          [
+            39.2239,
+            38.7081
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW711"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.3775,
+            40.315
+          ],
+          [
+            36.2747,
+            39.8739
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW714"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.2075,
+            40.475
+          ],
+          [
+            29.5936,
+            40.2625
+          ],
+          [
+            29.7397,
+            40.0456
+          ],
+          [
+            29.8011,
+            39.9528
+          ],
+          [
+            30.1244,
+            39.46
+          ],
+          [
+            30.5467,
+            38.8039
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW715"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.1428,
+            41.1269
+          ],
+          [
+            29.5936,
+            40.2625
+          ],
+          [
+            29.7397,
+            40.0456
+          ],
+          [
+            29.8011,
+            39.9528
+          ],
+          [
+            30.1244,
+            39.46
+          ],
+          [
+            30.5467,
+            38.8039
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW716"
+      },
+      geometry: {
+        coordinates: [
+          [
+            37.4728,
+            36.9514
+          ],
+          [
+            37.7514,
+            37.0508
+          ],
+          [
+            38.1128,
+            37.1806
+          ],
+          [
+            38.5231,
+            37.325
+          ],
+          [
+            38.9047,
+            37.4581
+          ],
+          [
+            39.2275,
+            37.5628
+          ],
+          [
+            39.2317,
+            37.5639
+          ],
+          [
+            40.2081,
+            37.8733
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW717"
+      },
+      geometry: {
+        coordinates: [
+          [
+            35.2103,
+            36.9406
+          ],
+          [
+            36.29,
+            36.3628
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW719"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.4794,
+            36.9514
+          ],
+          [
+            36.29,
+            36.3628
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW72"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            36.6656,
+            40.7742
+          ],
+          [
+            36.7269,
+            40.5119
+          ],
+          [
+            36.7992,
+            40.2003
+          ],
+          [
+            36.8933,
+            39.7894
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW73"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.0286,
+            39.1542
+          ],
+          [
+            37.1442,
+            38.7894
+          ],
+          [
+            38.1119,
+            38.4625
+          ],
+          [
+            38.7847,
+            38.2769
+          ],
+          [
+            39.0772,
+            38.1953
+          ],
+          [
+            39.2319,
+            38.1528
+          ],
+          [
+            40.2081,
+            37.8733
+          ],
+          [
+            40.8164,
+            38.2406
+          ],
+          [
+            40.8844,
+            38.2842
+          ],
+          [
+            41.1242,
+            38.4297
+          ],
+          [
+            41.4039,
+            38.5947
+          ],
+          [
+            41.6608,
+            38.7494
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW74"
+      },
+      geometry: {
+        coordinates: [
+          [
+            33.2917,
+            36.8628
+          ],
+          [
+            34.4114,
+            36.9147
+          ],
+          [
+            35.2103,
+            36.9406
+          ],
+          [
+            36.4794,
+            36.9514
+          ],
+          [
+            36.8631,
+            36.9533
+          ],
+          [
+            37.1542,
+            36.9542
+          ],
+          [
+            37.4728,
+            36.9514
+          ],
+          [
+            37.7667,
+            36.9847
+          ],
+          [
+            38.54,
+            37.0633
+          ],
+          [
+            38.8447,
+            37.0939
+          ],
+          [
+            39.1,
+            37.2419
+          ],
+          [
+            39.3486,
+            37.3856
+          ],
+          [
+            40.2081,
+            37.8733
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW75"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.1933,
+            40.7139
+          ],
+          [
+            32.3333,
+            40.5722
+          ],
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            33.3244,
+            39.4378
+          ],
+          [
+            33.3619,
+            39.3822
+          ],
+          [
+            33.4856,
+            39.2217
+          ],
+          [
+            34.03,
+            38.5211
+          ],
+          [
+            34.4994,
+            37.8989
+          ],
+          [
+            34.7258,
+            37.6008
+          ],
+          [
+            35.2103,
+            36.9406
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW76"
+      },
+      geometry: {
+        coordinates: [
+          [
+            35.5217,
+            38.7756
+          ],
+          [
+            35.3786,
+            39.0411
+          ],
+          [
+            35.28,
+            39.2233
+          ],
+          [
+            35.1828,
+            39.4017
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW77"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.8103,
+            40.0697
+          ],
+          [
+            32.3578,
+            39.3906
+          ],
+          [
+            31.5411,
+            38.1156
+          ],
+          [
+            31.0911,
+            37.3614
+          ],
+          [
+            30.7944,
+            36.9206
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW770"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.4703,
+            38.6656
+          ],
+          [
+            30.0333,
+            39.04
+          ],
+          [
+            30.1367,
+            39.1081
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW78"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            30.1569,
+            38.3383
+          ],
+          [
+            30.1197,
+            38.2944
+          ],
+          [
+            30.0019,
+            38.1522
+          ],
+          [
+            29.7042,
+            37.7897
+          ],
+          [
+            29.4236,
+            37.4583
+          ],
+          [
+            29.3125,
+            37.3272
+          ],
+          [
+            29.2497,
+            37.2519
+          ],
+          [
+            29.1433,
+            37.125
+          ],
+          [
+            28.7822,
+            36.6894
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW780"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.0544,
+            39.4292
+          ],
+          [
+            30.1367,
+            39.1081
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW79"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.6419,
+            37.1678
+          ],
+          [
+            28.2231,
+            36.9261
+          ],
+          [
+            28.2828,
+            36.8989
+          ],
+          [
+            28.7822,
+            36.6894
+          ],
+          [
+            29.4092,
+            36.7656
+          ],
+          [
+            29.765,
+            36.8069
+          ],
+          [
+            29.9994,
+            36.8322
+          ],
+          [
+            30.1464,
+            36.8492
+          ],
+          [
+            30.7944,
+            36.9206
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW790"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.5467,
+            38.8039
+          ],
+          [
+            30.1367,
+            39.1081
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW80"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.7722,
+            40.3133
+          ],
+          [
+            30.5122,
+            39.8131
+          ],
+          [
+            30.0544,
+            39.4292
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW81"
+      },
+      geometry: {
+        coordinates: [
+          [
+            26.675,
+            41.13
+          ],
+          [
+            27.4261,
+            40.9511
+          ],
+          [
+            27.9953,
+            39.8656
+          ],
+          [
+            28.2767,
+            39.2989
+          ],
+          [
+            28.3981,
+            39.05
+          ],
+          [
+            28.6028,
+            38.5781
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW83"
+      },
+      geometry: {
+        coordinates: [
+          [
+            30.7944,
+            36.9206
+          ],
+          [
+            31.3578,
+            36.6989
+          ],
+          [
+            31.6808,
+            36.5786
+          ],
+          [
+            31.9222,
+            36.4722
+          ],
+          [
+            32.7239,
+            36.1608
+          ],
+          [
+            33.2833,
+            35.9333
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW84"
+      },
+      geometry: {
+        coordinates: [
+          [
+            35.2103,
+            36.9406
+          ],
+          [
+            34.5206,
+            36.6256
+          ],
+          [
+            33.7544,
+            36.2611
+          ],
+          [
+            33.2869,
+            36.0364
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW86"
+      },
+      geometry: {
+        coordinates: [
+          [
+            35.0769,
+            42.0222
+          ],
+          [
+            35.1661,
+            41.8322
+          ],
+          [
+            35.9664,
+            41.5086
+          ],
+          [
+            36.5489,
+            41.2656
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW87"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.6028,
+            38.5781
+          ],
+          [
+            28.7033,
+            37.7217
+          ],
+          [
+            28.7189,
+            37.5003
+          ],
+          [
+            28.7328,
+            37.3572
+          ],
+          [
+            28.7822,
+            36.6894
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW88"
+      },
+      geometry: {
+        coordinates: [
+          [
+            39.7956,
+            40.9953
+          ],
+          [
+            39.6922,
+            40.5017
+          ],
+          [
+            39.6764,
+            40.4181
+          ],
+          [
+            39.6083,
+            40.0917
+          ],
+          [
+            39.5778,
+            39.9475
+          ],
+          [
+            39.5292,
+            39.7083
+          ],
+          [
+            39.4681,
+            39.5117
+          ],
+          [
+            39.3544,
+            39.1381
+          ],
+          [
+            39.2994,
+            38.9564
+          ],
+          [
+            39.2239,
+            38.7081
+          ],
+          [
+            38.9978,
+            37.8267
+          ],
+          [
+            38.9047,
+            37.4581
+          ],
+          [
+            38.8447,
+            37.0939
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW89"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.0072,
+            38.3172
+          ],
+          [
+            27.7764,
+            37.8956
+          ],
+          [
+            28.5,
+            37.4897
+          ],
+          [
+            28.7328,
+            37.3572
+          ],
+          [
+            29.2497,
+            37.2519
+          ],
+          [
+            29.4011,
+            37.2206
+          ],
+          [
+            29.6383,
+            37.1711
+          ],
+          [
+            29.9228,
+            37.1108
+          ],
+          [
+            30.7944,
+            36.9206
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW90"
+      },
+      geometry: {
+        coordinates: [
+          [
+            32.4608,
+            41.8722
+          ],
+          [
+            33.7061,
+            41.9514
+          ],
+          [
+            34.8575,
+            42.0119
+          ],
+          [
+            35.0769,
+            42.0222
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW91"
+      },
+      geometry: {
+        coordinates: [
+          [
+            28.8106,
+            40.9614
+          ],
+          [
+            29.1542,
+            39.7889
+          ],
+          [
+            29.2686,
+            39.3972
+          ],
+          [
+            29.4703,
+            38.6656
+          ],
+          [
+            29.7042,
+            37.7897
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW92"
+      },
+      geometry: {
+        coordinates: [
+          [
+            27.3653,
+            40.2842
+          ],
+          [
+            27.0081,
+            40.2283
+          ],
+          [
+            26.4275,
+            40.1353
+          ],
+          [
+            26.1881,
+            40.1567
+          ],
+          [
+            25.9236,
+            40.1797
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW94"
+      },
+      geometry: {
+        coordinates: [
+          [
+            41.2069,
+            39.9567
+          ],
+          [
+            41.7358,
+            39.8697
+          ],
+          [
+            42.7083,
+            39.7025
+          ],
+          [
+            43.0269,
+            39.6458
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW95"
+      },
+      geometry: {
+        coordinates: [
+          [
+            29.7042,
+            37.7897
+          ],
+          [
+            29.2436,
+            37.5886
+          ],
+          [
+            29.005,
+            37.4808
+          ],
+          [
+            28.7328,
+            37.3572
+          ],
+          [
+            28.4714,
+            37.2394
+          ],
+          [
+            28.2853,
+            37.1547
+          ],
+          [
+            28.2778,
+            37.1514
+          ],
+          [
+            28.0911,
+            37.0656
+          ],
+          [
+            27.6814,
+            37.2469
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW96"
+      },
+      geometry: {
+        coordinates: [
+          [
+            35.0769,
+            42.0222
+          ],
+          [
+            35.4131,
+            42.1514
+          ],
+          [
+            36.9147,
+            42.7089
+          ]
+        ],
+        type: "LineString"
+      }
+    },
+    {
+      type: "Feature",
+      properties: {
+        kind: "airway",
+        name: "UW99"
+      },
+      geometry: {
+        coordinates: [
+          [
+            36.5489,
+            41.2656
+          ],
+          [
+            36.6711,
+            41.7583
+          ],
+          [
+            36.7333,
+            42.0042
+          ],
+          [
+            36.7961,
+            42.2497
+          ],
+          [
+            36.9147,
+            42.7089
+          ]
+        ],
+        type: "LineString"
+      }
+    }
+  ]
+};
+
 // apps/simulator/src/WebSocketService.ts
 var import_eventsShim = __toESM(require_eventsShim());
 var WebSocketService = class {
@@ -9854,11 +62379,12 @@ var MyElement = class extends s3 {
   }
   connectedCallback() {
     super.connectedCallback();
+    this.startSendingData();
   }
   render() {
     return x`
       <section style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; font-size: 1vmin;">
-        <ats-simulator-map .geojson=${sectors_default} .flights=${this.flights?.aircrafts}></ats-simulator-map>
+        <ats-simulator-map .geojson=${sectors_default} .beacons=${beacons_default} .flights=${this.flights?.aircrafts} .airwaypoints=${airwaypoints_default} .airports=${airports_default} .airways=${airways_default}></ats-simulator-map>
       </section>
     `;
   }

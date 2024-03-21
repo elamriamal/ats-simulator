@@ -1,7 +1,12 @@
 import { LitElement, css, svg, SVGTemplateResult, PropertyValueMap } from 'lit';
 import * as d3 from 'd3';
 import { customElement, property } from 'lit/decorators.js';
-import { generateRandomData } from './utils';
+import renderSectors from './sectors';
+import renderFlights from './flights';
+import renderBeacons from './beacons';
+import renderAirports from './airports';
+import renderAirwaypoints from './airwaypoints';
+import renderAirways from './airways';
 
 @customElement('ats-simulator-map')
 export class MapElement extends LitElement {
@@ -14,12 +19,17 @@ export class MapElement extends LitElement {
   }
 
   private geojson: any;
+  private beacons: any;
+  private airports: any;
+  private airwaypoints: any;
+  private airways: any;
   private svg: any;
   private g: any;
   private zoom: any;
   private tooltip: any;
   private projection: any;
   private path: any;
+
   override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     super.updated(changedProperties);
 
@@ -37,24 +47,21 @@ export class MapElement extends LitElement {
 
     if (changedProperties.has('flights')) {
       // Call renderMap every time flights property is updated
-      this.renderMap(this.path);
+      this.renderMap();
     }
   }
+
 
   static override styles = css`
     :host {
       display: block;
       overflow: hidden; /* Hide overflow content */
     }
-    svg {
-      display: block;
-      background-color: #444; 
-    }
     .flight-card {
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 0.5rem;
+      font-size: 0.3rem;
       width: 50px;
       min-width: 50px;
       max-width: 50px;
@@ -71,16 +78,12 @@ export class MapElement extends LitElement {
       border: 0.2px solid white;
       text-align: center;
       cursor: pointer;
-      width: 5px;
-      min-width: 5px;
-      max-width: 5px;
-      height: 5px;
-      min-height: 5px;
-      max-height: 5px;
-      width: 100%; /* Ensure contents fill the available space */
-      height: 100%;
-      margin: 0; /* Reset margins */
-      padding: 0; /* Reset padding */
+      width: 8px;
+      min-width: 8px;
+      max-width: 8px;
+      height: 8px;
+      min-height: 8px;
+      max-height: 8px;
     }
     .tooltip {
       position: absolute;
@@ -95,7 +98,7 @@ export class MapElement extends LitElement {
       border-radius: 3px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.10);
       padding: 8px;
-      font-size: 8px;
+      font-size: 0.5rem;
     }
   `;
 
@@ -115,88 +118,41 @@ export class MapElement extends LitElement {
     this.g = this.svg.select('g');
     this.g.attr("clip-path", "inset(5%)");
     this.tooltip = this.shadowRoot!.querySelector('.tooltip');
-  
+
     // Add zoom behavior
     this.zoom = d3.zoom<SVGSVGElement, any>()
-      .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
+      .scaleExtent([1, 10]) // Set minimum and maximum zoom scale
       .on('zoom', (event) => {
         // Update the transform attribute of the <g> element
         this.g.attr('transform', event.transform);
       });
-  
-    this.svg.call(this.zoom);  
+
+    this.svg.call(this.zoom);
     // Render map with adjusted projection
-    this.renderMap(this.path);
+    this.renderMap();
   }
 
-  private renderMap(path: any): void {
+  private renderMap(): void {
     // Remove any existing elements
     this.g.selectAll("*").remove();
+    // Render sectors
+    renderSectors(this.g, this.geojson, this.path);
 
-    // Render countries
-    this.g.selectAll(".country")
-      .data(this.geojson.features)
-      .enter()
-      .append("path")
-      .attr("d", path)
-      .style("fill", "#444") // Dark grey fill color for countries
-      .style("stroke", "#666666"); // Light stroke color for countries
+    // Render beacons
+    renderBeacons(this.g, this.beacons, this.path);
+
+    // Render airports
+    renderAirports(this.g, this.airports, this.path);
+
+    // Render Airwaypoints
+    renderAirwaypoints(this.g, this.airwaypoints, this.path);
+
+    // Render airways
+    renderAirways(this.g, this.airways, this.path);
 
     // Render flights
-    this.flights?.forEach((flight: {
-      metadata: any;
-      data: any;
-      aircraftId: string;
-      position: {
-        hdg: any;
-        cas: any; latitude: number; longitude: number
-      };
-    }) => {
-      const foreignObjectId = `flight-foreign-object-${flight.aircraftId}`;
-      const { position } = flight;
-      const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
+    renderFlights(this.g, this.flights, this.projection, this.tooltip);
 
-      const foreignObject = this.g.append('foreignObject')
-        .attr('id', foreignObjectId)
-        .attr('x', x)
-        .attr('y', y);
-
-      // Append the plane section
-      foreignObject.append('xhtml:section')
-        .classed('plane', true)
-        .html('x');
-
-      // Update foreignObject dimensions with calculated width and height
-      foreignObject
-        .attr('width', 50)
-        .attr('height', 50)
-
-      const div = foreignObject.append('xhtml:div')
-        .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-        .classed('flight-card', true);
-      div.append('p').html(`${flight?.aircraftId} <br> ${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}`);
-
-      // Add tooltip interaction for flights
-      foreignObject.select('.plane').on('mouseover', (event: MouseEvent) => {
-        const flightData = `${flight?.aircraftId}<br>${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}<br>${generateRandomData()?.metadata}`;
-
-        const svgRect = this.svg.node().getBoundingClientRect();
-        const x = event.clientX - svgRect.left;
-        const y = event.clientY - svgRect.top;
-
-        // Check if the mouse coordinates intersect with the bounding box of the current flight's foreignObject
-        const bbox = foreignObject.node().getBoundingClientRect();
-        if (x >= bbox.left && x <= bbox.right && y >= bbox.top && y <= bbox.bottom) {
-          this.tooltip.style.left = `${x - 50}px`;
-          this.tooltip.style.top = `${y - 28}px`;
-          this.tooltip.innerHTML = flightData;
-          this.tooltip.style.display = 'block';
-        }
-      })
-
-        .on('mouseout', () => {
-          this.tooltip.style.display = 'none';
-        });
-    });
   }
+
 }

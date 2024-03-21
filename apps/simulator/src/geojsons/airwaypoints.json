@@ -1,0 +1,7584 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UMRUN"
+      },
+      "geometry": {
+        "coordinates": [
+           31.8781,
+           40.1861
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ODRUP"
+      },
+      "geometry": {
+        "coordinates": [
+           31.9161,
+           40.2667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SURUC"
+      },
+      "geometry": {
+        "coordinates": [
+           38.54,
+           37.0633
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ORMAN"
+      },
+      "geometry": {
+        "coordinates": [
+           33.3858,
+           41.2919
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GELBU"
+      },
+      "geometry": {
+        "coordinates": [
+           27.1408,
+           40.9353
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UDROS"
+      },
+      "geometry": {
+        "coordinates": [
+           30.5961,
+           42.7389
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ROLVI"
+      },
+      "geometry": {
+        "coordinates": [
+           31.8114,
+           39.2178
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SALDA"
+      },
+      "geometry": {
+        "coordinates": [
+           30.0003,
+           37.5553
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IPT"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3447,
+           37.8422
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SARPI"
+      },
+      "geometry": {
+        "coordinates": [
+           41.4497,
+           41.5489
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SERCE"
+      },
+      "geometry": {
+        "coordinates": [
+           27.3092,
+           41.5772
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OSRIN"
+      },
+      "geometry": {
+        "coordinates": [
+           33.4747,
+           41.3044
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SOTIV"
+      },
+      "geometry": {
+        "coordinates": [
+           28.4833,
+           36.55
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YAVRU"
+      },
+      "geometry": {
+        "coordinates": [
+           31.8328,
+           40.5822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARLAT"
+      },
+      "geometry": {
+        "coordinates": [
+           38.7019,
+           41.0969
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ALMUS"
+      },
+      "geometry": {
+        "coordinates": [
+           36.6656,
+           40.7742
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INTAB"
+      },
+      "geometry": {
+        "coordinates": [
+           39.1019,
+           39.9406
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TARSU"
+      },
+      "geometry": {
+        "coordinates": [
+           34.5206,
+           36.6256
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NULRU"
+      },
+      "geometry": {
+        "coordinates": [
+           39.645,
+           38.9789
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KILIS"
+      },
+      "geometry": {
+        "coordinates": [
+           37.4006,
+           36.7036
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADNOS"
+      },
+      "geometry": {
+        "coordinates": [
+           40.8533,
+           39.3183
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RELTU"
+      },
+      "geometry": {
+        "coordinates": [
+           32.3233,
+           41.6442
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PIMAV"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9536,
+           40.4006
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKPOS"
+      },
+      "geometry": {
+        "coordinates": [
+           43.3772,
+           40.6906
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KETEK"
+      },
+      "geometry": {
+        "coordinates": [
+           32.4783,
+           36.8878
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UNSUL"
+      },
+      "geometry": {
+        "coordinates": [
+           31.3086,
+           41.7664
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKMIN"
+      },
+      "geometry": {
+        "coordinates": [
+           40.8844,
+           38.2842
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKMIM"
+      },
+      "geometry": {
+        "coordinates": [
+           30.4817,
+           38.2347
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RIPNU"
+      },
+      "geometry": {
+        "coordinates": [
+           31.2103,
+           40.5253
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NETPU"
+      },
+      "geometry": {
+        "coordinates": [
+           40.4189,
+           40.9228
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERMUP"
+      },
+      "geometry": {
+        "coordinates": [
+           31.0228,
+           42.0006
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NENDO"
+      },
+      "geometry": {
+        "coordinates": [
+           34.2461,
+           41.3253
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NUMTI"
+      },
+      "geometry": {
+        "coordinates": [
+           29.5242,
+           39.6411
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKSUK"
+      },
+      "geometry": {
+        "coordinates": [
+           34.3372,
+           41.4025
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERGIN"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9994,
+           37.23
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SUSUZ"
+      },
+      "geometry": {
+        "coordinates": [
+           41.6083,
+           39.6808
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NUMSO"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3453,
+           40.9228
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MIMTO"
+      },
+      "geometry": {
+        "coordinates": [
+           33.0467,
+           41.8469
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YAMAN"
+      },
+      "geometry": {
+        "coordinates": [
+           31.4239,
+           40.2397
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OKUDU"
+      },
+      "geometry": {
+        "coordinates": [
+           39.0144,
+           38.5019
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EMLAD"
+      },
+      "geometry": {
+        "coordinates": [
+           37.6181,
+           41.1869
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ODPOT"
+      },
+      "geometry": {
+        "coordinates": [
+           35.8661,
+           40.9903
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RUKAP"
+      },
+      "geometry": {
+        "coordinates": [
+           31.9661,
+           37.8208
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TOMBI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.825,
+           36.0411
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AZBUL"
+      },
+      "geometry": {
+        "coordinates": [
+           33.3619,
+           39.3822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OTSIX"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9561,
+           39.7617
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TEVNI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3639,
+           41.5914
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ALRAM"
+      },
+      "geometry": {
+        "coordinates": [
+           44.6267,
+           37.7083
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NISAP"
+      },
+      "geometry": {
+        "coordinates": [
+           36.6414,
+           36.7844
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERTAS"
+      },
+      "geometry": {
+        "coordinates": [
+           29.1467,
+           41.4614
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MINSU"
+      },
+      "geometry": {
+        "coordinates": [
+           28.0561,
+           39.0844
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUSYR"
+      },
+      "geometry": {
+        "coordinates": [
+           37.3831,
+           36.6489
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DOKUB"
+      },
+      "geometry": {
+        "coordinates": [
+           29.8958,
+           38.8914
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERKOS"
+      },
+      "geometry": {
+        "coordinates": [
+           37.8839,
+           41.1644
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BDR"
+      },
+      "geometry": {
+        "coordinates": [
+           27.6814,
+           37.2469
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATRIV"
+      },
+      "geometry": {
+        "coordinates": [
+           37.3186,
+           40.2125
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LEGMU"
+      },
+      "geometry": {
+        "coordinates": [
+           31.5892,
+           41.9475
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NUNTU"
+      },
+      "geometry": {
+        "coordinates": [
+           37.3597,
+           39.5797
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TALIL"
+      },
+      "geometry": {
+        "coordinates": [
+           39.9722,
+           39.1889
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELROP"
+      },
+      "geometry": {
+        "coordinates": [
+           32.6533,
+           36.5061
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "POGEN"
+      },
+      "geometry": {
+        "coordinates": [
+           36.6936,
+           37.5031
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKI"
+      },
+      "geometry": {
+        "coordinates": [
+           27.4261,
+           40.9511
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GURBU"
+      },
+      "geometry": {
+        "coordinates": [
+           33.8328,
+           40.1683
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MARTI"
+      },
+      "geometry": {
+        "coordinates": [
+           35.1828,
+           39.4017
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BEPTO"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0533,
+           36.2697
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IST"
+      },
+      "geometry": {
+        "coordinates": [
+           28.8106,
+           40.9614
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LATSU"
+      },
+      "geometry": {
+        "coordinates": [
+           41.4139,
+           39.4208
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULGAN"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6925,
+           39.6417
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASMAP"
+      },
+      "geometry": {
+        "coordinates": [
+           30.7114,
+           40.6314
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ESOSU"
+      },
+      "geometry": {
+        "coordinates": [
+           33.5381,
+           41.6072
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ROKVA"
+      },
+      "geometry": {
+        "coordinates": [
+           31.6572,
+           41.8292
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YAVUZ"
+      },
+      "geometry": {
+        "coordinates": [
+           42.4333,
+           40.0444
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VEMEK"
+      },
+      "geometry": {
+        "coordinates": [
+           31.9222,
+           36.4722
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AKSEK"
+      },
+      "geometry": {
+        "coordinates": [
+           28.2231,
+           36.9261
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADORU"
+      },
+      "geometry": {
+        "coordinates": [
+           26.5683,
+           41.8717
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ABVEX"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6578,
+           40.8942
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ESOTA"
+      },
+      "geometry": {
+        "coordinates": [
+           41.7725,
+           37.77
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADA"
+      },
+      "geometry": {
+        "coordinates": [
+           35.2103,
+           36.9406
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DAMAT"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6647,
+           39.9561
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SISVO"
+      },
+      "geometry": {
+        "coordinates": [
+           27.7764,
+           37.8956
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASVOD"
+      },
+      "geometry": {
+        "coordinates": [
+           37.5728,
+           40.0822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BALUM"
+      },
+      "geometry": {
+        "coordinates": [
+           37.6667,
+           42.6833
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OSDIP"
+      },
+      "geometry": {
+        "coordinates": [
+           34.7986,
+           42.2383
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LORKO"
+      },
+      "geometry": {
+        "coordinates": [
+           29.765,
+           36.8069
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VEVUD"
+      },
+      "geometry": {
+        "coordinates": [
+           31.2222,
+           40.3808
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UMLEN"
+      },
+      "geometry": {
+        "coordinates": [
+           40.2167,
+           38.6617
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EDISI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1464,
+           36.8492
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BADEM"
+      },
+      "geometry": {
+        "coordinates": [
+           38.66,
+           37.6044
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ENFOR"
+      },
+      "geometry": {
+        "coordinates": [
+           36.2747,
+           39.8739
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SORAR"
+      },
+      "geometry": {
+        "coordinates": [
+           39.5125,
+           38.6242
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUMKU"
+      },
+      "geometry": {
+        "coordinates": [
+           42.1061,
+           38.5514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NEPNO"
+      },
+      "geometry": {
+        "coordinates": [
+           28.2778,
+           37.1514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AKEDO"
+      },
+      "geometry": {
+        "coordinates": [
+           35.4469,
+           40.9528
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVKAM"
+      },
+      "geometry": {
+        "coordinates": [
+           35.4131,
+           42.1514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TAMER"
+      },
+      "geometry": {
+        "coordinates": [
+           40.8164,
+           38.2406
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LUMOM"
+      },
+      "geometry": {
+        "coordinates": [
+           44.8233,
+           37.27
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LIVDO"
+      },
+      "geometry": {
+        "coordinates": [
+           42.4139,
+           38.2614
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NESTU"
+      },
+      "geometry": {
+        "coordinates": [
+           40.3494,
+           40.5936
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERGEP"
+      },
+      "geometry": {
+        "coordinates": [
+           33.9625,
+           37.4439
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INBAT"
+      },
+      "geometry": {
+        "coordinates": [
+           42.7083,
+           39.7025
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TIMOP"
+      },
+      "geometry": {
+        "coordinates": [
+           35.3611,
+           39.9919
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IVNAP"
+      },
+      "geometry": {
+        "coordinates": [
+           31.2533,
+           41.0908
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KIZIK"
+      },
+      "geometry": {
+        "coordinates": [
+           32.1494,
+           40.4183
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELNEM"
+      },
+      "geometry": {
+        "coordinates": [
+           38.1981,
+           39.7567
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKMEL"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1828,
+           40.3767
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GIPDA"
+      },
+      "geometry": {
+        "coordinates": [
+           32.2047,
+           42.2469
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKMEK"
+      },
+      "geometry": {
+        "coordinates": [
+           33.9433,
+           40.5036
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VAXEB"
+      },
+      "geometry": {
+        "coordinates": [
+           33.5786,
+           41.5969
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ESKIN"
+      },
+      "geometry": {
+        "coordinates": [
+           28.3981,
+           39.05
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAGLU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.3253,
+           38.0711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VIRAN"
+      },
+      "geometry": {
+        "coordinates": [
+           41.7028,
+           40.1186
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NOLGA"
+      },
+      "geometry": {
+        "coordinates": [
+           42.9789,
+           41.4281
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RAUMA"
+      },
+      "geometry": {
+        "coordinates": [
+           27.3092,
+           39.9839
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SIN"
+      },
+      "geometry": {
+        "coordinates": [
+           35.0769,
+           42.0222
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVBOL"
+      },
+      "geometry": {
+        "coordinates": [
+           29.6383,
+           37.1711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TKT"
+      },
+      "geometry": {
+        "coordinates": [
+           36.3775,
+           40.315
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ALEDA"
+      },
+      "geometry": {
+        "coordinates": [
+           27.8394,
+           39.8608
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SIV"
+      },
+      "geometry": {
+        "coordinates": [
+           36.8933,
+           39.7894
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERVAK"
+      },
+      "geometry": {
+        "coordinates": [
+           36.7269,
+           40.5119
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IPDAL"
+      },
+      "geometry": {
+        "coordinates": [
+           38.0103,
+           40.8842
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IRGAK"
+      },
+      "geometry": {
+        "coordinates": [
+           30.6178,
+           38.2806
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELTOX"
+      },
+      "geometry": {
+        "coordinates": [
+           43.3694,
+           40.0997
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELMAS"
+      },
+      "geometry": {
+        "coordinates": [
+           30.7083,
+           37.5833
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAMUP"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0172,
+           42.5875
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BELGI"
+      },
+      "geometry": {
+        "coordinates": [
+           25.8833,
+           40.5
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NEKAT"
+      },
+      "geometry": {
+        "coordinates": [
+           36.3536,
+           37.7436
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HTY"
+      },
+      "geometry": {
+        "coordinates": [
+           36.29,
+           36.3628
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RILEX"
+      },
+      "geometry": {
+        "coordinates": [
+           26.7664,
+           41.9711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BALSU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.4236,
+           37.4583
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARMAM"
+      },
+      "geometry": {
+        "coordinates": [
+           28.4714,
+           37.2394
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADASU"
+      },
+      "geometry": {
+        "coordinates": [
+           31.3889,
+           36.7511
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GAKSU"
+      },
+      "geometry": {
+        "coordinates": [
+           33.8142,
+           42.1892
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVPIM"
+      },
+      "geometry": {
+        "coordinates": [
+           32.3664,
+           41.895
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GELIN"
+      },
+      "geometry": {
+        "coordinates": [
+           40.7858,
+           39.6981
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PALUT"
+      },
+      "geometry": {
+        "coordinates": [
+           39.5333,
+           38.6939
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERVAG"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1828,
+           39.0653
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NIVLA"
+      },
+      "geometry": {
+        "coordinates": [
+           42.7961,
+           40.4622
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PELIL"
+      },
+      "geometry": {
+        "coordinates": [
+           30.2328,
+           37.8397
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVLAP"
+      },
+      "geometry": {
+        "coordinates": [
+           31.5858,
+           41.5375
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SELVI"
+      },
+      "geometry": {
+        "coordinates": [
+           34.4994,
+           37.8989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BIG"
+      },
+      "geometry": {
+        "coordinates": [
+           27.3653,
+           40.2842
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUNLA"
+      },
+      "geometry": {
+        "coordinates": [
+           36.0333,
+           35.8833
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GONPU"
+      },
+      "geometry": {
+        "coordinates": [
+           41.9606,
+           41.3006
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERMOD"
+      },
+      "geometry": {
+        "coordinates": [
+           35.28,
+           39.2233
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UNVUS"
+      },
+      "geometry": {
+        "coordinates": [
+           32.1414,
+           41.695
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MOVUL"
+      },
+      "geometry": {
+        "coordinates": [
+           39.2319,
+           38.1528
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BEYAZ"
+      },
+      "geometry": {
+        "coordinates": [
+           42.7881,
+           38.505
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULKEM"
+      },
+      "geometry": {
+        "coordinates": [
+           43.3647,
+           38.1106
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AKCAK"
+      },
+      "geometry": {
+        "coordinates": [
+           30.7247,
+           41.4289
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AKIMO"
+      },
+      "geometry": {
+        "coordinates": [
+           29.4011,
+           37.2206
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VEMAG"
+      },
+      "geometry": {
+        "coordinates": [
+           31.1358,
+           41.6789
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CLD"
+      },
+      "geometry": {
+        "coordinates": [
+           27.8964,
+           37.8147
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OZYAK"
+      },
+      "geometry": {
+        "coordinates": [
+           29.1433,
+           37.125
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATGOB"
+      },
+      "geometry": {
+        "coordinates": [
+           31.2508,
+           40.7253
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DASIS"
+      },
+      "geometry": {
+        "coordinates": [
+           44.2083,
+           38.9097
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LUTAM"
+      },
+      "geometry": {
+        "coordinates": [
+           38.5231,
+           37.325
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VEPUM"
+      },
+      "geometry": {
+        "coordinates": [
+           33.4172,
+           42.4206
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GELKI"
+      },
+      "geometry": {
+        "coordinates": [
+           31.6808,
+           36.5786
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INBET"
+      },
+      "geometry": {
+        "coordinates": [
+           27.275,
+           40.1867
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NEXAM"
+      },
+      "geometry": {
+        "coordinates": [
+           28.6353,
+           37.5003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RASVA"
+      },
+      "geometry": {
+        "coordinates": [
+           38.0078,
+           37.4981
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUDEK"
+      },
+      "geometry": {
+        "coordinates": [
+           39.4031,
+           42.1839
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MAKOL"
+      },
+      "geometry": {
+        "coordinates": [
+           29.1428,
+           42.1706
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATSAL"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7189,
+           37.5003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IPSAT"
+      },
+      "geometry": {
+        "coordinates": [
+           38.6058,
+           41.1053
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERGAN"
+      },
+      "geometry": {
+        "coordinates": [
+           39.0272,
+           38.515
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "APTOX"
+      },
+      "geometry": {
+        "coordinates": [
+           32.5042,
+           41.5931
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BOYAT"
+      },
+      "geometry": {
+        "coordinates": [
+           37.2433,
+           37.1208
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TOKER"
+      },
+      "geometry": {
+        "coordinates": [
+           30.7722,
+           40.3133
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARPAG"
+      },
+      "geometry": {
+        "coordinates": [
+           37.2744,
+           37.2625
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATGIT"
+      },
+      "geometry": {
+        "coordinates": [
+           29.7492,
+           38.2014
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KEPES"
+      },
+      "geometry": {
+        "coordinates": [
+           36.7075,
+           38.14
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RATVU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.3783,
+           39.9067
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "FILIZ"
+      },
+      "geometry": {
+        "coordinates": [
+           39.4703,
+           38.8664
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TIRER"
+      },
+      "geometry": {
+        "coordinates": [
+           28.3842,
+           41.1364
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OTROM"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6592,
+           40.9444
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MAVES"
+      },
+      "geometry": {
+        "coordinates": [
+           39.2275,
+           37.5628
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUKTU"
+      },
+      "geometry": {
+        "coordinates": [
+           32.7161,
+           36.3347
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKTOD"
+      },
+      "geometry": {
+        "coordinates": [
+           37.7067,
+           40.5919
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULTED"
+      },
+      "geometry": {
+        "coordinates": [
+           41.8261,
+           38.3506
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SONEN"
+      },
+      "geometry": {
+        "coordinates": [
+           28.2853,
+           37.1547
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BKZ"
+      },
+      "geometry": {
+        "coordinates": [
+           29.1428,
+           41.1269
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YASEN"
+      },
+      "geometry": {
+        "coordinates": [
+           29.5161,
+           41.1989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SOMBU"
+      },
+      "geometry": {
+        "coordinates": [
+           40.2769,
+           39.6003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RIVBU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.3125,
+           37.3272
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KULOL"
+      },
+      "geometry": {
+        "coordinates": [
+           31.5936,
+           36.6831
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ROXUK"
+      },
+      "geometry": {
+        "coordinates": [
+           29.7186,
+           39.8903
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERH"
+      },
+      "geometry": {
+        "coordinates": [
+           38.1119,
+           38.4625
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LEMDA"
+      },
+      "geometry": {
+        "coordinates": [
+           30.6569,
+           37.9822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERIDU"
+      },
+      "geometry": {
+        "coordinates": [
+           39.1697,
+           41.2153
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERN"
+      },
+      "geometry": {
+        "coordinates": [
+           39.5292,
+           39.7083
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASBEP"
+      },
+      "geometry": {
+        "coordinates": [
+           32.1236,
+           42.2628
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CNK"
+      },
+      "geometry": {
+        "coordinates": [
+           26.4275,
+           40.1353
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VAKUM"
+      },
+      "geometry": {
+        "coordinates": [
+           28.2581,
+           38.5022
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULVEX"
+      },
+      "geometry": {
+        "coordinates": [
+           31.5308,
+           41.5828
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NEKES"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2847,
+           36.1536
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ALVAR"
+      },
+      "geometry": {
+        "coordinates": [
+           41.7431,
+           39.9958
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERZ"
+      },
+      "geometry": {
+        "coordinates": [
+           41.2069,
+           39.9567
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BALON"
+      },
+      "geometry": {
+        "coordinates": [
+           39.6083,
+           40.0917
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VAKUL"
+      },
+      "geometry": {
+        "coordinates": [
+           42.1417,
+           37.8942
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RUXEV"
+      },
+      "geometry": {
+        "coordinates": [
+           34.8622,
+           41.2636
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TETSA"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7792,
+           41.7461
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KONAK"
+      },
+      "geometry": {
+        "coordinates": [
+           31.4161,
+           36.8947
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HOCAM"
+      },
+      "geometry": {
+        "coordinates": [
+           40.82,
+           40.2458
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GERZE"
+      },
+      "geometry": {
+        "coordinates": [
+           35.1661,
+           41.8322
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RESLI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1197,
+           38.2944
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERHAN"
+      },
+      "geometry": {
+        "coordinates": [
+           35.2289,
+           38.5239
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TEPKI"
+      },
+      "geometry": {
+        "coordinates": [
+           32.9928,
+           41.4533
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELVON"
+      },
+      "geometry": {
+        "coordinates": [
+           29.4389,
+           40.1931
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAYIR"
+      },
+      "geometry": {
+        "coordinates": [
+           41.4039,
+           38.5947
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KESIR"
+      },
+      "geometry": {
+        "coordinates": [
+           41.4514,
+           39.3153
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TEMEL"
+      },
+      "geometry": {
+        "coordinates": [
+           39.1372,
+           41.0572
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ESR"
+      },
+      "geometry": {
+        "coordinates": [
+           30.5122,
+           39.8131
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ETAMP"
+      },
+      "geometry": {
+        "coordinates": [
+           29.7289,
+           39.5797
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DERYA"
+      },
+      "geometry": {
+        "coordinates": [
+           30.8119,
+           36.4156
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PIXAP"
+      },
+      "geometry": {
+        "coordinates": [
+           39.6922,
+           40.5017
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULSAB"
+      },
+      "geometry": {
+        "coordinates": [
+           41.1314,
+           38.1425
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BULUT"
+      },
+      "geometry": {
+        "coordinates": [
+           38.9022,
+           38.7561
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BNG"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6008,
+           38.8556
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GIRNO"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2544,
+           41.0172
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SUNUM"
+      },
+      "geometry": {
+        "coordinates": [
+           34.8575,
+           42.0119
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NAREN"
+      },
+      "geometry": {
+        "coordinates": [
+           40.825,
+           38.6306
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EMKUD"
+      },
+      "geometry": {
+        "coordinates": [
+           30.2775,
+           38.6053
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RNA"
+      },
+      "geometry": {
+        "coordinates": [
+           42.0614,
+           37.365
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELGOV"
+      },
+      "geometry": {
+        "coordinates": [
+           28.0175,
+           40.5944
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OKESA"
+      },
+      "geometry": {
+        "coordinates": [
+           27.3864,
+           37.6292
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LAMSA"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9228,
+           37.1108
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KUDAK"
+      },
+      "geometry": {
+        "coordinates": [
+           28.2767,
+           39.2989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BENEM"
+      },
+      "geometry": {
+        "coordinates": [
+           29.3167,
+           36.1833
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "REKVO"
+      },
+      "geometry": {
+        "coordinates": [
+           40.4983,
+           39.5214
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SALGO"
+      },
+      "geometry": {
+        "coordinates": [
+           32.1994,
+           40.4739
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GOKPA"
+      },
+      "geometry": {
+        "coordinates": [
+           34.5947,
+           41.7461
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TERME"
+      },
+      "geometry": {
+        "coordinates": [
+           37.2247,
+           41.2144
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KUXIL"
+      },
+      "geometry": {
+        "coordinates": [
+           29.005,
+           37.4808
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NELNI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.5022,
+           41.6175
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IBLAL"
+      },
+      "geometry": {
+        "coordinates": [
+           28.0011,
+           41.9822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OVACI"
+      },
+      "geometry": {
+        "coordinates": [
+           29.1542,
+           39.7889
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SUGAT"
+      },
+      "geometry": {
+        "coordinates": [
+           37.7514,
+           37.0508
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SONAD"
+      },
+      "geometry": {
+        "coordinates": [
+           39.6764,
+           40.4181
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AMANI"
+      },
+      "geometry": {
+        "coordinates": [
+           26.4994,
+           39.3322
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IBURA"
+      },
+      "geometry": {
+        "coordinates": [
+           33.3736,
+           41.0175
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KUTAY"
+      },
+      "geometry": {
+        "coordinates": [
+           29.6219,
+           39.4617
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PIROX"
+      },
+      "geometry": {
+        "coordinates": [
+           28.05,
+           36.4833
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ETESU"
+      },
+      "geometry": {
+        "coordinates": [
+           39.3544,
+           39.1381
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BANRO"
+      },
+      "geometry": {
+        "coordinates": [
+           27.9953,
+           36.4947
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LUTFU"
+      },
+      "geometry": {
+        "coordinates": [
+           28.1833,
+           39.9394
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATLOM"
+      },
+      "geometry": {
+        "coordinates": [
+           39.3486,
+           37.3856
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VAKTI"
+      },
+      "geometry": {
+        "coordinates": [
+           37.8894,
+           40.7683
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EMBAG"
+      },
+      "geometry": {
+        "coordinates": [
+           42.2086,
+           38.1267
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "URGUP"
+      },
+      "geometry": {
+        "coordinates": [
+           34.03,
+           38.5211
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUDBU"
+      },
+      "geometry": {
+        "coordinates": [
+           27.7769,
+           41.9667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ODSAM"
+      },
+      "geometry": {
+        "coordinates": [
+           37.7647,
+           40.6481
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CRD"
+      },
+      "geometry": {
+        "coordinates": [
+           29.7042,
+           37.7897
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASTAL"
+      },
+      "geometry": {
+        "coordinates": [
+           33.1244,
+           40.7406
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ZELSU"
+      },
+      "geometry": {
+        "coordinates": [
+           43.7831,
+           38.2656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DIGTI"
+      },
+      "geometry": {
+        "coordinates": [
+           26.3214,
+           41.1253
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VADEN"
+      },
+      "geometry": {
+        "coordinates": [
+           27.2161,
+           42.0656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RATSI"
+      },
+      "geometry": {
+        "coordinates": [
+           36.2203,
+           37.8372
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TOPLU"
+      },
+      "geometry": {
+        "coordinates": [
+           28.1731,
+           41.4786
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CRL"
+      },
+      "geometry": {
+        "coordinates": [
+           27.9422,
+           41.1522
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GZP"
+      },
+      "geometry": {
+        "coordinates": [
+           32.2972,
+           36.3042
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KAR"
+      },
+      "geometry": {
+        "coordinates": [
+           43.1042,
+           40.5567
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CRM"
+      },
+      "geometry": {
+        "coordinates": [
+           36.5489,
+           41.2656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LANVO"
+      },
+      "geometry": {
+        "coordinates": [
+           39.2919,
+           39.9436
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BEDOP"
+      },
+      "geometry": {
+        "coordinates": [
+           32.2325,
+           41.9269
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CENGO"
+      },
+      "geometry": {
+        "coordinates": [
+           28.0911,
+           37.0656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TAVAS"
+      },
+      "geometry": {
+        "coordinates": [
+           29.2436,
+           37.5886
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAPSI"
+      },
+      "geometry": {
+        "coordinates": [
+           27.9042,
+           38.0022
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ABKEV"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0483,
+           42.5839
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ROTKU"
+      },
+      "geometry": {
+        "coordinates": [
+           39.96,
+           38.7933
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RIXEN"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7661,
+           42.0822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ORHAN"
+      },
+      "geometry": {
+        "coordinates": [
+           39.5778,
+           39.9475
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DEKEK"
+      },
+      "geometry": {
+        "coordinates": [
+           29.3231,
+           40.3344
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SRT"
+      },
+      "geometry": {
+        "coordinates": [
+           41.8819,
+           37.9606
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATVEP"
+      },
+      "geometry": {
+        "coordinates": [
+           26.9536,
+           41.4622
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAKIR"
+      },
+      "geometry": {
+        "coordinates": [
+           33.3244,
+           39.4378
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KAVAK"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7328,
+           37.3572
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KONEN"
+      },
+      "geometry": {
+        "coordinates": [
+           27.2772,
+           39.8117
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BIMVO"
+      },
+      "geometry": {
+        "coordinates": [
+           33.1319,
+           42.4561
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RATVO"
+      },
+      "geometry": {
+        "coordinates": [
+           43.9344,
+           37.2406
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UPKAG"
+      },
+      "geometry": {
+        "coordinates": [
+           34.1353,
+           41.4547
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KUMRU"
+      },
+      "geometry": {
+        "coordinates": [
+           30.7328,
+           37.4156
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SUMOL"
+      },
+      "geometry": {
+        "coordinates": [
+           33.1811,
+           42.7989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EMGIM"
+      },
+      "geometry": {
+        "coordinates": [
+           29.5422,
+           39.9094
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OTSOV"
+      },
+      "geometry": {
+        "coordinates": [
+           37.4314,
+           39.8328
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PETAR"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0814,
+           40.1711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LESRI"
+      },
+      "geometry": {
+        "coordinates": [
+           41.2303,
+           37.0722
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CTP"
+      },
+      "geometry": {
+        "coordinates": [
+           30.0714,
+           40.7375
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OSDUT"
+      },
+      "geometry": {
+        "coordinates": [
+           37.5544,
+           41.19
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GOKSU"
+      },
+      "geometry": {
+        "coordinates": [
+           41.8797,
+           39.4928
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "APSER"
+      },
+      "geometry": {
+        "coordinates": [
+           29.8483,
+           39.3672
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BRY"
+      },
+      "geometry": {
+        "coordinates": [
+           29.5936,
+           40.2625
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELDEN"
+      },
+      "geometry": {
+        "coordinates": [
+           35.4292,
+           39.9097
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HAKAN"
+      },
+      "geometry": {
+        "coordinates": [
+           32.2983,
+           41.7233
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARTAT"
+      },
+      "geometry": {
+        "coordinates": [
+           29.6242,
+           42.3639
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DELEL"
+      },
+      "geometry": {
+        "coordinates": [
+           40.8903,
+           40.965
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADUMU"
+      },
+      "geometry": {
+        "coordinates": [
+           33.0778,
+           42.0711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARTAR"
+      },
+      "geometry": {
+        "coordinates": [
+           38.8447,
+           37.0939
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TIVUG"
+      },
+      "geometry": {
+        "coordinates": [
+           33.0311,
+           41.7336
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BALIM"
+      },
+      "geometry": {
+        "coordinates": [
+           41.1242,
+           38.4297
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TIRMA"
+      },
+      "geometry": {
+        "coordinates": [
+           35.765,
+           38.9422
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GELSU"
+      },
+      "geometry": {
+        "coordinates": [
+           40.5569,
+           39.5583
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVSEP"
+      },
+      "geometry": {
+        "coordinates": [
+           26.1881,
+           40.1567
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERMEM"
+      },
+      "geometry": {
+        "coordinates": [
+           36.9197,
+           37.8114
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADVOK"
+      },
+      "geometry": {
+        "coordinates": [
+           36.5011,
+           39.5036
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERKAL"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9797,
+           40.9867
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DORUK"
+      },
+      "geometry": {
+        "coordinates": [
+           42.1853,
+           39.2792
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INLAP"
+      },
+      "geometry": {
+        "coordinates": [
+           43.7458,
+           37.6836
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "FATIH"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7994,
+           41.2281
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GINLI"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7744,
+           41.8711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAMLA"
+      },
+      "geometry": {
+        "coordinates": [
+           38.9028,
+           40.6403
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EBEDI"
+      },
+      "geometry": {
+        "coordinates": [
+           39.1236,
+           39.725
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UVTOL"
+      },
+      "geometry": {
+        "coordinates": [
+           28.3128,
+           37.7675
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATNOP"
+      },
+      "geometry": {
+        "coordinates": [
+           34.8583,
+           42.0522
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OZBEY"
+      },
+      "geometry": {
+        "coordinates": [
+           39.1,
+           37.2419
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PEVOP"
+      },
+      "geometry": {
+        "coordinates": [
+           38.7603,
+           40.1244
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DUGLA"
+      },
+      "geometry": {
+        "coordinates": [
+           27.2244,
+           39.4989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MILBA"
+      },
+      "geometry": {
+        "coordinates": [
+           36.4794,
+           36.9514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NILER"
+      },
+      "geometry": {
+        "coordinates": [
+           27.8697,
+           39.0839
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YAA"
+      },
+      "geometry": {
+        "coordinates": [
+           29.2075,
+           40.475
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EZN"
+      },
+      "geometry": {
+        "coordinates": [
+           38.8869,
+           39.9369
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARI"
+      },
+      "geometry": {
+        "coordinates": [
+           43.0269,
+           39.6458
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKSEN"
+      },
+      "geometry": {
+        "coordinates": [
+           30.6703,
+           37.8906
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RENGI"
+      },
+      "geometry": {
+        "coordinates": [
+           41.08,
+           38.4639
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ODIRA"
+      },
+      "geometry": {
+        "coordinates": [
+           36.9147,
+           42.7089
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MILAS"
+      },
+      "geometry": {
+        "coordinates": [
+           27.6419,
+           37.1678
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EZS"
+      },
+      "geometry": {
+        "coordinates": [
+           39.2239,
+           38.7081
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASNUT"
+      },
+      "geometry": {
+        "coordinates": [
+           27.0081,
+           40.2283
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OSGED"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1069,
+           38.9094
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ABKAL"
+      },
+      "geometry": {
+        "coordinates": [
+           41.5319,
+           38.0194
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ZUITA"
+      },
+      "geometry": {
+        "coordinates": [
+           39.6339,
+           38.3631
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BONAM"
+      },
+      "geometry": {
+        "coordinates": [
+           44.2997,
+           38.0489
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DYB"
+      },
+      "geometry": {
+        "coordinates": [
+           40.2081,
+           37.8733
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NASIM"
+      },
+      "geometry": {
+        "coordinates": [
+           32.3333,
+           40.5722
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KFK"
+      },
+      "geometry": {
+        "coordinates": [
+           30.5467,
+           38.8039
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATVAM"
+      },
+      "geometry": {
+        "coordinates": [
+           39.5831,
+           41.6433
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BERGO"
+      },
+      "geometry": {
+        "coordinates": [
+           27.1328,
+           38.9989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERPIM"
+      },
+      "geometry": {
+        "coordinates": [
+           42.7089,
+           38.1069
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULREP"
+      },
+      "geometry": {
+        "coordinates": [
+           40.8878,
+           39.3817
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DEMEB"
+      },
+      "geometry": {
+        "coordinates": [
+           39.2317,
+           37.5639
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NEMRO"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2028,
+           40.9083
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UDVET"
+      },
+      "geometry": {
+        "coordinates": [
+           35.5336,
+           38.315
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BUK"
+      },
+      "geometry": {
+        "coordinates": [
+           33.105,
+           40.2419
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AKBUK"
+      },
+      "geometry": {
+        "coordinates": [
+           27.4606,
+           37.5
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ILHAN"
+      },
+      "geometry": {
+        "coordinates": [
+           33.7036,
+           40.4439
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UNSAV"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7897,
+           41.4783
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NELPO"
+      },
+      "geometry": {
+        "coordinates": [
+           37.6758,
+           40.47
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OKLAM"
+      },
+      "geometry": {
+        "coordinates": [
+           31.5828,
+           38.0908
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KEMER"
+      },
+      "geometry": {
+        "coordinates": [
+           34.7258,
+           37.6008
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AGINA"
+      },
+      "geometry": {
+        "coordinates": [
+           44.0867,
+           39.3233
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ESEPO"
+      },
+      "geometry": {
+        "coordinates": [
+           39.5583,
+           39.8519
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KOZAN"
+      },
+      "geometry": {
+        "coordinates": [
+           37.1542,
+           36.9542
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HAZAR"
+      },
+      "geometry": {
+        "coordinates": [
+           39.4322,
+           38.5325
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VESAR"
+      },
+      "geometry": {
+        "coordinates": [
+           34.0167,
+           35.9167
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OLUPO"
+      },
+      "geometry": {
+        "coordinates": [
+           37.6619,
+           41.7086
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SUREL"
+      },
+      "geometry": {
+        "coordinates": [
+           40.8772,
+           40.8672
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATPUM"
+      },
+      "geometry": {
+        "coordinates": [
+           40.3758,
+           41.1933
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARMUD"
+      },
+      "geometry": {
+        "coordinates": [
+           33.4856,
+           39.2217
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BUMOM"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2297,
+           38.0144
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HAVZA"
+      },
+      "geometry": {
+        "coordinates": [
+           35.9286,
+           41.0925
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NEGEM"
+      },
+      "geometry": {
+        "coordinates": [
+           29.8703,
+           42.4617
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKTES"
+      },
+      "geometry": {
+        "coordinates": [
+           40.2044,
+           40.9853
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKTEL"
+      },
+      "geometry": {
+        "coordinates": [
+           38.9978,
+           37.8267
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BUPUN"
+      },
+      "geometry": {
+        "coordinates": [
+           37.9056,
+           37.3944
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVSAS"
+      },
+      "geometry": {
+        "coordinates": [
+           40.1886,
+           39.3247
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HAY"
+      },
+      "geometry": {
+        "coordinates": [
+           32.5094,
+           39.4364
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YUCEL"
+      },
+      "geometry": {
+        "coordinates": [
+           33.5853,
+           39.5789
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YAYLA"
+      },
+      "geometry": {
+        "coordinates": [
+           27.9953,
+           39.8656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TZK"
+      },
+      "geometry": {
+        "coordinates": [
+           34.5428,
+           38.7667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KHD"
+      },
+      "geometry": {
+        "coordinates": [
+           38.4567,
+           37.7247
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EDASU"
+      },
+      "geometry": {
+        "coordinates": [
+           42.7767,
+           40.6067
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KUGOS"
+      },
+      "geometry": {
+        "coordinates": [
+           34.0878,
+           42.7806
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UVULU"
+      },
+      "geometry": {
+        "coordinates": [
+           34.5364,
+           41.5703
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HANKO"
+      },
+      "geometry": {
+        "coordinates": [
+           30.2661,
+           39.4989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KUBER"
+      },
+      "geometry": {
+        "coordinates": [
+           33.6106,
+           39.8322
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NAPIP"
+      },
+      "geometry": {
+        "coordinates": [
+           31.7389,
+           41.8067
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADSEP"
+      },
+      "geometry": {
+        "coordinates": [
+           36.5481,
+           37.6858
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "REBLO"
+      },
+      "geometry": {
+        "coordinates": [
+           43.685,
+           40.84
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INLEV"
+      },
+      "geometry": {
+        "coordinates": [
+           37.0881,
+           37.2594
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UTURI"
+      },
+      "geometry": {
+        "coordinates": [
+           37.9747,
+           39.8736
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AKUTU"
+      },
+      "geometry": {
+        "coordinates": [
+           42.5886,
+           40.6347
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SIVKU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9794,
+           39.1356
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERGUN"
+      },
+      "geometry": {
+        "coordinates": [
+           34.7389,
+           40.7464
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ETISI"
+      },
+      "geometry": {
+        "coordinates": [
+           43.2956,
+           40.2003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARPUT"
+      },
+      "geometry": {
+        "coordinates": [
+           38.9419,
+           38.8422
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ESENK"
+      },
+      "geometry": {
+        "coordinates": [
+           42.9381,
+           38.7447
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LUUPU"
+      },
+      "geometry": {
+        "coordinates": [
+           32.2383,
+           41.9094
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UTUSO"
+      },
+      "geometry": {
+        "coordinates": [
+           31.7106,
+           36.4497
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MANAZ"
+      },
+      "geometry": {
+        "coordinates": [
+           34.4114,
+           36.9147
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SOMGU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9556,
+           39.5533
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KISLA"
+      },
+      "geometry": {
+        "coordinates": [
+           34.3333,
+           39.11
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OLDUD"
+      },
+      "geometry": {
+        "coordinates": [
+           32.6119,
+           42.1661
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VEVEN"
+      },
+      "geometry": {
+        "coordinates": [
+           37.6383,
+           39.4528
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SULTA"
+      },
+      "geometry": {
+        "coordinates": [
+           29.7397,
+           40.0456
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OTKEP"
+      },
+      "geometry": {
+        "coordinates": [
+           42.66,
+           37.8592
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VAPEK"
+      },
+      "geometry": {
+        "coordinates": [
+           31.6944,
+           37.3667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BABSA"
+      },
+      "geometry": {
+        "coordinates": [
+           30.305,
+           38.0156
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MARIS"
+      },
+      "geometry": {
+        "coordinates": [
+           28.2828,
+           36.8989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MANAV"
+      },
+      "geometry": {
+        "coordinates": [
+           31.3578,
+           36.6989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INDUR"
+      },
+      "geometry": {
+        "coordinates": [
+           43.6647,
+           40.1156
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RORMU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9269,
+           39.52
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LEGDO"
+      },
+      "geometry": {
+        "coordinates": [
+           41.1372,
+           40.835
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATSUB"
+      },
+      "geometry": {
+        "coordinates": [
+           31.6239,
+           36.585
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GAP"
+      },
+      "geometry": {
+        "coordinates": [
+           38.9047,
+           37.4581
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EDASA"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1244,
+           39.46
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "USANU"
+      },
+      "geometry": {
+        "coordinates": [
+           36.0625,
+           40.9356
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GAZ"
+      },
+      "geometry": {
+        "coordinates": [
+           37.4728,
+           36.9514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HALIL"
+      },
+      "geometry": {
+        "coordinates": [
+           32.3578,
+           39.3906
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "REDRA"
+      },
+      "geometry": {
+        "coordinates": [
+           26.5244,
+           37.9822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TEKDO"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1569,
+           38.3383
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INPOR"
+      },
+      "geometry": {
+        "coordinates": [
+           34.1033,
+           36.675
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADRES"
+      },
+      "geometry": {
+        "coordinates": [
+           37.3336,
+           37.1714
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DETOS"
+      },
+      "geometry": {
+        "coordinates": [
+           36.6711,
+           41.7583
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SONLU"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7997,
+           39.0831
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NAMAN"
+      },
+      "geometry": {
+        "coordinates": [
+           30.9994,
+           40.9989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASPUL"
+      },
+      "geometry": {
+        "coordinates": [
+           40.4128,
+           38.5517
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LATGA"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0922,
+           40.3314
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASMOB"
+      },
+      "geometry": {
+        "coordinates": [
+           32.2328,
+           41.6694
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NARLI"
+      },
+      "geometry": {
+        "coordinates": [
+           43.2497,
+           37.8156
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ADBEL"
+      },
+      "geometry": {
+        "coordinates": [
+           31.7464,
+           36.9053
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULRAS"
+      },
+      "geometry": {
+        "coordinates": [
+           34.1125,
+           38.9933
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ELGEX"
+      },
+      "geometry": {
+        "coordinates": [
+           38.1128,
+           37.1806
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PIPUR"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2389,
+           41.3511
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKDAM"
+      },
+      "geometry": {
+        "coordinates": [
+           29.6172,
+           40.4347
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DIGIL"
+      },
+      "geometry": {
+        "coordinates": [
+           39.0772,
+           38.1953
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KABAN"
+      },
+      "geometry": {
+        "coordinates": [
+           42.6497,
+           37.2489
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BARPE"
+      },
+      "geometry": {
+        "coordinates": [
+           26.9781,
+           40.9261
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SUDES"
+      },
+      "geometry": {
+        "coordinates": [
+           26.8933,
+           39.7694
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVKOR"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0,
+           36.4289
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MISRO"
+      },
+      "geometry": {
+        "coordinates": [
+           29.8011,
+           39.9528
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TESVA"
+      },
+      "geometry": {
+        "coordinates": [
+           44.4964,
+           38.2858
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SOPOV"
+      },
+      "geometry": {
+        "coordinates": [
+           36.7992,
+           40.2003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MODAU"
+      },
+      "geometry": {
+        "coordinates": [
+           31.8858,
+           42.0092
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RIKSO"
+      },
+      "geometry": {
+        "coordinates": [
+           26.4333,
+           38.8333
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PAZAR"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9994,
+           41.2989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VAN"
+      },
+      "geometry": {
+        "coordinates": [
+           43.325,
+           38.4661
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KARDE"
+      },
+      "geometry": {
+        "coordinates": [
+           37.0453,
+           41.9039
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SOLSA"
+      },
+      "geometry": {
+        "coordinates": [
+           35.7789,
+           38.1456
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GOBIT"
+      },
+      "geometry": {
+        "coordinates": [
+           33.8869,
+           39.7761
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MARMA"
+      },
+      "geometry": {
+        "coordinates": [
+           27.6489,
+           40.5272
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DERIL"
+      },
+      "geometry": {
+        "coordinates": [
+           44.415,
+           37.7344
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NIZIP"
+      },
+      "geometry": {
+        "coordinates": [
+           37.7667,
+           36.9847
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULKAN"
+      },
+      "geometry": {
+        "coordinates": [
+           28.1258,
+           37.3025
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERCIS"
+      },
+      "geometry": {
+        "coordinates": [
+           34.9436,
+           38.2703
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GETKO"
+      },
+      "geometry": {
+        "coordinates": [
+           40.5383,
+           40.4547
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ABDIK"
+      },
+      "geometry": {
+        "coordinates": [
+           41.9553,
+           37.6883
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DONDU"
+      },
+      "geometry": {
+        "coordinates": [
+           37.0581,
+           37.5864
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UNEPI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1978,
+           38.2494
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EKNUD"
+      },
+      "geometry": {
+        "coordinates": [
+           30.8103,
+           38.1292
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VARTO"
+      },
+      "geometry": {
+        "coordinates": [
+           41.545,
+           39.0661
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "AYT"
+      },
+      "geometry": {
+        "coordinates": [
+           30.7944,
+           36.9206
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ATKAN"
+      },
+      "geometry": {
+        "coordinates": [
+           27.8494,
+           39.52
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NIVAX"
+      },
+      "geometry": {
+        "coordinates": [
+           39.6342,
+           41.4892
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BALAX"
+      },
+      "geometry": {
+        "coordinates": [
+           33.7808,
+           39.4575
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NEGOL"
+      },
+      "geometry": {
+        "coordinates": [
+           41.0792,
+           39.4764
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVGEG"
+      },
+      "geometry": {
+        "coordinates": [
+           31.1075,
+           42.4572
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ABISI"
+      },
+      "geometry": {
+        "coordinates": [
+           31.9525,
+           40.3628
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GEM"
+      },
+      "geometry": {
+        "coordinates": [
+           36.0286,
+           39.1542
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TELVO"
+      },
+      "geometry": {
+        "coordinates": [
+           32.9217,
+           39.3711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ODERO"
+      },
+      "geometry": {
+        "coordinates": [
+           30.2644,
+           42.6106
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SITRU"
+      },
+      "geometry": {
+        "coordinates": [
+           26.2994,
+           38.1072
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ODMAX"
+      },
+      "geometry": {
+        "coordinates": [
+           31.4031,
+           42.1211
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NODKO"
+      },
+      "geometry": {
+        "coordinates": [
+           28.2686,
+           38.2197
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KOZLU"
+      },
+      "geometry": {
+        "coordinates": [
+           30.0744,
+           37.4972
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DAMLA"
+      },
+      "geometry": {
+        "coordinates": [
+           31.0911,
+           37.3614
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "HISAR"
+      },
+      "geometry": {
+        "coordinates": [
+           31.5411,
+           38.1156
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RUVOM"
+      },
+      "geometry": {
+        "coordinates": [
+           34.3933,
+           42.2936
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MERAM"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2869,
+           36.0364
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RAKUR"
+      },
+      "geometry": {
+        "coordinates": [
+           31.9478,
+           42.7989
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OTSAN"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3314,
+           40.7106
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SONUP"
+      },
+      "geometry": {
+        "coordinates": [
+           28.5,
+           37.4897
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MRD"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6386,
+           37.2278
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UMDOT"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2869,
+           36.3825
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NESET"
+      },
+      "geometry": {
+        "coordinates": [
+           29.1197,
+           38.6314
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UREBO"
+      },
+      "geometry": {
+        "coordinates": [
+           37.1442,
+           38.7894
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OLPOT"
+      },
+      "geometry": {
+        "coordinates": [
+           36.3606,
+           39.8611
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SARIZ"
+      },
+      "geometry": {
+        "coordinates": [
+           35.3786,
+           39.0411
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BELSU"
+      },
+      "geometry": {
+        "coordinates": [
+           34.2864,
+           39.1308
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BADOX"
+      },
+      "geometry": {
+        "coordinates": [
+           33.9753,
+           39.3319
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TOLUN"
+      },
+      "geometry": {
+        "coordinates": [
+           38.79,
+           41.34
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GULMO"
+      },
+      "geometry": {
+        "coordinates": [
+           36.7333,
+           42.0042
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KEKIK"
+      },
+      "geometry": {
+        "coordinates": [
+           28.3678,
+           37.0786
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVPUV"
+      },
+      "geometry": {
+        "coordinates": [
+           32.7594,
+           41.8003
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TAVUS"
+      },
+      "geometry": {
+        "coordinates": [
+           41.7358,
+           39.8697
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OTLUG"
+      },
+      "geometry": {
+        "coordinates": [
+           41.5122,
+           39.1536
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BASMU"
+      },
+      "geometry": {
+        "coordinates": [
+           30.5425,
+           40.6667
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "REMPO"
+      },
+      "geometry": {
+        "coordinates": [
+           36.4722,
+           37.66
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUMER"
+      },
+      "geometry": {
+        "coordinates": [
+           29.4703,
+           38.6656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BABLI"
+      },
+      "geometry": {
+        "coordinates": [
+           36.8631,
+           36.9533
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARKIN"
+      },
+      "geometry": {
+        "coordinates": [
+           39.9167,
+           39.9514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RIMBO"
+      },
+      "geometry": {
+        "coordinates": [
+           28.5522,
+           41.3808
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RAVLI"
+      },
+      "geometry": {
+        "coordinates": [
+           41.3922,
+           39.4769
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAVTI"
+      },
+      "geometry": {
+        "coordinates": [
+           40.2547,
+           40.6628
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SEHIR"
+      },
+      "geometry": {
+        "coordinates": [
+           32.2036,
+           37.6517
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SULAK"
+      },
+      "geometry": {
+        "coordinates": [
+           36.2867,
+           37.8942
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DAL"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7822,
+           36.6894
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "UPKUL"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3175,
+           38.5317
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASKER"
+      },
+      "geometry": {
+        "coordinates": [
+           38.7847,
+           38.2769
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TEVDA"
+      },
+      "geometry": {
+        "coordinates": [
+           35.0667,
+           38.3728
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DEVMU"
+      },
+      "geometry": {
+        "coordinates": [
+           32.4608,
+           41.8722
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YKV"
+      },
+      "geometry": {
+        "coordinates": [
+           44.2425,
+           37.5492
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DEREL"
+      },
+      "geometry": {
+        "coordinates": [
+           32.1933,
+           40.7139
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ETVER"
+      },
+      "geometry": {
+        "coordinates": [
+           34.2272,
+           38.6158
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ORVOR"
+      },
+      "geometry": {
+        "coordinates": [
+           35.6903,
+           41.0225
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RAVGO"
+      },
+      "geometry": {
+        "coordinates": [
+           30.5008,
+           39.5469
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NONDU"
+      },
+      "geometry": {
+        "coordinates": [
+           26.675,
+           41.13
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OSKOV"
+      },
+      "geometry": {
+        "coordinates": [
+           38.1575,
+           37.0711
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LASON"
+      },
+      "geometry": {
+        "coordinates": [
+           27.4528,
+           38.3847
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVKIT"
+      },
+      "geometry": {
+        "coordinates": [
+           33.7544,
+           36.2611
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KINIK"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9994,
+           38.7322
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ASBOM"
+      },
+      "geometry": {
+        "coordinates": [
+           37.0414,
+           37.2589
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ULMAR"
+      },
+      "geometry": {
+        "coordinates": [
+           27.1869,
+           41.2111
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVNOT"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9706,
+           40.7844
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAFRA"
+      },
+      "geometry": {
+        "coordinates": [
+           35.9664,
+           41.5086
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OSVEL"
+      },
+      "geometry": {
+        "coordinates": [
+           31.0186,
+           38.4819
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DEDIM"
+      },
+      "geometry": {
+        "coordinates": [
+           29.2686,
+           39.3972
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KULAR"
+      },
+      "geometry": {
+        "coordinates": [
+           28.6328,
+           38.5822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERSEN"
+      },
+      "geometry": {
+        "coordinates": [
+           30.6661,
+           40.8656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "FIRAT"
+      },
+      "geometry": {
+        "coordinates": [
+           37.6542,
+           37.1389
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SOVAP"
+      },
+      "geometry": {
+        "coordinates": [
+           36.7961,
+           42.2497
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GAYEM"
+      },
+      "geometry": {
+        "coordinates": [
+           29.63,
+           41.0458
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KARGI"
+      },
+      "geometry": {
+        "coordinates": [
+           30.0544,
+           39.4292
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TBN"
+      },
+      "geometry": {
+        "coordinates": [
+           39.7956,
+           40.9953
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TURNA"
+      },
+      "geometry": {
+        "coordinates": [
+           41.3578,
+           39.5586
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "FENER"
+      },
+      "geometry": {
+        "coordinates": [
+           28.3578,
+           41.2864
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERKUK"
+      },
+      "geometry": {
+        "coordinates": [
+           32.9431,
+           39.2153
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MUS"
+      },
+      "geometry": {
+        "coordinates": [
+           41.6608,
+           38.7494
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "MUT"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2917,
+           36.8628
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "IMR"
+      },
+      "geometry": {
+        "coordinates": [
+           27.0072,
+           38.3172
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GUMRU"
+      },
+      "geometry": {
+        "coordinates": [
+           31.3494,
+           41.5489
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NINVA"
+      },
+      "geometry": {
+        "coordinates": [
+           43.2167,
+           37.35
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ABSAX"
+      },
+      "geometry": {
+        "coordinates": [
+           32.5836,
+           42.3336
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "CAY"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0444,
+           41.5139
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "INB"
+      },
+      "geometry": {
+        "coordinates": [
+           33.7061,
+           41.9514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BATNU"
+      },
+      "geometry": {
+        "coordinates": [
+           32.7239,
+           36.1608
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ROLIN"
+      },
+      "geometry": {
+        "coordinates": [
+           40.6564,
+           41.7992
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "REBTA"
+      },
+      "geometry": {
+        "coordinates": [
+           33.1694,
+           37.6867
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "APVAS"
+      },
+      "geometry": {
+        "coordinates": [
+           36.6683,
+           40.7642
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LETBU"
+      },
+      "geometry": {
+        "coordinates": [
+           32.0692,
+           41.1325
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LUMEX"
+      },
+      "geometry": {
+        "coordinates": [
+           42.4692,
+           40.6525
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SISPI"
+      },
+      "geometry": {
+        "coordinates": [
+           29.87,
+           39.9147
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BRONZ"
+      },
+      "geometry": {
+        "coordinates": [
+           30.3494,
+           37.2697
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DESEM"
+      },
+      "geometry": {
+        "coordinates": [
+           30.0019,
+           38.1522
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KONUK"
+      },
+      "geometry": {
+        "coordinates": [
+           39.4681,
+           39.5117
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ALPAY"
+      },
+      "geometry": {
+        "coordinates": [
+           29.9994,
+           36.8322
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TUNCA"
+      },
+      "geometry": {
+        "coordinates": [
+           31.0311,
+           41.2328
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OBRUK"
+      },
+      "geometry": {
+        "coordinates": [
+           33.1189,
+           38.0239
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RERVA"
+      },
+      "geometry": {
+        "coordinates": [
+           33.8925,
+           42.3597
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DIGBO"
+      },
+      "geometry": {
+        "coordinates": [
+           28.4044,
+           41.4936
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SEHER"
+      },
+      "geometry": {
+        "coordinates": [
+           38.5736,
+           40.5061
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PIDEV"
+      },
+      "geometry": {
+        "coordinates": [
+           31.5333,
+           37.0942
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "TEKMI"
+      },
+      "geometry": {
+        "coordinates": [
+           38.3494,
+           37.9589
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KUMAN"
+      },
+      "geometry": {
+        "coordinates": [
+           27.8328,
+           38.0317
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ALTIN"
+      },
+      "geometry": {
+        "coordinates": [
+           29.4092,
+           36.7656
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BENTA"
+      },
+      "geometry": {
+        "coordinates": [
+           33.9558,
+           40.1514
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GKA"
+      },
+      "geometry": {
+        "coordinates": [
+           25.9236,
+           40.1797
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "YUNUS"
+      },
+      "geometry": {
+        "coordinates": [
+           27.8833,
+           36.7097
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GULRA"
+      },
+      "geometry": {
+        "coordinates": [
+           38.2794,
+           40.3797
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ERTEK"
+      },
+      "geometry": {
+        "coordinates": [
+           39.2994,
+           38.9564
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "PESOX"
+      },
+      "geometry": {
+        "coordinates": [
+           30.0333,
+           39.04
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LEKRO"
+      },
+      "geometry": {
+        "coordinates": [
+           40.9714,
+           37.2772
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "GOLDO"
+      },
+      "geometry": {
+        "coordinates": [
+           26.2494,
+           40.8822
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SONSU"
+      },
+      "geometry": {
+        "coordinates": [
+           38.3867,
+           37.88
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "LAVTA"
+      },
+      "geometry": {
+        "coordinates": [
+           28.7033,
+           37.7217
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "SUNAT"
+      },
+      "geometry": {
+        "coordinates": [
+           29.2497,
+           37.2519
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BAG"
+      },
+      "geometry": {
+        "coordinates": [
+           32.8103,
+           40.0697
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RIXUB"
+      },
+      "geometry": {
+        "coordinates": [
+           30.6689,
+           42.2872
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OKMOT"
+      },
+      "geometry": {
+        "coordinates": [
+           31.7908,
+           38.5106
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "OTKOT"
+      },
+      "geometry": {
+        "coordinates": [
+           34.4328,
+           42.1114
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KSR"
+      },
+      "geometry": {
+        "coordinates": [
+           35.5217,
+           38.7756
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DEN"
+      },
+      "geometry": {
+        "coordinates": [
+           28.6028,
+           38.5781
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "EVLIG"
+      },
+      "geometry": {
+        "coordinates": [
+           31.4831,
+           40.4661
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NUGBA"
+      },
+      "geometry": {
+        "coordinates": [
+           30.6742,
+           41.5911
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KST"
+      },
+      "geometry": {
+        "coordinates": [
+           33.8,
+           41.3503
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ENESU"
+      },
+      "geometry": {
+        "coordinates": [
+           27.3306,
+           41.4753
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ARSUG"
+      },
+      "geometry": {
+        "coordinates": [
+           38.2722,
+           41.1331
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "RAHMA"
+      },
+      "geometry": {
+        "coordinates": [
+           42.5081,
+           40.3733
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "ODALI"
+      },
+      "geometry": {
+        "coordinates": [
+           38.15,
+           40.3278
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "DOREN"
+      },
+      "geometry": {
+        "coordinates": [
+           33.2833,
+           35.9333
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "BIRPU"
+      },
+      "geometry": {
+        "coordinates": [
+           29.1747,
+           36.3189
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "NESIL"
+      },
+      "geometry": {
+        "coordinates": [
+           29.7231,
+           37.3431
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "VEXOL"
+      },
+      "geometry": {
+        "coordinates": [
+           26.1994,
+           38.3489
+          ],
+          "type": "Point"
+      }
+    },{
+      "type": "Feature",
+      "properties": {
+        "kind": "airwaypoint",
+        "name": "KTH"
+      },
+      "geometry": {
+        "coordinates": [
+           30.1367,
+           39.1081
+          ],
+          "type": "Point"
+      }
+    }]
+}

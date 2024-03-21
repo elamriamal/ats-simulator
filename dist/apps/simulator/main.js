@@ -3427,7 +3427,6 @@ var atan = Math.atan;
 var atan2 = Math.atan2;
 var cos = Math.cos;
 var exp = Math.exp;
-var hypot = Math.hypot;
 var log = Math.log;
 var sin = Math.sin;
 var sign = Math.sign || function(x2) {
@@ -3542,119 +3541,6 @@ function cartesianScale(vector, k2) {
 function cartesianNormalizeInPlace(d3) {
   var l3 = sqrt(d3[0] * d3[0] + d3[1] * d3[1] + d3[2] * d3[2]);
   d3[0] /= l3, d3[1] /= l3, d3[2] /= l3;
-}
-
-// node_modules/d3-geo/src/centroid.js
-var W0;
-var W1;
-var X0;
-var Y0;
-var Z0;
-var X1;
-var Y1;
-var Z1;
-var X2;
-var Y2;
-var Z2;
-var lambda00;
-var phi00;
-var x0;
-var y0;
-var z0;
-var centroidStream = {
-  sphere: noop2,
-  point: centroidPoint,
-  lineStart: centroidLineStart,
-  lineEnd: centroidLineEnd,
-  polygonStart: function() {
-    centroidStream.lineStart = centroidRingStart;
-    centroidStream.lineEnd = centroidRingEnd;
-  },
-  polygonEnd: function() {
-    centroidStream.lineStart = centroidLineStart;
-    centroidStream.lineEnd = centroidLineEnd;
-  }
-};
-function centroidPoint(lambda, phi) {
-  lambda *= radians, phi *= radians;
-  var cosPhi = cos(phi);
-  centroidPointCartesian(cosPhi * cos(lambda), cosPhi * sin(lambda), sin(phi));
-}
-function centroidPointCartesian(x2, y3, z) {
-  ++W0;
-  X0 += (x2 - X0) / W0;
-  Y0 += (y3 - Y0) / W0;
-  Z0 += (z - Z0) / W0;
-}
-function centroidLineStart() {
-  centroidStream.point = centroidLinePointFirst;
-}
-function centroidLinePointFirst(lambda, phi) {
-  lambda *= radians, phi *= radians;
-  var cosPhi = cos(phi);
-  x0 = cosPhi * cos(lambda);
-  y0 = cosPhi * sin(lambda);
-  z0 = sin(phi);
-  centroidStream.point = centroidLinePoint;
-  centroidPointCartesian(x0, y0, z0);
-}
-function centroidLinePoint(lambda, phi) {
-  lambda *= radians, phi *= radians;
-  var cosPhi = cos(phi), x2 = cosPhi * cos(lambda), y3 = cosPhi * sin(lambda), z = sin(phi), w2 = atan2(sqrt((w2 = y0 * z - z0 * y3) * w2 + (w2 = z0 * x2 - x0 * z) * w2 + (w2 = x0 * y3 - y0 * x2) * w2), x0 * x2 + y0 * y3 + z0 * z);
-  W1 += w2;
-  X1 += w2 * (x0 + (x0 = x2));
-  Y1 += w2 * (y0 + (y0 = y3));
-  Z1 += w2 * (z0 + (z0 = z));
-  centroidPointCartesian(x0, y0, z0);
-}
-function centroidLineEnd() {
-  centroidStream.point = centroidPoint;
-}
-function centroidRingStart() {
-  centroidStream.point = centroidRingPointFirst;
-}
-function centroidRingEnd() {
-  centroidRingPoint(lambda00, phi00);
-  centroidStream.point = centroidPoint;
-}
-function centroidRingPointFirst(lambda, phi) {
-  lambda00 = lambda, phi00 = phi;
-  lambda *= radians, phi *= radians;
-  centroidStream.point = centroidRingPoint;
-  var cosPhi = cos(phi);
-  x0 = cosPhi * cos(lambda);
-  y0 = cosPhi * sin(lambda);
-  z0 = sin(phi);
-  centroidPointCartesian(x0, y0, z0);
-}
-function centroidRingPoint(lambda, phi) {
-  lambda *= radians, phi *= radians;
-  var cosPhi = cos(phi), x2 = cosPhi * cos(lambda), y3 = cosPhi * sin(lambda), z = sin(phi), cx = y0 * z - z0 * y3, cy = z0 * x2 - x0 * z, cz = x0 * y3 - y0 * x2, m3 = hypot(cx, cy, cz), w2 = asin(m3), v2 = m3 && -w2 / m3;
-  X2.add(v2 * cx);
-  Y2.add(v2 * cy);
-  Z2.add(v2 * cz);
-  W1 += w2;
-  X1 += w2 * (x0 + (x0 = x2));
-  Y1 += w2 * (y0 + (y0 = y3));
-  Z1 += w2 * (z0 + (z0 = z));
-  centroidPointCartesian(x0, y0, z0);
-}
-function centroid_default(object) {
-  W0 = W1 = X0 = Y0 = Z0 = X1 = Y1 = Z1 = 0;
-  X2 = new Adder();
-  Y2 = new Adder();
-  Z2 = new Adder();
-  stream_default(object, centroidStream);
-  var x2 = +X2, y3 = +Y2, z = +Z2, m3 = hypot(x2, y3, z);
-  if (m3 < epsilon22) {
-    x2 = X1, y3 = Y1, z = Z1;
-    if (W1 < epsilon)
-      x2 = X0, y3 = Y0, z = Z0;
-    m3 = hypot(x2, y3, z);
-    if (m3 < epsilon22)
-      return [NaN, NaN];
-  }
-  return [atan2(y3, x2) * degrees2, asin(z / m3) * degrees2];
 }
 
 // node_modules/d3-geo/src/compose.js
@@ -4192,9 +4078,9 @@ function circle_default(radius) {
 }
 
 // node_modules/d3-geo/src/clip/line.js
-function line_default(a3, b3, x06, y06, x12, y12) {
+function line_default(a3, b3, x05, y05, x12, y12) {
   var ax = a3[0], ay = a3[1], bx = b3[0], by = b3[1], t0 = 0, t1 = 1, dx = bx - ax, dy = by - ay, r6;
-  r6 = x06 - ax;
+  r6 = x05 - ax;
   if (!dx && r6 > 0)
     return;
   r6 /= dx;
@@ -4224,7 +4110,7 @@ function line_default(a3, b3, x06, y06, x12, y12) {
     if (r6 < t1)
       t1 = r6;
   }
-  r6 = y06 - ay;
+  r6 = y05 - ay;
   if (!dy && r6 > 0)
     return;
   r6 /= dy;
@@ -4264,22 +4150,22 @@ function line_default(a3, b3, x06, y06, x12, y12) {
 // node_modules/d3-geo/src/clip/rectangle.js
 var clipMax = 1e9;
 var clipMin = -clipMax;
-function clipRectangle(x06, y06, x12, y12) {
+function clipRectangle(x05, y05, x12, y12) {
   function visible(x2, y3) {
-    return x06 <= x2 && x2 <= x12 && y06 <= y3 && y3 <= y12;
+    return x05 <= x2 && x2 <= x12 && y05 <= y3 && y3 <= y12;
   }
   function interpolate(from, to, direction, stream) {
     var a3 = 0, a1 = 0;
     if (from == null || (a3 = corner(from, direction)) !== (a1 = corner(to, direction)) || comparePoint(from, to) < 0 ^ direction > 0) {
       do
-        stream.point(a3 === 0 || a3 === 3 ? x06 : x12, a3 > 1 ? y12 : y06);
+        stream.point(a3 === 0 || a3 === 3 ? x05 : x12, a3 > 1 ? y12 : y05);
       while ((a3 = (a3 + direction + 4) % 4) !== a1);
     } else {
       stream.point(to[0], to[1]);
     }
   }
   function corner(p3, direction) {
-    return abs2(p3[0] - x06) < epsilon ? direction > 0 ? 0 : 3 : abs2(p3[0] - x12) < epsilon ? direction > 0 ? 2 : 1 : abs2(p3[1] - y06) < epsilon ? direction > 0 ? 1 : 0 : direction > 0 ? 3 : 2;
+    return abs2(p3[0] - x05) < epsilon ? direction > 0 ? 0 : 3 : abs2(p3[0] - x12) < epsilon ? direction > 0 ? 2 : 1 : abs2(p3[1] - y05) < epsilon ? direction > 0 ? 1 : 0 : direction > 0 ? 3 : 2;
   }
   function compareIntersection2(a3, b3) {
     return comparePoint(a3.x, b3.x);
@@ -4307,10 +4193,10 @@ function clipRectangle(x06, y06, x12, y12) {
         for (var ring2 = polygon[i3], j = 1, m3 = ring2.length, point2 = ring2[0], a0, a1, b0 = point2[0], b1 = point2[1]; j < m3; ++j) {
           a0 = b0, a1 = b1, point2 = ring2[j], b0 = point2[0], b1 = point2[1];
           if (a1 <= y12) {
-            if (b1 > y12 && (b0 - a0) * (y12 - a1) > (b1 - a1) * (x06 - a0))
+            if (b1 > y12 && (b0 - a0) * (y12 - a1) > (b1 - a1) * (x05 - a0))
               ++winding;
           } else {
-            if (b1 <= y12 && (b0 - a0) * (y12 - a1) < (b1 - a1) * (x06 - a0))
+            if (b1 <= y12 && (b0 - a0) * (y12 - a1) < (b1 - a1) * (x05 - a0))
               --winding;
           }
         }
@@ -4371,7 +4257,7 @@ function clipRectangle(x06, y06, x12, y12) {
           activeStream.point(x2, y3);
         else {
           var a3 = [x_ = Math.max(clipMin, Math.min(clipMax, x_)), y_ = Math.max(clipMin, Math.min(clipMax, y_))], b3 = [x2 = Math.max(clipMin, Math.min(clipMax, x2)), y3 = Math.max(clipMin, Math.min(clipMax, y3))];
-          if (line_default(a3, b3, x06, y06, x12, y12)) {
+          if (line_default(a3, b3, x05, y05, x12, y12)) {
             if (!v_) {
               activeStream.lineStart();
               activeStream.point(a3[0], a3[1]);
@@ -4401,8 +4287,8 @@ var areaSum = new Adder();
 var areaRingSum = new Adder();
 var x00;
 var y00;
-var x02;
-var y02;
+var x0;
+var y0;
 var areaStream = {
   point: noop2,
   lineStart: noop2,
@@ -4427,11 +4313,11 @@ function areaRingStart() {
 }
 function areaPointFirst(x2, y3) {
   areaStream.point = areaPoint;
-  x00 = x02 = x2, y00 = y02 = y3;
+  x00 = x0 = x2, y00 = y0 = y3;
 }
 function areaPoint(x2, y3) {
-  areaRingSum.add(y02 * x2 - x02 * y3);
-  x02 = x2, y02 = y3;
+  areaRingSum.add(y0 * x2 - x0 * y3);
+  x0 = x2, y0 = y3;
 }
 function areaRingEnd() {
   areaPoint(x00, y00);
@@ -4439,9 +4325,9 @@ function areaRingEnd() {
 var area_default = areaStream;
 
 // node_modules/d3-geo/src/path/bounds.js
-var x03 = Infinity;
-var y03 = x03;
-var x1 = -x03;
+var x02 = Infinity;
+var y02 = x02;
+var x1 = -x02;
 var y1 = x1;
 var boundsStream = {
   point: boundsPoint,
@@ -4450,100 +4336,100 @@ var boundsStream = {
   polygonStart: noop2,
   polygonEnd: noop2,
   result: function() {
-    var bounds = [[x03, y03], [x1, y1]];
-    x1 = y1 = -(y03 = x03 = Infinity);
+    var bounds = [[x02, y02], [x1, y1]];
+    x1 = y1 = -(y02 = x02 = Infinity);
     return bounds;
   }
 };
 function boundsPoint(x2, y3) {
-  if (x2 < x03)
-    x03 = x2;
+  if (x2 < x02)
+    x02 = x2;
   if (x2 > x1)
     x1 = x2;
-  if (y3 < y03)
-    y03 = y3;
+  if (y3 < y02)
+    y02 = y3;
   if (y3 > y1)
     y1 = y3;
 }
 var bounds_default = boundsStream;
 
 // node_modules/d3-geo/src/path/centroid.js
-var X02 = 0;
-var Y02 = 0;
-var Z02 = 0;
-var X12 = 0;
-var Y12 = 0;
-var Z12 = 0;
-var X22 = 0;
-var Y22 = 0;
-var Z22 = 0;
+var X0 = 0;
+var Y0 = 0;
+var Z0 = 0;
+var X1 = 0;
+var Y1 = 0;
+var Z1 = 0;
+var X2 = 0;
+var Y2 = 0;
+var Z2 = 0;
 var x002;
 var y002;
-var x04;
-var y04;
-var centroidStream2 = {
-  point: centroidPoint2,
-  lineStart: centroidLineStart2,
-  lineEnd: centroidLineEnd2,
+var x03;
+var y03;
+var centroidStream = {
+  point: centroidPoint,
+  lineStart: centroidLineStart,
+  lineEnd: centroidLineEnd,
   polygonStart: function() {
-    centroidStream2.lineStart = centroidRingStart2;
-    centroidStream2.lineEnd = centroidRingEnd2;
+    centroidStream.lineStart = centroidRingStart;
+    centroidStream.lineEnd = centroidRingEnd;
   },
   polygonEnd: function() {
-    centroidStream2.point = centroidPoint2;
-    centroidStream2.lineStart = centroidLineStart2;
-    centroidStream2.lineEnd = centroidLineEnd2;
+    centroidStream.point = centroidPoint;
+    centroidStream.lineStart = centroidLineStart;
+    centroidStream.lineEnd = centroidLineEnd;
   },
   result: function() {
-    var centroid = Z22 ? [X22 / Z22, Y22 / Z22] : Z12 ? [X12 / Z12, Y12 / Z12] : Z02 ? [X02 / Z02, Y02 / Z02] : [NaN, NaN];
-    X02 = Y02 = Z02 = X12 = Y12 = Z12 = X22 = Y22 = Z22 = 0;
+    var centroid = Z2 ? [X2 / Z2, Y2 / Z2] : Z1 ? [X1 / Z1, Y1 / Z1] : Z0 ? [X0 / Z0, Y0 / Z0] : [NaN, NaN];
+    X0 = Y0 = Z0 = X1 = Y1 = Z1 = X2 = Y2 = Z2 = 0;
     return centroid;
   }
 };
-function centroidPoint2(x2, y3) {
-  X02 += x2;
-  Y02 += y3;
-  ++Z02;
+function centroidPoint(x2, y3) {
+  X0 += x2;
+  Y0 += y3;
+  ++Z0;
 }
-function centroidLineStart2() {
-  centroidStream2.point = centroidPointFirstLine;
+function centroidLineStart() {
+  centroidStream.point = centroidPointFirstLine;
 }
 function centroidPointFirstLine(x2, y3) {
-  centroidStream2.point = centroidPointLine;
-  centroidPoint2(x04 = x2, y04 = y3);
+  centroidStream.point = centroidPointLine;
+  centroidPoint(x03 = x2, y03 = y3);
 }
 function centroidPointLine(x2, y3) {
-  var dx = x2 - x04, dy = y3 - y04, z = sqrt(dx * dx + dy * dy);
-  X12 += z * (x04 + x2) / 2;
-  Y12 += z * (y04 + y3) / 2;
-  Z12 += z;
-  centroidPoint2(x04 = x2, y04 = y3);
+  var dx = x2 - x03, dy = y3 - y03, z = sqrt(dx * dx + dy * dy);
+  X1 += z * (x03 + x2) / 2;
+  Y1 += z * (y03 + y3) / 2;
+  Z1 += z;
+  centroidPoint(x03 = x2, y03 = y3);
 }
-function centroidLineEnd2() {
-  centroidStream2.point = centroidPoint2;
+function centroidLineEnd() {
+  centroidStream.point = centroidPoint;
 }
-function centroidRingStart2() {
-  centroidStream2.point = centroidPointFirstRing;
+function centroidRingStart() {
+  centroidStream.point = centroidPointFirstRing;
 }
-function centroidRingEnd2() {
+function centroidRingEnd() {
   centroidPointRing(x002, y002);
 }
 function centroidPointFirstRing(x2, y3) {
-  centroidStream2.point = centroidPointRing;
-  centroidPoint2(x002 = x04 = x2, y002 = y04 = y3);
+  centroidStream.point = centroidPointRing;
+  centroidPoint(x002 = x03 = x2, y002 = y03 = y3);
 }
 function centroidPointRing(x2, y3) {
-  var dx = x2 - x04, dy = y3 - y04, z = sqrt(dx * dx + dy * dy);
-  X12 += z * (x04 + x2) / 2;
-  Y12 += z * (y04 + y3) / 2;
-  Z12 += z;
-  z = y04 * x2 - x04 * y3;
-  X22 += z * (x04 + x2);
-  Y22 += z * (y04 + y3);
-  Z22 += z * 3;
-  centroidPoint2(x04 = x2, y04 = y3);
+  var dx = x2 - x03, dy = y3 - y03, z = sqrt(dx * dx + dy * dy);
+  X1 += z * (x03 + x2) / 2;
+  Y1 += z * (y03 + y3) / 2;
+  Z1 += z;
+  z = y03 * x2 - x03 * y3;
+  X2 += z * (x03 + x2);
+  Y2 += z * (y03 + y3);
+  Z2 += z * 3;
+  centroidPoint(x03 = x2, y03 = y3);
 }
-var centroid_default2 = centroidStream2;
+var centroid_default = centroidStream;
 
 // node_modules/d3-geo/src/path/context.js
 function PathContext(context) {
@@ -4594,8 +4480,8 @@ var lengthSum = new Adder();
 var lengthRing;
 var x003;
 var y003;
-var x05;
-var y05;
+var x04;
+var y04;
 var lengthStream = {
   point: noop2,
   lineStart: function() {
@@ -4620,12 +4506,12 @@ var lengthStream = {
 };
 function lengthPointFirst(x2, y3) {
   lengthStream.point = lengthPoint;
-  x003 = x05 = x2, y003 = y05 = y3;
+  x003 = x04 = x2, y003 = y04 = y3;
 }
 function lengthPoint(x2, y3) {
-  x05 -= x2, y05 -= y3;
-  lengthSum.add(sqrt(x05 * x05 + y05 * y05));
-  x05 = x2, y05 = y3;
+  x04 -= x2, y04 -= y3;
+  lengthSum.add(sqrt(x04 * x04 + y04 * y04));
+  x04 = x2, y04 = y3;
 }
 var measure_default = lengthStream;
 
@@ -4743,8 +4629,8 @@ function path_default(projection2, context) {
     return bounds_default.result();
   };
   path.centroid = function(object) {
-    stream_default(object, projectionStream(centroid_default2));
-    return centroid_default2.result();
+    stream_default(object, projectionStream(centroid_default));
+    return centroid_default.result();
   };
   path.projection = function(_2) {
     if (!arguments.length)
@@ -4867,19 +4753,19 @@ function resampleNone(project) {
   });
 }
 function resample(project, delta2) {
-  function resampleLineTo(x06, y06, lambda0, a0, b0, c0, x12, y12, lambda1, a1, b1, c1, depth, stream) {
-    var dx = x12 - x06, dy = y12 - y06, d22 = dx * dx + dy * dy;
+  function resampleLineTo(x05, y05, lambda0, a0, b0, c0, x12, y12, lambda1, a1, b1, c1, depth, stream) {
+    var dx = x12 - x05, dy = y12 - y05, d22 = dx * dx + dy * dy;
     if (d22 > 4 * delta2 && depth--) {
-      var a3 = a0 + a1, b3 = b0 + b1, c4 = c0 + c1, m3 = sqrt(a3 * a3 + b3 * b3 + c4 * c4), phi2 = asin(c4 /= m3), lambda2 = abs2(abs2(c4) - 1) < epsilon || abs2(lambda0 - lambda1) < epsilon ? (lambda0 + lambda1) / 2 : atan2(b3, a3), p3 = project(lambda2, phi2), x2 = p3[0], y22 = p3[1], dx2 = x2 - x06, dy2 = y22 - y06, dz = dy * dx2 - dx * dy2;
+      var a3 = a0 + a1, b3 = b0 + b1, c4 = c0 + c1, m3 = sqrt(a3 * a3 + b3 * b3 + c4 * c4), phi2 = asin(c4 /= m3), lambda2 = abs2(abs2(c4) - 1) < epsilon || abs2(lambda0 - lambda1) < epsilon ? (lambda0 + lambda1) / 2 : atan2(b3, a3), p3 = project(lambda2, phi2), x2 = p3[0], y22 = p3[1], dx2 = x2 - x05, dy2 = y22 - y05, dz = dy * dx2 - dx * dy2;
       if (dz * dz / d22 > delta2 || abs2((dx * dx2 + dy * dy2) / d22 - 0.5) > 0.3 || a0 * a1 + b0 * b1 + c0 * c1 < cosMinDistance) {
-        resampleLineTo(x06, y06, lambda0, a0, b0, c0, x2, y22, lambda2, a3 /= m3, b3 /= m3, c4, depth, stream);
+        resampleLineTo(x05, y05, lambda0, a0, b0, c0, x2, y22, lambda2, a3 /= m3, b3 /= m3, c4, depth, stream);
         stream.point(x2, y22);
         resampleLineTo(x2, y22, lambda2, a3, b3, c4, x12, y12, lambda1, a1, b1, c1, depth, stream);
       }
     }
   }
   return function(stream) {
-    var lambda002, x004, y004, a00, b00, c00, lambda0, x06, y06, a0, b0, c0;
+    var lambda00, x004, y004, a00, b00, c00, lambda0, x05, y05, a0, b0, c0;
     var resampleStream = {
       point,
       lineStart,
@@ -4898,14 +4784,14 @@ function resample(project, delta2) {
       stream.point(x2[0], x2[1]);
     }
     function lineStart() {
-      x06 = NaN;
+      x05 = NaN;
       resampleStream.point = linePoint;
       stream.lineStart();
     }
     function linePoint(lambda, phi) {
       var c4 = cartesian([lambda, phi]), p3 = project(lambda, phi);
-      resampleLineTo(x06, y06, lambda0, a0, b0, c0, x06 = p3[0], y06 = p3[1], lambda0 = lambda, a0 = c4[0], b0 = c4[1], c0 = c4[2], maxDepth, stream);
-      stream.point(x06, y06);
+      resampleLineTo(x05, y05, lambda0, a0, b0, c0, x05 = p3[0], y05 = p3[1], lambda0 = lambda, a0 = c4[0], b0 = c4[1], c0 = c4[2], maxDepth, stream);
+      stream.point(x05, y05);
     }
     function lineEnd() {
       resampleStream.point = point;
@@ -4917,11 +4803,11 @@ function resample(project, delta2) {
       resampleStream.lineEnd = ringEnd;
     }
     function ringPoint(lambda, phi) {
-      linePoint(lambda002 = lambda, phi), x004 = x06, y004 = y06, a00 = a0, b00 = b0, c00 = c0;
+      linePoint(lambda00 = lambda, phi), x004 = x05, y004 = y05, a00 = a0, b00 = b0, c00 = c0;
       resampleStream.point = linePoint;
     }
     function ringEnd() {
-      resampleLineTo(x06, y06, lambda0, a0, b0, c0, x004, y004, lambda002, a00, b00, c00, maxDepth, stream);
+      resampleLineTo(x05, y05, lambda0, a0, b0, c0, x004, y004, lambda00, a00, b00, c00, maxDepth, stream);
       resampleStream.lineEnd = lineEnd;
       lineEnd();
     }
@@ -4974,7 +4860,7 @@ function projection(project) {
   })();
 }
 function projectionMutator(projectAt) {
-  var project, k2 = 150, x2 = 480, y3 = 250, lambda = 0, phi = 0, deltaLambda = 0, deltaPhi = 0, deltaGamma = 0, rotate, alpha = 0, sx = 1, sy = 1, theta = null, preclip = antimeridian_default, x06 = null, y06, x12, y12, postclip = identity_default, delta2 = 0.5, projectResample, projectTransform, projectRotateTransform, cache, cacheStream;
+  var project, k2 = 150, x2 = 480, y3 = 250, lambda = 0, phi = 0, deltaLambda = 0, deltaPhi = 0, deltaGamma = 0, rotate, alpha = 0, sx = 1, sy = 1, theta = null, preclip = antimeridian_default, x05 = null, y05, x12, y12, postclip = identity_default, delta2 = 0.5, projectResample, projectTransform, projectRotateTransform, cache, cacheStream;
   function projection2(point) {
     return projectRotateTransform(point[0] * radians, point[1] * radians);
   }
@@ -4989,13 +4875,13 @@ function projectionMutator(projectAt) {
     return arguments.length ? (preclip = _2, theta = void 0, reset()) : preclip;
   };
   projection2.postclip = function(_2) {
-    return arguments.length ? (postclip = _2, x06 = y06 = x12 = y12 = null, reset()) : postclip;
+    return arguments.length ? (postclip = _2, x05 = y05 = x12 = y12 = null, reset()) : postclip;
   };
   projection2.clipAngle = function(_2) {
     return arguments.length ? (preclip = +_2 ? circle_default(theta = _2 * radians) : (theta = null, antimeridian_default), reset()) : theta * degrees2;
   };
   projection2.clipExtent = function(_2) {
-    return arguments.length ? (postclip = _2 == null ? (x06 = y06 = x12 = y12 = null, identity_default) : clipRectangle(x06 = +_2[0][0], y06 = +_2[0][1], x12 = +_2[1][0], y12 = +_2[1][1]), reset()) : x06 == null ? null : [[x06, y06], [x12, y12]];
+    return arguments.length ? (postclip = _2 == null ? (x05 = y05 = x12 = y12 = null, identity_default) : clipRectangle(x05 = +_2[0][0], y05 = +_2[0][1], x12 = +_2[1][0], y12 = +_2[1][1]), reset()) : x05 == null ? null : [[x05, y05], [x12, y12]];
   };
   projection2.scale = function(_2) {
     return arguments.length ? (k2 = +_2, recenter()) : k2;
@@ -5063,7 +4949,7 @@ function mercator_default() {
   return mercatorProjection(mercatorRaw).scale(961 / tau);
 }
 function mercatorProjection(project) {
-  var m3 = projection(project), center = m3.center, scale = m3.scale, translate = m3.translate, clipExtent = m3.clipExtent, x06 = null, y06, x12, y12;
+  var m3 = projection(project), center = m3.center, scale = m3.scale, translate = m3.translate, clipExtent = m3.clipExtent, x05 = null, y05, x12, y12;
   m3.scale = function(_2) {
     return arguments.length ? (scale(_2), reclip()) : scale();
   };
@@ -5074,11 +4960,11 @@ function mercatorProjection(project) {
     return arguments.length ? (center(_2), reclip()) : center();
   };
   m3.clipExtent = function(_2) {
-    return arguments.length ? (_2 == null ? x06 = y06 = x12 = y12 = null : (x06 = +_2[0][0], y06 = +_2[0][1], x12 = +_2[1][0], y12 = +_2[1][1]), reclip()) : x06 == null ? null : [[x06, y06], [x12, y12]];
+    return arguments.length ? (_2 == null ? x05 = y05 = x12 = y12 = null : (x05 = +_2[0][0], y05 = +_2[0][1], x12 = +_2[1][0], y12 = +_2[1][1]), reclip()) : x05 == null ? null : [[x05, y05], [x12, y12]];
   };
   function reclip() {
     var k2 = pi * scale(), t4 = m3(rotation_default(m3.rotate()).invert([0, 0]));
-    return clipExtent(x06 == null ? [[t4[0] - k2, t4[1] - k2], [t4[0] + k2, t4[1] + k2]] : project === mercatorRaw ? [[Math.max(t4[0] - k2, x06), y06], [Math.min(t4[0] + k2, x12), y12]] : [[x06, Math.max(t4[1] - k2, y06)], [x12, Math.min(t4[1] + k2, y12)]]);
+    return clipExtent(x05 == null ? [[t4[0] - k2, t4[1] - k2], [t4[0] + k2, t4[1] + k2]] : project === mercatorRaw ? [[Math.max(t4[0] - k2, x05), y05], [Math.min(t4[0] + k2, x12), y12]] : [[x05, Math.max(t4[1] - k2, y05)], [x12, Math.min(t4[1] + k2, y12)]]);
   }
   return reclip();
 }
@@ -5353,7 +5239,7 @@ function zoom_default2() {
   function mousedowned(event, ...args) {
     if (touchending || !filter2.apply(this, arguments))
       return;
-    var currentTarget = event.currentTarget, g3 = gesture(this, args, true).event(event), v2 = select_default2(event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true), p3 = pointer_default(event, currentTarget), x06 = event.clientX, y06 = event.clientY;
+    var currentTarget = event.currentTarget, g3 = gesture(this, args, true).event(event), v2 = select_default2(event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true), p3 = pointer_default(event, currentTarget), x05 = event.clientX, y05 = event.clientY;
     nodrag_default(event.view);
     nopropagation2(event);
     g3.mouse = [p3, this.__zoom.invert(p3)];
@@ -5362,7 +5248,7 @@ function zoom_default2() {
     function mousemoved(event2) {
       noevent_default3(event2);
       if (!g3.moved) {
-        var dx = event2.clientX - x06, dy = event2.clientY - y06;
+        var dx = event2.clientX - x05, dy = event2.clientY - y05;
         g3.moved = dx * dx + dy * dy > clickDistance2;
       }
       g3.event(event2).zoom("mouse", constrain(translate(g3.that.__zoom, g3.mouse[0] = pointer_default(event2, currentTarget), g3.mouse[1]), g3.extent, translateExtent));
@@ -5573,8 +5459,9 @@ var MapElement = class extends s3 {
   }
   updated(changedProperties) {
     super.updated(changedProperties);
-    const centroid = centroid_default(this.geojson);
-    this.projection = mercator_default().center(centroid).scale(this.width / 6).translate([this.width / 2, this.height / 2]);
+    const center = [35, 40];
+    const scale = Math.max(this.width, this.height);
+    this.projection = mercator_default().center(center).scale(scale).translate([this.width / 2, this.height / 2]);
     this.path = path_default().projection(this.projection);
     if (changedProperties.has("flights")) {
       this.renderMap(this.path);
@@ -5583,7 +5470,7 @@ var MapElement = class extends s3 {
   render() {
     return T`
       <!-- Create SVG element for the map -->
-      <svg width="${this.width}" height="${this.height}">
+      <svg width="${this.width * 10}" height="${this.height * 10}">
         <g></g>
       </svg>
       <!-- Tooltip -->
@@ -5605,31 +5492,26 @@ var MapElement = class extends s3 {
     this.g.selectAll("*").remove();
     this.g.selectAll(".country").data(this.geojson.features).enter().append("path").attr("d", path).style("fill", "#444").style("stroke", "#666666");
     this.flights?.forEach((flight) => {
+      const foreignObjectId = `flight-foreign-object-${flight.aircraftId}`;
       const { position } = flight;
       const [x2, y3] = this.projection([position.longitude, position.latitude]);
-      const foreignObject = this.g.append("foreignObject").attr("x", x2).attr("y", y3);
-      const tempDiv = foreignObject.append("xhtml:div").attr("xmlns", "http://www.w3.org/1999/xhtml").classed("flight-card", true).style("visibility", "hidden").html(flight.data);
+      const foreignObject = this.g.append("foreignObject").attr("id", foreignObjectId).attr("x", x2).attr("y", y3);
       foreignObject.append("xhtml:section").classed("plane", true).html("x");
-      const divWidth = tempDiv.node().getBoundingClientRect().width;
-      const divHeight = tempDiv.node().getBoundingClientRect().height;
-      const planeWidth = foreignObject.select(".plane").node().getBoundingClientRect().width;
-      const planeHeight = foreignObject.select(".plane").node().getBoundingClientRect().height;
-      const width = Math.max(divWidth, planeWidth);
-      const height = divHeight + planeHeight;
-      tempDiv.remove();
-      foreignObject.attr("width", width).attr("height", height);
-      foreignObject.select(".flight-card").style("visibility", "visible");
+      foreignObject.attr("width", 50).attr("height", 50);
       const div = foreignObject.append("xhtml:div").attr("xmlns", "http://www.w3.org/1999/xhtml").classed("flight-card", true);
       div.append("p").html(`${flight?.aircraftId} <br> ${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}`);
-      foreignObject.on("mouseover", (event) => {
+      foreignObject.select(".plane").on("mouseover", (event) => {
         const flightData = `${flight?.aircraftId}<br>${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}<br>${generateRandomData()?.metadata}`;
         const svgRect = this.svg.node().getBoundingClientRect();
         const x3 = event.clientX - svgRect.left;
         const y4 = event.clientY - svgRect.top;
-        this.tooltip.style.left = `${x3}px`;
-        this.tooltip.style.top = `${y4}px`;
-        this.tooltip.innerHTML = flightData;
-        this.tooltip.style.display = "block";
+        const bbox = foreignObject.node().getBoundingClientRect();
+        if (x3 >= bbox.left && x3 <= bbox.right && y4 >= bbox.top && y4 <= bbox.bottom) {
+          this.tooltip.style.left = `${x3 - 50}px`;
+          this.tooltip.style.top = `${y4 - 28}px`;
+          this.tooltip.innerHTML = flightData;
+          this.tooltip.style.display = "block";
+        }
       }).on("mouseout", () => {
         this.tooltip.style.display = "none";
       });
@@ -5649,14 +5531,33 @@ MapElement.styles = i`
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 8px;
+      font-size: 0.5rem;
+      width: 50px;
+      min-width: 50px;
+      max-width: 50px;
+      height: 50px;
+      min-height: 50px;
+      max-height: 50px;
+      pointer-events: none;
+      -webkit-pointer-events: none; /* Safari and Chrome */
+      -moz-pointer-events: none; /* Firefox */
+      -ms-pointer-events: none; /* Internet Explorer */
     }
     .plane {
       color: white;
-      border: 0.5px solid white;
+      border: 0.2px solid white;
       text-align: center;
-      width: 1vmin;
       cursor: pointer;
+      width: 5px;
+      min-width: 5px;
+      max-width: 5px;
+      height: 5px;
+      min-height: 5px;
+      max-height: 5px;
+      width: 100%; /* Ensure contents fill the available space */
+      height: 100%;
+      margin: 0; /* Reset margins */
+      padding: 0; /* Reset padding */
     }
     .tooltip {
       position: absolute;
@@ -9944,12 +9845,6 @@ var MyElement = class extends s3 {
     fetch("http://racemusaircrafttrafficgenerator.d0e6fvepbddreqau.francecentral.azurecontainer.io:8080/send").then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
-      }
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        return response.json();
-      } else {
-        return response.text();
       }
     }).then((data) => {
       console.log("Received data:", data);

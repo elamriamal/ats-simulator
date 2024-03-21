@@ -7,6 +7,7 @@ class WebSocketService {
 
     constructor() {
         this.eventEmitter = new EventEmitter();
+
         this.socket = new WebSocket('ws://racemusaircrafttrafficgenerator.d0e6fvepbddreqau.francecentral.azurecontainer.io:8080/ws');
         this.socket.onopen = () => {
             console.log('WebSocket connected');

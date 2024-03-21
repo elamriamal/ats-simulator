@@ -23,12 +23,13 @@ export class MapElement extends LitElement {
   override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     super.updated(changedProperties);
 
-    // Create a projection for the entire map
-    const centroid = d3.geoCentroid(this.geojson);
+    const center: [number, number] = [35, 40]; // Approximate center of the map
+    const scale = Math.max(this.width, this.height); // Adjust the scale factor as needed
 
+    // Create a projection
     this.projection = d3.geoMercator()
-      .center(centroid) // Set the center of the projection
-      .scale(this.width / 6)
+      .center(center)
+      .scale(scale)
       .translate([this.width / 2, this.height / 2]);
 
     // Create a path generator
@@ -53,14 +54,33 @@ export class MapElement extends LitElement {
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 8px;
+      font-size: 0.5rem;
+      width: 50px;
+      min-width: 50px;
+      max-width: 50px;
+      height: 50px;
+      min-height: 50px;
+      max-height: 50px;
+      pointer-events: none;
+      -webkit-pointer-events: none; /* Safari and Chrome */
+      -moz-pointer-events: none; /* Firefox */
+      -ms-pointer-events: none; /* Internet Explorer */
     }
     .plane {
       color: white;
-      border: 0.5px solid white;
+      border: 0.2px solid white;
       text-align: center;
-      width: 1vmin;
       cursor: pointer;
+      width: 5px;
+      min-width: 5px;
+      max-width: 5px;
+      height: 5px;
+      min-height: 5px;
+      max-height: 5px;
+      width: 100%; /* Ensure contents fill the available space */
+      height: 100%;
+      margin: 0; /* Reset margins */
+      padding: 0; /* Reset padding */
     }
     .tooltip {
       position: absolute;
@@ -82,7 +102,7 @@ export class MapElement extends LitElement {
   override render(): SVGTemplateResult {
     return svg`
       <!-- Create SVG element for the map -->
-      <svg width="${this.width}" height="${this.height}">
+      <svg width="${this.width * 10}" height="${this.height * 10}">
         <g></g>
       </svg>
       <!-- Tooltip -->
@@ -94,16 +114,17 @@ export class MapElement extends LitElement {
     this.svg = d3.select(this.shadowRoot!.querySelector('svg'));
     this.g = this.svg.select('g');
     this.g.attr("clip-path", "inset(5%)");
-    this.tooltip = this.shadowRoot!.querySelector('.tooltip');    
-
+    this.tooltip = this.shadowRoot!.querySelector('.tooltip');
+  
     // Add zoom behavior
     this.zoom = d3.zoom<SVGSVGElement, any>()
       .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
       .on('zoom', (event) => {
+        // Update the transform attribute of the <g> element
         this.g.attr('transform', event.transform);
       });
-
-    this.svg.call(this.zoom);
+  
+    this.svg.call(this.zoom);  
     // Render map with adjusted projection
     this.renderMap(this.path);
   }
@@ -131,45 +152,24 @@ export class MapElement extends LitElement {
         cas: any; latitude: number; longitude: number
       };
     }) => {
+      const foreignObjectId = `flight-foreign-object-${flight.aircraftId}`;
       const { position } = flight;
       const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
 
       const foreignObject = this.g.append('foreignObject')
+        .attr('id', foreignObjectId)
         .attr('x', x)
         .attr('y', y);
-
-      // Append a temporary div to the foreignObject
-      const tempDiv = foreignObject.append('xhtml:div')
-        .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-        .classed('flight-card', true)
-        .style('visibility', 'hidden') // Hide the temporary div
-        .html(flight.data);
 
       // Append the plane section
       foreignObject.append('xhtml:section')
         .classed('plane', true)
         .html('x');
 
-      // Get dimensions of the temporary div and plane section
-      const divWidth = tempDiv.node().getBoundingClientRect().width;
-      const divHeight = tempDiv.node().getBoundingClientRect().height;
-      const planeWidth = foreignObject.select('.plane').node().getBoundingClientRect().width;
-      const planeHeight = foreignObject.select('.plane').node().getBoundingClientRect().height;
-
-      // Calculate total width and height including the plane element
-      const width = Math.max(divWidth, planeWidth);
-      const height = divHeight + planeHeight;
-
-      // Remove the temporary div
-      tempDiv.remove();
-
       // Update foreignObject dimensions with calculated width and height
       foreignObject
-        .attr('width', width)
-        .attr('height', height);
-
-      // make the foreignObject visible
-      foreignObject.select('.flight-card').style('visibility', 'visible');
+        .attr('width', 50)
+        .attr('height', 50)
 
       const div = foreignObject.append('xhtml:div')
         .attr('xmlns', 'http://www.w3.org/1999/xhtml')
@@ -177,30 +177,26 @@ export class MapElement extends LitElement {
       div.append('p').html(`${flight?.aircraftId} <br> ${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}`);
 
       // Add tooltip interaction for flights
-      foreignObject.on('mouseover', (event: MouseEvent) => {
-        const flightData = `${flight?.aircraftId}<br>${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}<br>${generateRandomData()?.metadata}`; // Get flight data for the current flight
+      foreignObject.select('.plane').on('mouseover', (event: MouseEvent) => {
+        const flightData = `${flight?.aircraftId}<br>${Math.floor(flight?.position?.cas)} - ${Math.floor(flight?.position?.hdg)}<br>${generateRandomData()?.metadata}`;
 
-        // Get the position of the mouse pointer relative to the SVG container
         const svgRect = this.svg.node().getBoundingClientRect();
         const x = event.clientX - svgRect.left;
         const y = event.clientY - svgRect.top;
 
-        // Adjust tooltip position to be over the flight card
-        this.tooltip.style.left = `${x}px`; // Initial left position
-        this.tooltip.style.top = `${y}px`; // Initial top position
-
-        // Update tooltip content
-        this.tooltip.innerHTML = flightData;
-
-        // Show tooltip initially (may still have zero dimensions)
-        this.tooltip.style.display = 'block';
+        // Check if the mouse coordinates intersect with the bounding box of the current flight's foreignObject
+        const bbox = foreignObject.node().getBoundingClientRect();
+        if (x >= bbox.left && x <= bbox.right && y >= bbox.top && y <= bbox.bottom) {
+          this.tooltip.style.left = `${x - 50}px`;
+          this.tooltip.style.top = `${y - 28}px`;
+          this.tooltip.innerHTML = flightData;
+          this.tooltip.style.display = 'block';
+        }
       })
 
         .on('mouseout', () => {
-          // Hide tooltip on mouseout
           this.tooltip.style.display = 'none';
         });
-
     });
   }
 }

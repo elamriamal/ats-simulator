@@ -15,11 +15,12 @@ let MapElement = class MapElement extends lit_1.LitElement {
     }
     updated(changedProperties) {
         super.updated(changedProperties);
-        // Create a projection for the entire map
-        const centroid = d3.geoCentroid(this.geojson);
+        const center = [35, 40]; // Approximate center of the map
+        const scale = Math.max(this.width, this.height); // Adjust the scale factor as needed
+        // Create a projection
         this.projection = d3.geoMercator()
-            .center(centroid) // Set the center of the projection
-            .scale(this.width / 6)
+            .center(center)
+            .scale(scale)
             .translate([this.width / 2, this.height / 2]);
         // Create a path generator
         this.path = d3.geoPath().projection(this.projection);
@@ -31,7 +32,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
     render() {
         return (0, lit_1.svg) `
       <!-- Create SVG element for the map -->
-      <svg width="${this.width}" height="${this.height}">
+      <svg width="${this.width * 10}" height="${this.height * 10}">
         <g></g>
       </svg>
       <!-- Tooltip -->
@@ -47,6 +48,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
         this.zoom = d3.zoom()
             .scaleExtent([1, 8]) // Set minimum and maximum zoom scale
             .on('zoom', (event) => {
+            // Update the transform attribute of the <g> element
             this.g.attr('transform', event.transform);
         });
         this.svg.call(this.zoom);
@@ -68,59 +70,42 @@ let MapElement = class MapElement extends lit_1.LitElement {
         // Render flights
         (_a = this.flights) === null || _a === void 0 ? void 0 : _a.forEach((flight) => {
             var _a, _b;
+            const foreignObjectId = `flight-foreign-object-${flight.aircraftId}`;
             const { position } = flight;
             const [x, y] = this.projection([position.longitude, position.latitude]); // Convert lat/long to SVG coordinates
             const foreignObject = this.g.append('foreignObject')
+                .attr('id', foreignObjectId)
                 .attr('x', x)
                 .attr('y', y);
-            // Append a temporary div to the foreignObject
-            const tempDiv = foreignObject.append('xhtml:div')
-                .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-                .classed('flight-card', true)
-                .style('visibility', 'hidden') // Hide the temporary div
-                .html(flight.data);
             // Append the plane section
             foreignObject.append('xhtml:section')
                 .classed('plane', true)
                 .html('x');
-            // Get dimensions of the temporary div and plane section
-            const divWidth = tempDiv.node().getBoundingClientRect().width;
-            const divHeight = tempDiv.node().getBoundingClientRect().height;
-            const planeWidth = foreignObject.select('.plane').node().getBoundingClientRect().width;
-            const planeHeight = foreignObject.select('.plane').node().getBoundingClientRect().height;
-            // Calculate total width and height including the plane element
-            const width = Math.max(divWidth, planeWidth);
-            const height = divHeight + planeHeight;
-            // Remove the temporary div
-            tempDiv.remove();
             // Update foreignObject dimensions with calculated width and height
             foreignObject
-                .attr('width', width)
-                .attr('height', height);
-            // make the foreignObject visible
-            foreignObject.select('.flight-card').style('visibility', 'visible');
+                .attr('width', 50)
+                .attr('height', 50);
             const div = foreignObject.append('xhtml:div')
                 .attr('xmlns', 'http://www.w3.org/1999/xhtml')
                 .classed('flight-card', true);
             div.append('p').html(`${flight === null || flight === void 0 ? void 0 : flight.aircraftId} <br> ${Math.floor((_a = flight === null || flight === void 0 ? void 0 : flight.position) === null || _a === void 0 ? void 0 : _a.cas)} - ${Math.floor((_b = flight === null || flight === void 0 ? void 0 : flight.position) === null || _b === void 0 ? void 0 : _b.hdg)}`);
             // Add tooltip interaction for flights
-            foreignObject.on('mouseover', (event) => {
+            foreignObject.select('.plane').on('mouseover', (event) => {
                 var _a, _b, _c;
-                const flightData = `${flight === null || flight === void 0 ? void 0 : flight.aircraftId}<br>${Math.floor((_a = flight === null || flight === void 0 ? void 0 : flight.position) === null || _a === void 0 ? void 0 : _a.cas)} - ${Math.floor((_b = flight === null || flight === void 0 ? void 0 : flight.position) === null || _b === void 0 ? void 0 : _b.hdg)}<br>${(_c = (0, utils_1.generateRandomData)()) === null || _c === void 0 ? void 0 : _c.metadata}`; // Get flight data for the current flight
-                // Get the position of the mouse pointer relative to the SVG container
+                const flightData = `${flight === null || flight === void 0 ? void 0 : flight.aircraftId}<br>${Math.floor((_a = flight === null || flight === void 0 ? void 0 : flight.position) === null || _a === void 0 ? void 0 : _a.cas)} - ${Math.floor((_b = flight === null || flight === void 0 ? void 0 : flight.position) === null || _b === void 0 ? void 0 : _b.hdg)}<br>${(_c = (0, utils_1.generateRandomData)()) === null || _c === void 0 ? void 0 : _c.metadata}`;
                 const svgRect = this.svg.node().getBoundingClientRect();
                 const x = event.clientX - svgRect.left;
                 const y = event.clientY - svgRect.top;
-                // Adjust tooltip position to be over the flight card
-                this.tooltip.style.left = `${x}px`; // Initial left position
-                this.tooltip.style.top = `${y}px`; // Initial top position
-                // Update tooltip content
-                this.tooltip.innerHTML = flightData;
-                // Show tooltip initially (may still have zero dimensions)
-                this.tooltip.style.display = 'block';
+                // Check if the mouse coordinates intersect with the bounding box of the current flight's foreignObject
+                const bbox = foreignObject.node().getBoundingClientRect();
+                if (x >= bbox.left && x <= bbox.right && y >= bbox.top && y <= bbox.bottom) {
+                    this.tooltip.style.left = `${x - 50}px`;
+                    this.tooltip.style.top = `${y - 28}px`;
+                    this.tooltip.innerHTML = flightData;
+                    this.tooltip.style.display = 'block';
+                }
             })
                 .on('mouseout', () => {
-                // Hide tooltip on mouseout
                 this.tooltip.style.display = 'none';
             });
         });
@@ -140,14 +125,33 @@ MapElement.styles = (0, lit_1.css) `
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 8px;
+      font-size: 0.5rem;
+      width: 50px;
+      min-width: 50px;
+      max-width: 50px;
+      height: 50px;
+      min-height: 50px;
+      max-height: 50px;
+      pointer-events: none;
+      -webkit-pointer-events: none; /* Safari and Chrome */
+      -moz-pointer-events: none; /* Firefox */
+      -ms-pointer-events: none; /* Internet Explorer */
     }
     .plane {
       color: white;
-      border: 0.5px solid white;
+      border: 0.2px solid white;
       text-align: center;
-      width: 1vmin;
       cursor: pointer;
+      width: 5px;
+      min-width: 5px;
+      max-width: 5px;
+      height: 5px;
+      min-height: 5px;
+      max-height: 5px;
+      width: 100%; /* Ensure contents fill the available space */
+      height: 100%;
+      margin: 0; /* Reset margins */
+      padding: 0; /* Reset padding */
     }
     .tooltip {
       position: absolute;

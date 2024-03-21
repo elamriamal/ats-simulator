@@ -26,13 +26,6 @@ export class MyElement extends LitElement {
         if (!response.ok) {
           throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
         }
-        // Check if the content type is JSON
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          return response.json(); // Parse response as JSON
-        } else {
-          return response.text(); // Read response as text
-        }
       })
       .then(data => {
         // Process the data
@@ -44,6 +37,7 @@ export class MyElement extends LitElement {
   }
   override connectedCallback(): void {
     super.connectedCallback();
+
     // this.startSendingData();
   }
 

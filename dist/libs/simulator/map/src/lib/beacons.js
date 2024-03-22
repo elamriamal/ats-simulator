@@ -21,8 +21,8 @@ function renderBeacons(svg, beacons, path) {
         var size = 5; // Adjust size as needed
         return (x) + "," + (y - size) + " " + (x - size) + "," + (y + size) + " " + (x + size) + "," + (y + size);
     })
-        .style("fill", "#00FFFF")
-        .style("stroke", "#00FFFF");
+        .style("fill", "#004080")
+        .style("stroke", "#004080");
     // Add text near each beacon
     svg.selectAll(".beacon-label")
         .data(beacons.features)
@@ -40,7 +40,7 @@ function renderBeacons(svg, beacons, path) {
     })
         .text(function (d) { return d.properties.name; })
         .attr("text-anchor", "middle")
-        .style("fill", "#00FFFF")
+        .style("fill", "#004080")
         .style("font-size", "0.5rem"); // Adjust font size as needed
 }
 exports.default = renderBeacons;

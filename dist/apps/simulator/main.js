@@ -10977,7 +10977,7 @@ function renderBeacons(svg, beacons, path) {
     var y3 = centroid[1];
     var size = 5;
     return x2 + "," + (y3 - size) + " " + (x2 - size) + "," + (y3 + size) + " " + (x2 + size) + "," + (y3 + size);
-  }).style("fill", "#00FFFF").style("stroke", "#00FFFF");
+  }).style("fill", "#004080").style("stroke", "#004080");
   svg.selectAll(".beacon-label").data(beacons.features).enter().append("text").attr("x", function(d3) {
     if (!path || !path.centroid(d3))
       return 0;
@@ -10988,7 +10988,7 @@ function renderBeacons(svg, beacons, path) {
     return path.centroid(d3)[1] + 15;
   }).text(function(d3) {
     return d3.properties.name;
-  }).attr("text-anchor", "middle").style("fill", "#00FFFF").style("font-size", "0.5rem");
+  }).attr("text-anchor", "middle").style("fill", "#004080").style("font-size", "0.5rem");
 }
 
 // libs/simulator/map/src/lib/airports.ts

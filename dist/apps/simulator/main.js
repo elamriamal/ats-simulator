@@ -11085,7 +11085,7 @@ var MapElement = class extends s3 {
       <!-- Tooltip -->
       <div class="tooltip" style="display: none;"></div>
       <!-- Checkbox lists -->
-      <div style="position: absolute; bottom: 10px; right: 10px;">
+      <div class="checkbox-container" style="position: absolute; bottom: 10px; right: 10px;">
         <label>
           <input type="checkbox" ?checked="${this.showAirways}" @change="${this.toggleAirways}"> Airways
         </label>
@@ -11160,12 +11160,29 @@ MapElement.styles = i`
       color: white;
       font-size: 12px; /* Set the font size for the entire component */
     }
-    .checkbox-label {
-      font-size: 0.6rem; /* Increase font size for checkbox label */
-    }
+   
     .checkbox-input {
       width: 20px; /* Increase checkbox size */
       height: 20px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 4px;
+    }
+    .checkbox-input:checked {
+      background-color: white;
+    }
+    .checkbox-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 5px;
+      border-radius: 8px;
+    }
+    .checkbox-container label {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
     }
     .flight-card {
       position: absolute;

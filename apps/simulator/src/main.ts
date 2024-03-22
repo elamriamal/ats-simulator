@@ -26,15 +26,11 @@ export class MyElement extends LitElement {
 
   startSendingData() {
     // Start sending data via REST service
-    fetch('http://racemusaircrafttrafficgenerator.d0e6fvepbddreqau.francecentral.azurecontainer.io:8080/send')
+    fetch('https://racemusaircrafttrafficgenerator.azurewebsites.net/send')
       .then(response => {
         if (!response.ok) {
           throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
         }
-      })
-      .then(data => {
-        // Process the data
-        console.log('Received data:', data);
       })
       .catch(error => {
         console.error('Error fetching data:', error);

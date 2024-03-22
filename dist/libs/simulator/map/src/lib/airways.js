@@ -8,7 +8,7 @@ function renderAirways(svg, airways, path) {
         .append("path")
         .attr("d", path)
         .style("fill", "none")
-        .style("stroke", "black");
+        .style("stroke", "#0080FF");
 }
 exports.default = renderAirways;
 //# sourceMappingURL=airways.js.map

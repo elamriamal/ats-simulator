@@ -20,6 +20,7 @@
     "@swc/helpers": "~0.5.2",
     "@types/d3": "^7.4.3",
     "@types/jest": "^29.4.0",
+    "@types/lodash": "^4.17.0",
     "@types/node": "~18.16.9",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
@@ -43,6 +44,7 @@
     "http-server": "^14.1.1",
     "isomorphic-ws": "^5.0.0",
     "lit": "^3.1.2",
+    "lodash": "^4.17.21",
     "tslib": "^2.3.0",
     "websocket": "^1.0.34"
   }

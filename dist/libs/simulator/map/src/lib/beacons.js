@@ -18,11 +18,11 @@ function renderBeacons(svg, beacons, path) {
         }
         var x = centroid[0];
         var y = centroid[1];
-        var size = 1; // Adjust size as needed
+        var size = 5; // Adjust size as needed
         return (x) + "," + (y - size) + " " + (x - size) + "," + (y + size) + " " + (x + size) + "," + (y + size);
     })
-        .style("fill", "black")
-        .style("stroke", "black");
+        .style("fill", "#00FFFF")
+        .style("stroke", "#00FFFF");
     // Add text near each beacon
     svg.selectAll(".beacon-label")
         .data(beacons.features)
@@ -36,12 +36,12 @@ function renderBeacons(svg, beacons, path) {
         .attr("y", function (d) {
         if (!path || !path.centroid(d))
             return 0;
-        return path.centroid(d)[1] + 3;
+        return path.centroid(d)[1] + 15;
     })
         .text(function (d) { return d.properties.name; })
         .attr("text-anchor", "middle")
-        .style("fill", "black")
-        .style("font-size", "0.2rem"); // Adjust font size as needed
+        .style("fill", "#00FFFF")
+        .style("font-size", "0.5rem"); // Adjust font size as needed
 }
 exports.default = renderBeacons;
 //# sourceMappingURL=beacons.js.map

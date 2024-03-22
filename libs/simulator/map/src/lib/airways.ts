@@ -6,5 +6,5 @@ export default function renderAirways(svg: any, airways: any, path: any): void {
     .append("path")
     .attr("d", path)
     .style("fill", "none")
-    .style("stroke", "black");
+    .style("stroke", "#0080FF");
 }

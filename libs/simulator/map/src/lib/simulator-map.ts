@@ -1,6 +1,7 @@
 import { LitElement, css, svg, SVGTemplateResult, PropertyValueMap } from 'lit';
 import * as d3 from 'd3';
 import { customElement, property } from 'lit/decorators.js';
+import { debounce } from 'lodash'; // Import debounce function
 import renderSectors from './sectors';
 import renderFlights from './flights';
 import renderBeacons from './beacons';
@@ -14,10 +15,6 @@ export class MapElement extends LitElement {
   @property({ type: Number }) height = window.innerHeight;
   @property({ type: Array }) flights: any[] = [];
 
-  constructor() {
-    super();
-  }
-
   private geojson: any;
   private beacons: any;
   private airports: any;
@@ -26,15 +23,27 @@ export class MapElement extends LitElement {
   private svg: any;
   private g: any;
   private zoom: any;
-  private tooltip: any;
   private projection: any;
   private path: any;
+  tooltip: any;
+  // Properties to track visibility of map elements
+  private showAirways = true;
+  private showAirports = true;
+  private showBeacons = true;
+  private showAirwaypoints = true;
+
+  constructor() {
+    super();
+    this.toggleAirways = debounce(this.toggleAirways, 300, { leading: true, trailing: false });
+    this.toggleAirports = debounce(this.toggleAirports, 300, { leading: true, trailing: false });
+    this.toggleBeacons = debounce(this.toggleBeacons, 300, { leading: true, trailing: false });
+  }
 
   override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     super.updated(changedProperties);
 
     const center: [number, number] = [35, 40]; // Approximate center of the map
-    const scale = Math.max(this.width, this.height); // Adjust the scale factor as needed
+    const scale = Math.max(this.width, this.height)*2.5; // Adjust the scale factor as needed
 
     // Create a projection
     this.projection = d3.geoMercator()
@@ -45,23 +54,31 @@ export class MapElement extends LitElement {
     // Create a path generator
     this.path = d3.geoPath().projection(this.projection);
 
-    if (changedProperties.has('flights')) {
-      // Call renderMap every time flights property is updated
+    if (changedProperties.has('flights') || changedProperties.has('showAirways') || changedProperties.has('showAirports') || changedProperties.has('showBeacons')) {
+      // Call renderMap every time flights or visibility properties are updated
       this.renderMap();
     }
   }
-
 
   static override styles = css`
     :host {
       display: block;
       overflow: hidden; /* Hide overflow content */
+      color: white;
+      font-size: 12px; /* Set the font size for the entire component */
+    }
+    .checkbox-label {
+      font-size: 0.6rem; /* Increase font size for checkbox label */
+    }
+    .checkbox-input {
+      width: 20px; /* Increase checkbox size */
+      height: 20px;
     }
     .flight-card {
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 0.3rem;
+      font-size: 0.5rem;
       width: 50px;
       min-width: 50px;
       max-width: 50px;
@@ -84,6 +101,9 @@ export class MapElement extends LitElement {
       height: 8px;
       min-height: 8px;
       max-height: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .tooltip {
       position: absolute;
@@ -110,6 +130,18 @@ export class MapElement extends LitElement {
       </svg>
       <!-- Tooltip -->
       <div class="tooltip" style="display: none;"></div>
+      <!-- Checkbox lists -->
+      <div style="position: absolute; bottom: 10px; right: 10px;">
+        <label>
+          <input type="checkbox" ?checked="${this.showAirways}" @change="${this.toggleAirways}"> Airways
+        </label>
+        <label>
+          <input type="checkbox" ?checked="${this.showAirports}" @change="${this.toggleAirports}"> Airports
+        </label>
+        <label>
+          <input type="checkbox" ?checked="${this.showBeacons}" @change="${this.toggleBeacons}"> Beacons
+        </label>
+      </div>
     `;
   }
 
@@ -138,21 +170,58 @@ export class MapElement extends LitElement {
     // Render sectors
     renderSectors(this.g, this.geojson, this.path);
 
-    // Render beacons
-    renderBeacons(this.g, this.beacons, this.path);
+    if (this.showAirways) {
+      renderAirways(this.g, this.airways, this.path);
 
-    // Render airports
-    renderAirports(this.g, this.airports, this.path);
+      // Render Airwaypoints only if Airways are visible
+      if (this.showAirwaypoints) {
+         renderAirwaypoints(this.g, this.airwaypoints, this.path);
+      }
+    }
 
-    // Render Airwaypoints
-    renderAirwaypoints(this.g, this.airwaypoints, this.path);
+    if (this.showAirports) {
+      renderAirports(this.g, this.airports, this.path);
+    }
 
-    // Render airways
-    renderAirways(this.g, this.airways, this.path);
+    if (this.showBeacons) {
+      renderBeacons(this.g, this.beacons, this.path);
+    }
 
     // Render flights
     renderFlights(this.g, this.flights, this.projection, this.tooltip);
+  }
 
+  private toggleAirports(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.showAirports = target.checked;
+      this.renderMap();
+    }
+  }
+
+  private toggleAirways(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.showAirways = target.checked;
+      // Update showAirwaypoints based on showAirways and showBeacons
+      this.updateAirwaypointsVisibility();
+      this.renderMap();
+    }
+  }
+
+  private toggleBeacons(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.showBeacons = target.checked;
+      // Update showAirwaypoints based on showAirways and showBeacons
+      this.updateAirwaypointsVisibility();
+      this.renderMap();
+    }
+  }
+
+  private updateAirwaypointsVisibility(): void {
+    // Update showAirwaypoints based on showAirways and showBeacons
+    this.showAirwaypoints = this.showAirways && !this.showBeacons;
   }
 
 }

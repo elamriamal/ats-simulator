@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const lit_1 = require("lit");
 const d3 = require("d3");
 const decorators_js_1 = require("lit/decorators.js");
+const lodash_1 = require("lodash"); // Import debounce function
 const sectors_1 = require("./sectors");
 const flights_1 = require("./flights");
 const beacons_1 = require("./beacons");
@@ -17,11 +18,19 @@ let MapElement = class MapElement extends lit_1.LitElement {
         this.width = window.innerWidth;
         this.height = window.innerHeight;
         this.flights = [];
+        // Properties to track visibility of map elements
+        this.showAirways = true;
+        this.showAirports = true;
+        this.showBeacons = true;
+        this.showAirwaypoints = true;
+        this.toggleAirways = (0, lodash_1.debounce)(this.toggleAirways, 300, { leading: true, trailing: false });
+        this.toggleAirports = (0, lodash_1.debounce)(this.toggleAirports, 300, { leading: true, trailing: false });
+        this.toggleBeacons = (0, lodash_1.debounce)(this.toggleBeacons, 300, { leading: true, trailing: false });
     }
     updated(changedProperties) {
         super.updated(changedProperties);
         const center = [35, 40]; // Approximate center of the map
-        const scale = Math.max(this.width, this.height); // Adjust the scale factor as needed
+        const scale = Math.max(this.width, this.height) * 2.5; // Adjust the scale factor as needed
         // Create a projection
         this.projection = d3.geoMercator()
             .center(center)
@@ -29,8 +38,8 @@ let MapElement = class MapElement extends lit_1.LitElement {
             .translate([this.width / 2, this.height / 2]);
         // Create a path generator
         this.path = d3.geoPath().projection(this.projection);
-        if (changedProperties.has('flights')) {
-            // Call renderMap every time flights property is updated
+        if (changedProperties.has('flights') || changedProperties.has('showAirways') || changedProperties.has('showAirports') || changedProperties.has('showBeacons')) {
+            // Call renderMap every time flights or visibility properties are updated
             this.renderMap();
         }
     }
@@ -42,6 +51,18 @@ let MapElement = class MapElement extends lit_1.LitElement {
       </svg>
       <!-- Tooltip -->
       <div class="tooltip" style="display: none;"></div>
+      <!-- Checkbox lists -->
+      <div style="position: absolute; bottom: 10px; right: 10px;">
+        <label>
+          <input type="checkbox" ?checked="${this.showAirways}" @change="${this.toggleAirways}"> Airways
+        </label>
+        <label>
+          <input type="checkbox" ?checked="${this.showAirports}" @change="${this.toggleAirports}"> Airports
+        </label>
+        <label>
+          <input type="checkbox" ?checked="${this.showBeacons}" @change="${this.toggleBeacons}"> Beacons
+        </label>
+      </div>
     `;
     }
     firstUpdated() {
@@ -65,16 +86,50 @@ let MapElement = class MapElement extends lit_1.LitElement {
         this.g.selectAll("*").remove();
         // Render sectors
         (0, sectors_1.default)(this.g, this.geojson, this.path);
-        // Render beacons
-        (0, beacons_1.default)(this.g, this.beacons, this.path);
-        // Render airports
-        (0, airports_1.default)(this.g, this.airports, this.path);
-        // Render Airwaypoints
-        (0, airwaypoints_1.default)(this.g, this.airwaypoints, this.path);
-        // Render airways
-        (0, airways_1.default)(this.g, this.airways, this.path);
+        if (this.showAirways) {
+            (0, airways_1.default)(this.g, this.airways, this.path);
+            // Render Airwaypoints only if Airways are visible
+            if (this.showAirwaypoints) {
+                (0, airwaypoints_1.default)(this.g, this.airwaypoints, this.path);
+            }
+        }
+        if (this.showAirports) {
+            (0, airports_1.default)(this.g, this.airports, this.path);
+        }
+        if (this.showBeacons) {
+            (0, beacons_1.default)(this.g, this.beacons, this.path);
+        }
         // Render flights
         (0, flights_1.default)(this.g, this.flights, this.projection, this.tooltip);
+    }
+    toggleAirports(event) {
+        const target = event.target;
+        if (target) {
+            this.showAirports = target.checked;
+            this.renderMap();
+        }
+    }
+    toggleAirways(event) {
+        const target = event.target;
+        if (target) {
+            this.showAirways = target.checked;
+            // Update showAirwaypoints based on showAirways and showBeacons
+            this.updateAirwaypointsVisibility();
+            this.renderMap();
+        }
+    }
+    toggleBeacons(event) {
+        const target = event.target;
+        if (target) {
+            this.showBeacons = target.checked;
+            // Update showAirwaypoints based on showAirways and showBeacons
+            this.updateAirwaypointsVisibility();
+            this.renderMap();
+        }
+    }
+    updateAirwaypointsVisibility() {
+        // Update showAirwaypoints based on showAirways and showBeacons
+        this.showAirwaypoints = this.showAirways && !this.showBeacons;
     }
 };
 exports.MapElement = MapElement;
@@ -82,12 +137,21 @@ MapElement.styles = (0, lit_1.css) `
     :host {
       display: block;
       overflow: hidden; /* Hide overflow content */
+      color: white;
+      font-size: 12px; /* Set the font size for the entire component */
+    }
+    .checkbox-label {
+      font-size: 0.6rem; /* Increase font size for checkbox label */
+    }
+    .checkbox-input {
+      width: 20px; /* Increase checkbox size */
+      height: 20px;
     }
     .flight-card {
       position: absolute;
       color: white;
       cursor: pointer;
-      font-size: 0.3rem;
+      font-size: 0.5rem;
       width: 50px;
       min-width: 50px;
       max-width: 50px;
@@ -110,6 +174,9 @@ MapElement.styles = (0, lit_1.css) `
       height: 8px;
       min-height: 8px;
       max-height: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .tooltip {
       position: absolute;

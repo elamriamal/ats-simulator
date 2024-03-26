@@ -29,7 +29,12 @@ export class MyElement extends LitElement {
     fetch('https://racemusaircrafttrafficgenerator.azurewebsites.net/send')
       .then(response => {
         if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+          if (response.status === 403) {
+            // Afficher une alerte en cas d'erreur 403
+            window.alert("Backend service https://racemusaircrafttrafficgenerator.azurewebsites.net has been blocked by your firewall, please contact your IT service to whitelist the URL or connect from another network.");
+          } else {
+            throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+          }
         }
       })
       .catch(error => {

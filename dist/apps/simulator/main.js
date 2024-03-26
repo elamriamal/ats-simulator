@@ -9446,7 +9446,7 @@ function clipAntimeridianInterpolate(from, to, direction, stream) {
 
 // node_modules/d3-geo/src/clip/circle.js
 function circle_default(radius) {
-  var cr = cos(radius), delta = 6 * radians, smallRadius = cr > 0, notHemisphere = abs2(cr) > epsilon;
+  var cr = cos(radius), delta = 2 * radians, smallRadius = cr > 0, notHemisphere = abs2(cr) > epsilon;
   function interpolate(from, to, direction, stream) {
     circleStream(stream, radius, delta, direction, from, to);
   }
@@ -67942,7 +67942,11 @@ var MyElement = class extends s3 {
   startSendingData() {
     fetch("https://racemusaircrafttrafficgenerator.azurewebsites.net/send").then((response) => {
       if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+        if (response.status === 403) {
+          window.alert("Backend service https://racemusaircrafttrafficgenerator.azurewebsites.net has been blocked by your firewall, please contact your IT service to whitelist the URL or connect from another network.");
+        } else {
+          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+        }
       }
     }).catch((error) => {
       console.error("Error fetching data:", error);

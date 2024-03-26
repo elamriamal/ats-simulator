@@ -67942,14 +67942,11 @@ var MyElement = class extends s3 {
   startSendingData() {
     fetch("https://racemusaircrafttrafficgenerator.azurewebsites.net/send").then((response) => {
       if (!response.ok) {
-        if (response.status === 403) {
-          window.alert("Backend service https://racemusaircrafttrafficgenerator.azurewebsites.net has been blocked by your firewall, please contact your IT service to whitelist the URL or connect from another network.");
-        } else {
-          throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
-        }
+        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
       }
     }).catch((error) => {
       console.error("Error fetching data:", error);
+      window.alert("Backend service https://racemusaircrafttrafficgenerator.azurewebsites.net has been blocked by your firewall, please contact your IT service to whitelist the URL or connect from another network.");
     });
   }
   connectedCallback() {

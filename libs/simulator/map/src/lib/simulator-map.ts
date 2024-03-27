@@ -137,12 +137,15 @@ export class MapElement extends LitElement {
       padding: 8px;
       font-size: 0.5rem;
     }
+    .bg-color {
+      background-color: #AAAAAA;
+    }
   `;
 
   override render(): SVGTemplateResult {
     return svg`
       <!-- Create SVG element for the map -->
-      <svg width="${this.width * 10}" height="${this.height * 10}">
+      <svg width="${this.width * 10}" height="${this.height * 10}" class="bg-color">
         <g></g>
       </svg>
       <!-- Tooltip -->

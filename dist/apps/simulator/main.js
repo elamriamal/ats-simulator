@@ -10913,7 +10913,11 @@ var import_lodash = __toESM(require_lodash());
 
 // libs/simulator/map/src/lib/sectors.ts
 function renderSectors(svg, geojson, path) {
-  svg.selectAll(".country").data(geojson.features).enter().append("path").attr("d", path).style("fill", "#AAAAAA").style("stroke", "#FEFEE2");
+  const colorScale = ["#767676", "#888888", "#5a5e6b", "#999999", "#666666", "#AAAAAA", "#484b55"];
+  const colorGenerator = (index) => {
+    return colorScale[index % colorScale.length];
+  };
+  svg.selectAll(".country").data(geojson.features).enter().append("path").attr("d", path).attr("fill", (d3, i3) => colorGenerator(i3)).style("stroke", "#FEFEE2");
 }
 
 // libs/simulator/map/src/lib/utils.ts
@@ -11079,7 +11083,7 @@ var MapElement = class extends s3 {
   render() {
     return T`
       <!-- Create SVG element for the map -->
-      <svg width="${this.width * 10}" height="${this.height * 10}">
+      <svg width="${this.width * 10}" height="${this.height * 10}" class="bg-color">
         <g></g>
       </svg>
       <!-- Tooltip -->
@@ -11229,6 +11233,9 @@ MapElement.styles = i`
       box-shadow: 0 1px 2px rgba(0,0,0,0.10);
       padding: 8px;
       font-size: 0.5rem;
+    }
+    .bg-color {
+      background-color: #AAAAAA;
     }
   `;
 __decorateClass([

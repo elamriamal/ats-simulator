@@ -46,7 +46,7 @@ let MapElement = class MapElement extends lit_1.LitElement {
     render() {
         return (0, lit_1.svg) `
       <!-- Create SVG element for the map -->
-      <svg width="${this.width * 10}" height="${this.height * 10}">
+      <svg width="${this.width * 10}" height="${this.height * 10}" class="bg-color">
         <g></g>
       </svg>
       <!-- Tooltip -->
@@ -209,6 +209,9 @@ MapElement.styles = (0, lit_1.css) `
       box-shadow: 0 1px 2px rgba(0,0,0,0.10);
       padding: 8px;
       font-size: 0.5rem;
+    }
+    .bg-color {
+      background-color: #AAAAAA;
     }
   `;
 tslib_1.__decorate([

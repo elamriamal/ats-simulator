@@ -10997,30 +10997,36 @@ function renderBeacons(svg, beacons, path) {
 
 // libs/simulator/map/src/lib/airports.ts
 function renderAirports(svg, airports, path) {
-  svg.selectAll(".country").data(airports.features).enter().append("path").attr("d", function(d3) {
+  svg.selectAll(".country").data(airports.features).enter().append("circle").attr("cx", function(d3) {
     if (!path) {
-      return "";
+      return 0;
     }
-    return path(d3);
-  }).style("fill", "#841a1b").style("stroke", "#841a1b").attr("transform", function(d3) {
-    if (!path) {
-      return "";
-    }
-    var scale = 0.5;
     var centroid = path.centroid(d3);
-    return "translate(" + centroid + ") scale(" + scale + ")";
-  });
+    if (!centroid || isNaN(centroid[0])) {
+      return 0;
+    }
+    return centroid[0];
+  }).attr("cy", function(d3) {
+    if (!path) {
+      return 0;
+    }
+    var centroid = path.centroid(d3);
+    if (!centroid || isNaN(centroid[1])) {
+      return 0;
+    }
+    return centroid[1];
+  }).attr("r", 2).style("fill", "#841a1b").style("stroke", "#841a1b");
   svg.selectAll(".airport-label").data(airports.features).enter().append("text").attr("class", "airport-label").attr("x", function(d3) {
     if (!path || !path.centroid(d3))
       return 0;
-    return path.centroid(d3)[0] + 100;
+    return path.centroid(d3)[0];
   }).attr("y", function(d3) {
     if (!path || !path.centroid(d3))
       return 0;
-    return path.centroid(d3)[1] + 60;
+    return path.centroid(d3)[1] + 15;
   }).text(function(d3) {
     return d3.properties.name;
-  }).attr("text-anchor", "start").style("fill", "#841a1b").style("font-size", "0.5rem");
+  }).attr("text-anchor", "middle").style("fill", "#841a1b").style("font-size", "0.5rem");
 }
 
 // libs/simulator/map/src/lib/airwaypoints.ts
